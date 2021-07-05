@@ -76,9 +76,9 @@ mindmap-plugin: basic
 欢迎提 pull request  😀
 
 ## 捐款
-  您也可以通过捐款支持我
+  您也可以通过捐款支持我<br>
 <a href="https://www.buymeacoffee.com/markmind"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=markmind&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff"></a>
-
+<br>
 
 <img src="https://user-images.githubusercontent.com/18719494/124471790-e3844f80-ddcf-11eb-83c6-c5c16996c206.png" width="200px"/>
   
