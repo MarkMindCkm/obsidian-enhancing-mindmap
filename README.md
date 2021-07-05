@@ -46,6 +46,7 @@ mindmap-plugin: basic
 | Collapse node             | Ctrl/Cmd + /     |
 | Move node to another node  | Drag and drop node |
 | Tab node                 | Up/down/left/right |
+| scale                     | Ctrl/Cmd + mouse wheel|
 
 ## Features
 
