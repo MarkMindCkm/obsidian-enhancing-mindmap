@@ -5,7 +5,6 @@ import  SVG from 'svg.js'
 import {MindMapView} from '../MindMapView'
 import { frontMatterKey,basicFrontmatter } from '../constants';
 import Exec from './Execute'
-import { copyFileSync } from 'fs'
 
 
 interface Setting{
