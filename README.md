@@ -38,14 +38,14 @@ mindmap-plugin: basic
 | New child node            | Tab              |
 | New brother node          | enter            |
 | Delete node               | Delete           |
-| edit node                 | space/dblclick node|
+| edit node                 | Space/dblclick node|
 | Undo                      | Ctrl/Cmd+Z       |
 | Redo                      | Ctrl/Cmd+Y       |
-| quit edit node            | tab              |
-| expand node               | Ctrl/Cmd + /     |
-| collapse node             | Ctrl/Cmd + /     |
-| move node to another node  | drag and drop node |
-| tab node                 | up/down/left/right |
+| Quit edit node            | Tab              |
+| Expand node               | Ctrl/Cmd + /     |
+| Collapse node             | Ctrl/Cmd + /     |
+| Move node to another node  | Drag and drop node |
+| Tab node                 | Up/down/left/right |
 
 ## Features
 
