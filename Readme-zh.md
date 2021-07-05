@@ -1,1 +1,87 @@
+# obsidian-enhancing-mindmap-plugin
+
+
+![test](https://user-images.githubusercontent.com/18719494/124454742-63ec8580-ddbb-11eb-8da0-7cd44f38a225.gif)
+
+## 输出的 markdown 样式:
+
+```
+---
+
+mindmap-plugin: basic
+
+---
+
+# Enhancing Mind map
+
+## Links
+- <https://github.com/MarkMindLtd/obsidian-enhancing-mindmap>
+- [GitHub](https://github.com/MarkMindLtd/obsidian-enhancing-mindmap)
+
+## Related
+- [coc-markmap](https://github.com/gera2ld/coc-markmap)
+- [gatsby-remark-markmap](https://github.com/gera2ld/gatsby-remark-markmap)
+
+## Features
+- links
+- **inline** ~~text~~ *styles*
+- multiline
+   text
+- `inline code`
+- Katex - $x = {-b \pm \sqrt{b^2-4ac} \over 2a}$
+```
+
+## Short cuts
+
+| 新建脑图             | Ctrl/Cmd+P       |
+| ------------------------- | ---------------- |
+| 新增子节点            | Tab              |
+| 新增兄弟节点          | enter            |
+| 删除节点               | Delete           |
+| 编辑节点                 | Space/dblclick node|
+| 后退                      | Ctrl/Cmd+Z       |
+| 前进                      | Ctrl/Cmd+Y       |
+| 取消编辑节点            | Tab              |
+| 展开节点               | Ctrl/Cmd + /     |
+| 收缩节点             | Ctrl/Cmd + /     |
+| 拖动节点  | Drag and drop node |
+| 切换节点                 | Up/down/left/right |
+
+## 功能
+
+1. 编辑节点
+2. 拖动节点至某节点
+3. 前进/后退
+4. 在markdown和思维导图视图之间切换  
+5. 数据同步
+...
+
+![test (2)](https://user-images.githubusercontent.com/18719494/124458786-fd1d9b00-ddbf-11eb-8dbc-eeefb5b7abf5.gif)
+
+## 手动安装
+1. 下载文件
+2. 解压至obsidian: <vault>/.obsidian/plugins/
+3. 注意: 在某些系统中 .obsidian文件夹是隐藏的，在 macos 系统上，使用 Command+Shift+Dot 显示文件夹.
+4. 重启软件
+5. 打开安全模式
+
+
+## 计划
+1. 更多的主题背景
+2. 更多的布局方式
+3. 导出到图片和 opml
+4. 导入 opml 和 xmind 文件
+
+## 开发者
+欢迎提 pull request  😀
+
+## 捐款
+  您可以通过捐款支持我
+<a href="https://www.buymeacoffee.com/markmind"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=markmind&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff"></a>
+
+![微信图片_20210705203026](https://user-images.githubusercontent.com/18719494/124471790-e3844f80-ddcf-11eb-83c6-c5c16996c206.png)
+
+  
+
+
 
