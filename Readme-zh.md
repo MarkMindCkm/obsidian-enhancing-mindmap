@@ -46,6 +46,7 @@ mindmap-plugin: basic
 | 收缩节点             | Ctrl/Cmd + /     |
 | 拖动节点  | Drag and drop node |
 | 切换节点                 | Up/down/left/right |
+| 放大、缩小                 | Ctrl/Cmd + 滚轮 |
 
 ## 功能
 
