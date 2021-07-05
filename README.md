@@ -55,7 +55,15 @@ mindmap-plugin: basic
 4. toggle between mindmap and markdown views  
 5. synchronize data between boards
 ...
+
 ![test (2)](https://user-images.githubusercontent.com/18719494/124458786-fd1d9b00-ddbf-11eb-8dbc-eeefb5b7abf5.gif)
+
+## Manual installation
+1. Download the latest release
+2. Extract the obsidian-enhancing-mindmap folder from the zip to your vault's plugins folder: <vault>/.obsidian/plugins/
+3. Note: On some machines the .obsidian folder may be hidden. On MacOS you should be able to press Command+Shift+Dot to show the folder in Finder.
+4. Reload Obsidian
+5. If prompted about Safe Mode, you can disable safe mode and enable the plugin.
 
 
 ## Plans 
