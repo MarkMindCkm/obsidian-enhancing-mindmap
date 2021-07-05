@@ -7,7 +7,6 @@ import { frontMatterKey,basicFrontmatter } from '../constants';
 import Exec from './Execute'
 
 
-
 interface Setting{
     theme?:string;
     canvasSize?:number;
