@@ -73,7 +73,8 @@ mindmap-plugin: basic
 4. 导入 opml 和 xmind 文件
 
 ## 开发者
-欢迎提 pull request  😀
+1. 欢迎提 pull request  😀
+2. 如果您会css,那么您可以自己修改思维导图节点样式
 
 ## 捐款
   您也可以通过捐款支持我<br>
