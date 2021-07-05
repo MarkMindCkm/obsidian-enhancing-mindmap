@@ -1,0 +1,10 @@
+import { JSItem, CSSItem } from './types';
+export declare function escapeHtml(html: string): string;
+export declare function escapeScript(content: string): string;
+export declare function htmlOpen(tagName: string, attrs?: any): string;
+export declare function htmlClose(tagName: string): string;
+export declare function wrapHtml(tagName: string, content?: string, attrs?: any): string;
+export declare function wrapStyle(text: string, style: any): string;
+export declare function buildCode(fn: Function, args: any[]): string;
+export declare function persistJS(items: JSItem[], context?: any): string[];
+export declare function persistCSS(items: CSSItem[]): string[];

@@ -1,0 +1,54 @@
+{
+  "_from": "markmap-common@^0.1.5",
+  "_id": "markmap-common@0.1.5",
+  "_inBundle": false,
+  "_integrity": "sha1-9I56usV5DHLVq1VCmiFKy+FnCSI=",
+  "_location": "/markmap-common",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "range",
+    "registry": true,
+    "raw": "markmap-common@^0.1.5",
+    "name": "markmap-common",
+    "escapedName": "markmap-common",
+    "rawSpec": "^0.1.5",
+    "saveSpec": null,
+    "fetchSpec": "^0.1.5"
+  },
+  "_requiredBy": [
+    "/markmap-lib"
+  ],
+  "_resolved": "https://registry.nlark.com/markmap-common/download/markmap-common-0.1.5.tgz",
+  "_shasum": "f48e7abac5790c72d5ab55429a214acbe1670922",
+  "_spec": "markmap-common@^0.1.5",
+  "_where": "C:\\Users\\gongkun\\Desktop\\obsidian\\node_modules\\markmap-lib",
+  "author": "",
+  "bundleDependencies": false,
+  "dependencies": {
+    "@babel/runtime": "^7.12.1"
+  },
+  "deprecated": false,
+  "description": "Common types and utility functions used by markmap packages.",
+  "files": [
+    "dist",
+    "types"
+  ],
+  "gitHead": "cbb56b8ede93b15000a31013a0474891b774a977",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "name": "markmap-common",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "build:js": "rollup -c rollup.conf.js",
+    "build:types": "tsc",
+    "clean": "del-cli dist types",
+    "dev": "rollup -wc rollup.conf.js",
+    "lint": "eslint --ext .ts,.tsx ."
+  },
+  "typings": "types/index.d.ts",
+  "version": "0.1.5"
+}

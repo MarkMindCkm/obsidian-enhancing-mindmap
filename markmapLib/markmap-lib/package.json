@@ -1,0 +1,85 @@
+{
+  "_from": "markmap-lib",
+  "_id": "markmap-lib@0.11.6",
+  "_inBundle": false,
+  "_integrity": "sha1-9XiD+bcDUOrZTtLVaSYWa216su8=",
+  "_location": "/markmap-lib",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "markmap-lib",
+    "name": "markmap-lib",
+    "escapedName": "markmap-lib",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.nlark.com/markmap-lib/download/markmap-lib-0.11.6.tgz",
+  "_shasum": "f57883f9b70350ead94ed2d56926166b6d7ab2ef",
+  "_spec": "markmap-lib",
+  "_where": "C:\\Users\\gongkun\\Desktop\\obsidian",
+  "author": {
+    "name": "Gerald",
+    "email": "gera2ld@live.com"
+  },
+  "browser": "dist/browser/index.js",
+  "bugs": {
+    "url": "https://github.com/gera2ld/markmap/issues"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "@babel/runtime": "^7.12.5",
+    "katex": "^0.12.0",
+    "markmap-common": "^0.1.5",
+    "prismjs": "^1.21.0",
+    "remarkable": "^2.0.0",
+    "remarkable-katex": "^1.1.6"
+  },
+  "deprecated": false,
+  "description": "Visualize your Markdown as mindmaps with Markmap",
+  "devDependencies": {
+    "markmap-view": "^0.2.6"
+  },
+  "engines": {
+    "node": ">=10"
+  },
+  "files": [
+    "dist",
+    "types"
+  ],
+  "gitHead": "c1b04d45e3d7a9be432c2980ee105983abac7470",
+  "homepage": "https://github.com/gera2ld/markmap#readme",
+  "jsdelivr": "dist/browser/index.min.js",
+  "keywords": [
+    "markdown",
+    "markmap",
+    "mindmap"
+  ],
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "name": "markmap-lib",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/gera2ld/markmap.git"
+  },
+  "scripts": {
+    "build:js": "rollup -c rollup.conf.js",
+    "build:types": "tsc",
+    "clean": "del-cli dist types",
+    "dev": "rollup -wc rollup.conf.js",
+    "lint": "eslint --ext .ts ."
+  },
+  "typings": "types/index.d.ts",
+  "unpkg": "dist/browser/index.min.js",
+  "version": "0.11.6"
+}
