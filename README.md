@@ -55,6 +55,8 @@ mindmap-plugin: basic
 4. toggle between mindmap and markdown views  
 5. synchronize data between boards
 ...
+![test (2)](https://user-images.githubusercontent.com/18719494/124458786-fd1d9b00-ddbf-11eb-8dbc-eeefb5b7abf5.gif)
+
 
 ## Plans 
 1. more theme
