@@ -224,6 +224,8 @@ export default class MindMapPlugin extends Plugin{
               return next.call(this, menu);
             }
 
+          
+
             menu
               .addItem((item) => {
                 item

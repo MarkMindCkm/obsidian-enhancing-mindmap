@@ -34,6 +34,7 @@ export class MindMapView extends TextFileView implements HoverParent{
   mindmap:MindMap | null;
   colors:string[]=[];
   timeOut:any=null;
+  fileCache:any
   getViewType() {
     return mindmapViewType;
   }
@@ -52,11 +53,42 @@ export class MindMapView extends TextFileView implements HoverParent{
   }
 
    mindMapChange(){
+     if(!this.fileCache){
+        const activeFile = this.app.workspace.getActiveFile();
+        if (!activeFile) return false;
+        this.fileCache = this.app.metadataCache.getFileCache(activeFile);
+     }
+     
+
      if(this.mindmap){
         var md = this.mindmap.getMarkdown();
-        this.data = basicFrontmatter + md;
+        var frontMatter = this.getFrontMatter()
+        this.data = frontMatter + md;
         this.app.vault.adapter.write(this.mindmap.path,this.data);
      }
+  }
+
+  getFrontMatter(){
+    var frontMatter='---\n\n';
+    var v:any='';
+    if(this.fileCache.frontmatter){
+      for (var k in this.fileCache.frontmatter){
+        if(k != 'position'){
+          if(Object.prototype.toString.call(this.fileCache.frontmatter[k])=='[object Array]'||Object.prototype.toString.call(this.fileCache.frontmatter[k])=='[object Object]'){
+              v = JSON.stringify(this.fileCache.frontmatter[k]);
+          }else if(Object.prototype.toString.call(this.fileCache.frontmatter[k])=='[object Number]'||Object.prototype.toString.call(this.fileCache.frontmatter[k])=="[object String]"){
+              v =  this.fileCache.frontmatter[k];
+          }
+
+          if(v){
+            frontMatter += `${k}: ${v}\n\n`;
+          }
+        }
+      }
+    }
+
+    frontMatter +=`---\n\n`;
+    return frontMatter
   }
 
   constructor(leaf: WorkspaceLeaf, plugin: MindMapPlugin) {
@@ -152,7 +184,7 @@ export class MindMapView extends TextFileView implements HoverParent{
   }
 
   getMdText(str:string){
-    var md = str.replace(FRONT_MATTER_REGEX,'');
+    var md = str.trim().replace(FRONT_MATTER_REGEX,'');
     return  md.trim();
   }
 
@@ -182,7 +214,6 @@ export class MindMapView extends TextFileView implements HoverParent{
     if(str){
       const { root } = transformer.transform(str);
       const data =  transformData(root);
-     // console.log(data,111);
       return data;
 
     }else{
