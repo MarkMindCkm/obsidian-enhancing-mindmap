@@ -34,7 +34,8 @@ export class MindMapView extends TextFileView implements HoverParent{
   mindmap:MindMap | null;
   colors:string[]=[];
   timeOut:any=null;
-  fileCache:any
+  fileCache:any;
+  firstInit:boolean=true;
   getViewType() {
     return mindmapViewType;
   }
@@ -53,17 +54,12 @@ export class MindMapView extends TextFileView implements HoverParent{
   }
 
    mindMapChange(){
-     if(!this.fileCache){
-        const activeFile = this.app.workspace.getActiveFile();
-        if (!activeFile) return false;
-        this.fileCache = this.app.metadataCache.getFileCache(activeFile);
-     }
-     
-
+    
      if(this.mindmap){
         var md = this.mindmap.getMarkdown();
-        var frontMatter = this.getFrontMatter()
+        var frontMatter = this.getFrontMatter();
         this.data = frontMatter + md;
+       // console.log(this.mindmap.path);
         this.app.vault.adapter.write(this.mindmap.path,this.data);
      }
   }
@@ -81,13 +77,13 @@ export class MindMapView extends TextFileView implements HoverParent{
           }
 
           if(v){
-            frontMatter += `${k}: ${v}\n\n`;
+            frontMatter += `${k}: ${v}\n`;
           }
         }
       }
     }
 
-    frontMatter +=`---\n\n`;
+    frontMatter +=`\n---\n\n`;
     return frontMatter
   }
 
@@ -95,6 +91,13 @@ export class MindMapView extends TextFileView implements HoverParent{
     super(leaf);
     this.setColors();
     this.plugin = plugin;
+
+    this.fileCache={
+      'frontmatter':{
+        'mindmap-plugin':'basic'
+      }
+    }
+  
   }
 
 
@@ -132,13 +135,27 @@ export class MindMapView extends TextFileView implements HoverParent{
         mindData.isRoot=true;
     
         this.mindmap = new MindMap(mindData,this.contentEl,this.plugin.settings);
-        this.mindmap.path = this.app.workspace.getActiveFile()?.path||'';
         this.mindmap.colors=this.colors;
-        setTimeout(()=>{
+        if(this.firstInit){
+          setTimeout(()=>{
+            var leaf = this.app.workspace.activeLeaf;
+            if(leaf){
+               var view= leaf.view as MindMapView;
+               this.mindmap.path = view?.file.path;
+               if(view.file){
+                 this.fileCache = this.app.metadataCache.getFileCache(view.file);
+               }
+            }
+            this.mindmap.init();
+            this.mindmap.refresh();
+            this.mindmap.view=this;
+            this.firstInit=false;
+          },100);
+        }else{
           this.mindmap.init();
           this.mindmap.refresh();
           this.mindmap.view=this;
-        },100);
+        }
   }
 
   onunload(){
@@ -152,6 +169,8 @@ export class MindMapView extends TextFileView implements HoverParent{
     }
     
     this.plugin.setMarkdownView(this.leaf);
+
+    
   }
 
   onload() {
