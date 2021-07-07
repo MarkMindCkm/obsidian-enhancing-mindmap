@@ -81,13 +81,13 @@ export class MindMapView extends TextFileView implements HoverParent{
           }
 
           if(v){
-            frontMatter += `${k}: ${v}\n\n`;
+            frontMatter += `${k}: ${v}\n`;
           }
         }
       }
     }
 
-    frontMatter +=`---\n\n`;
+    frontMatter +=`\n---\n\n`;
     return frontMatter
   }
 
