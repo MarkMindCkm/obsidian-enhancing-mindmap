@@ -44,7 +44,8 @@ export default class MindMap{
     _dragNode:INode;
     exec:Exec;
     scalePointer:number[]=[];
-    mindScale = 100
+    mindScale = 100;
+    timeOut:any = null;
     constructor( data:INodeData,containerEL:HTMLElement,setting?:Setting){
         this.setting = Object.assign({
             theme:'default',
@@ -885,7 +886,12 @@ export default class MindMap{
           } else {
             this.appEl.style.transform = "scale(" + this.mindScale / 100 + ")";
           }
-          new Notice(`${num} %`);
+          if(this.timeOut){
+              clearTimeout(this.timeOut)
+          }
+          this.timeOut = setTimeout(()=>{
+              new Notice(`${num} %`);
+          },500);
       }
 
       setScale(type:string) {
