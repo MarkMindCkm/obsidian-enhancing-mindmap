@@ -47,7 +47,7 @@ mindmap-plugin: basic
 | Move node to another node  | Drag and drop node |
 | Tab node                 | Up/down/left/right |
 | Zoom in/out              | Ctrl/Cmd + mouse wheel|
-| mind map center          | Ctrl/Cmd + E |
+| mind map to center          | Ctrl/Cmd + E |
 
 ## Features
 
