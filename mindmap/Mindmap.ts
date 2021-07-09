@@ -102,7 +102,7 @@ export default class MindMap{
        this.mindMapChange=this.mindMapChange.bind(this);
 
        this.initEvent();
-       this.center();
+       //this.center();
     }
 
     setAppSetting(){
@@ -243,12 +243,7 @@ export default class MindMap{
 
         if(this._tempNum == this._nodeNum){
             this.refresh();
-            //scale pointer
-            this.scalePointer=[];
-            var root = this.root;
-            var rbox = root.getBox();
-            this.scalePointer.push(rbox.x+rbox.width/2,rbox.y+rbox.height/2);
-           
+            this.center();
         }
     }
 
@@ -284,6 +279,23 @@ export default class MindMap{
                     node.edit();
                 }
             }
+        }
+
+
+        if(ctrlKey && !shiftKey){
+            //ctrl + y
+            if(keyCode == 89){
+                e.preventDefault();
+                e.stopPropagation();
+                this.redo();
+            }
+
+            //ctrl + z
+            if(keyCode == 90){
+                 e.preventDefault();
+                 e.stopPropagation();
+                 this.undo();
+            }
 
         }
     }
@@ -299,6 +311,10 @@ export default class MindMap{
                 if(node&&!node.isEdit){
                      e.preventDefault();
                      e.stopPropagation();
+                     if(!node.isExpand){
+                        node.expand();
+                     }
+                     if(!node.parent) return;
                      node.mindmap.execute('addSiblingNode',{
                          parent:node.parent
                      });
@@ -321,6 +337,9 @@ export default class MindMap{
                 e.stopPropagation();
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
+                    if(!node.isExpand){
+                        node.expand();
+                    }
                     node.mindmap.execute("addChildNode", { parent: node });
                 }else if(node && node.isEdit){
                     node.cancelEdit();
@@ -355,28 +374,13 @@ export default class MindMap{
              if (node&&!node.isEdit) {
                this._selectNode(node, "left");
              }
-          }
-            
+          }       
            
         }
 
+
         if(ctrlKey && !shiftKey){
-            //ctrl + y
-            if(keyCode == 89){
-                e.preventDefault();
-                e.stopPropagation();
-                this.redo();
-            }
-
-            //ctrl + z
-            if(keyCode == 90){
-                 e.preventDefault();
-                 e.stopPropagation();
-                 this.undo();
-            }
-
             //ctr + /  toggle expand node
-           
             if(keyCode == 191){
                 var node = this.selectNode;
                 if (node&&!node.isEdit) {
@@ -392,8 +396,11 @@ export default class MindMap{
                 }
            }
 
+           // ctrl + E  center
+           if(keyCode == 69){
+               this.center();
+           }
         }
-
     }
 
     _selectNode(node:INode, direct:string) {
@@ -810,11 +817,25 @@ export default class MindMap{
     }
 
     center(){
+        this._setMindScalePointer();
+        var oldScale = this.mindScale;
+        this.scale(100);
+
         var w = this.containerEL.clientWidth;
         var h= this.containerEL.clientHeight;
-        
         this.containerEL.scrollTop = this.setting.canvasSize/2 - h/2 - 60 ;
         this.containerEL.scrollLeft = this.setting.canvasSize/2 - w/2 + 30;
+
+        this.scale(oldScale);
+    }
+
+    _setMindScalePointer(){
+            this.scalePointer=[]; 
+            var root = this.root;
+            if(root){
+                var rbox = root.getBox();
+                this.scalePointer.push(rbox.x+rbox.width/2,rbox.y+rbox.height/2);
+            }
     }
 
     getMarkdown(){
@@ -879,19 +900,13 @@ export default class MindMap{
           num = 300;
         }
         this.mindScale = num;
-
           if (this.scalePointer.length) {
             this.appEl.style.transformOrigin = `${this.scalePointer[0]}px ${this.scalePointer[1]}px`;
             this.appEl.style.transform = "scale(" + this.mindScale / 100 + ")";
           } else {
             this.appEl.style.transform = "scale(" + this.mindScale / 100 + ")";
           }
-          if(this.timeOut){
-              clearTimeout(this.timeOut)
-          }
-          this.timeOut = setTimeout(()=>{
-              new Notice(`${num} %`);
-          },500);
+         
       }
 
       setScale(type:string) {
@@ -901,6 +916,14 @@ export default class MindMap{
           var n = this.mindScale - 10;
         }
         this.scale(n);
+
+        if(this.timeOut){
+            clearTimeout(this.timeOut)
+        }
+        
+        this.timeOut = setTimeout(()=>{
+            new Notice(`${n} %`);
+        },600);
       }
 
 }

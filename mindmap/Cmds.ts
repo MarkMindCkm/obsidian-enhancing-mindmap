@@ -203,6 +203,7 @@ export class CollapseNode extends Command{
    constructor(node:INode){
        super('collapseNOde')
        this.node = node;
+       this.node.mindmap.clearSelectNode();
        this.node.clearCacheData();
        this.node.refreshBox();
    }
