@@ -119,9 +119,9 @@ export class MindMapSettingsTab extends PluginSettingTab {
             .setDesc(`${t('Mind map layout direct desc')}`)
             .addDropdown(dropDown =>
                 dropDown
-                    .addOption('mind map', 'mind map')
-                    .addOption('right', 'right')
-                    .addOption('left', 'left')
+                    .addOption('mind map', t('Centered'))
+                    .addOption('right', t('Right'))
+                    .addOption('left', t('Left'))
                     .setValue(this.plugin.settings.layoutDirect.toString() || 'mind map')
                     .onChange((value: string) => {
                         this.plugin.settings.layoutDirect = value;

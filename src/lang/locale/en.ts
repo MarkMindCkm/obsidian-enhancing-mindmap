@@ -17,13 +17,16 @@ export default {
 
     //setting
     "Canvas size":"Canvas size",
-    "Canvas size desc":"Width and height of canvas",
+    "Canvas size desc":"Width and height of the canvas",
     "Canvas background":"Canvas background",
-    "Canvas background desc":"background color of canvas",
-    "Max level of node to markdown head":"Max level of node to markdown head",
-    "Max level of node to markdown head desc":"When get markdown text of mindmap,max level of node text to markdown head",
-    "Font size":"Font size",
-    "Font size desc":"Font size",
-    "Mind map layout direct":"Mind map layout direct",
-    "Mind map layout direct desc":"The direc of mind map",
+    "Canvas background desc":"Background color of canvas",
+    "Max level of node to markdown head":"Max level of node to create a Heading",
+    "Max level of node to markdown head desc":"Specify which Node Level creates a seperate Heading instead of a List-Item",
+    "Font size":"Font Size",
+    "Font size desc":"Specify the Font Size",
+    "Mind map layout direct":"Mindmap Layout",
+    "Mind map layout direct desc":"Specify the direction the nodes are placed in your Mindmap",
+    "Right": "Right",
+    "Left": "Left",
+    "Centered": "Centered"
 };
