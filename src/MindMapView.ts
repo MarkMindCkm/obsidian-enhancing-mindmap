@@ -274,13 +274,7 @@ export class MindMapView extends TextFileView implements HoverParent {
 
     // })
 
-
     super.onMoreOptionsMenu(menu);
   }
-
-
-
-
-
 
 }
