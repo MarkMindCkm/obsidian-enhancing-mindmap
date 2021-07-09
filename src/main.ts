@@ -1,105 +1,107 @@
-import {  Plugin,
-    WorkspaceLeaf,
-    TFile,
-    TFolder,
-    ViewState,
-    MarkdownView,
-    Menu } from 'obsidian';
+import {
+  Plugin,
+  WorkspaceLeaf,
+  TFile,
+  TFolder,
+  ViewState,
+  MarkdownView,
+  Menu
+} from 'obsidian';
 // import DEFAULT_SETTINGS from './setting'
-import {around} from 'monkey-around'
+import { around } from 'monkey-around'
 import { MindMapSettings } from './settings';
-import {MindMapSettingsTab} from './settingTab'
+import { MindMapSettingsTab } from './settingTab'
 
 import { MindMapView, mindmapViewType } from "./MindMapView";
-import { frontMatterKey,basicFrontmatter } from './constants';
-import {t} from './lang/helpers'
+import { frontMatterKey, basicFrontmatter } from './constants';
+import { t } from './lang/helpers'
 
 
-export default class MindMapPlugin extends Plugin{
-    settings:MindMapSettings;
-    mindmapFileModes: { [file: string]: string } = {};
-    _loaded:boolean = false;
-    timeOut:any=null;
-   
-    async onload() {
+export default class MindMapPlugin extends Plugin {
+  settings: MindMapSettings;
+  mindmapFileModes: { [file: string]: string } = {};
+  _loaded: boolean = false;
+  timeOut: any = null;
 
-		  await this.loadSettings();
-	
-		  this.addCommand({
-		   	 id: 'Create New MindMap',
-			   name: `${t('Create new mindmap')}`,
-		   	 checkCallback: (checking: boolean) => {
-				    let leaf = this.app.workspace.activeLeaf;
-				  if (leaf) {
-					   if (!checking) {
-                const targetFolder = this.app.fileManager.getNewFileParent(
-                    this.app.workspace.getActiveFile()?.path || ""
-                );
-                if(targetFolder){
-                   this.newMindMap(targetFolder);
-                }
-					     }
-				   	 return true;
-				   }
-			    return false;
-			}
-		});
+  async onload() {
+
+    await this.loadSettings();
+
+    this.addCommand({
+      id: 'Create New MindMap',
+      name: `${t('Create new mindmap')}`,
+      checkCallback: (checking: boolean) => {
+        let leaf = this.app.workspace.activeLeaf;
+        if (leaf) {
+          if (!checking) {
+            const targetFolder = this.app.fileManager.getNewFileParent(
+              this.app.workspace.getActiveFile()?.path || ""
+            );
+            if (targetFolder) {
+              this.newMindMap(targetFolder);
+            }
+          }
+          return true;
+        }
+        return false;
+      }
+    });
 
     this.registerView(mindmapViewType, (leaf) => new MindMapView(leaf, this));
     this.registerEvents();
     this.registerMonkeyAround();
-    
+
 
     this.addSettingTab(new MindMapSettingsTab(this.app, this));
-	
-	}
 
-	onunload() {
-		const mindmapLeaves = this.app.workspace.getLeavesOfType(mindmapViewType);
+  }
+
+  onunload() {
+    const mindmapLeaves = this.app.workspace.getLeavesOfType(mindmapViewType);
     mindmapLeaves.forEach((leaf) => {
       this.setMarkdownView(leaf);
     });
     //this.app.workspace.unregisterHoverLinkSource(frontMatterKey);
-	}
+  }
 
-  async newMindMap(folder?: TFolder){
-        const targetFolder = folder
-        ? folder
-        : this.app.fileManager.getNewFileParent(
-            this.app.workspace.getActiveFile()?.path || ""
-          );
-  
-      try {
-        // @ts-ignore
-        const mindmap: TFile = await this.app.fileManager.createNewMarkdownFile(
-          targetFolder,
-          `${t('Untitled mindmap')}`
-        );
-  
-        await this.app.vault.modify(mindmap, basicFrontmatter);
-        await this.app.workspace.activeLeaf.setViewState({
-          type: mindmapViewType,
-          state: { file: mindmap.path },
-        });
-      } catch (e) {
-        console.error("Error creating mindmap board:", e);
-      }
+  async newMindMap(folder?: TFolder) {
+    const targetFolder = folder
+      ? folder
+      : this.app.fileManager.getNewFileParent(
+        this.app.workspace.getActiveFile()?.path || ""
+      );
+
+    try {
+      // @ts-ignore
+      const mindmap: TFile = await this.app.fileManager.createNewMarkdownFile(
+        targetFolder,
+        `${t('Untitled mindmap')}`
+      );
+
+      await this.app.vault.modify(mindmap, basicFrontmatter);
+      await this.app.workspace.activeLeaf.setViewState({
+        type: mindmapViewType,
+        state: { file: mindmap.path },
+      });
+    } catch (e) {
+      console.error("Error creating mindmap board:", e);
     }
+  }
 
-	async loadSettings() {
-		this.settings = Object.assign({
-      canvasSize:8000,
-      headLevel:2,
-      fontSize:16,
-      background:'transparent',
-      layout:'mindmap',
-      layoutDirect:'mindmap'
+  async loadSettings() {
+    this.settings = Object.assign({
+      canvasSize: 8000,
+      headLevel: 2,
+      fontSize: 16,
+      background: 'transparent',
+      layout: 'mindmap',
+      layoutDirect: 'mindmap'
     }, await this.loadData());
-	}
+  }
 
-	async saveSettings() {
-		await this.saveData(this.settings);
-	}
+  async saveSettings() {
+    await this.saveData(this.settings);
+  }
 
   async setMarkdownView(leaf: WorkspaceLeaf) {
     await leaf.setViewState(
@@ -112,7 +114,7 @@ export default class MindMapPlugin extends Plugin{
     );
   }
 
- async setMindMapView(leaf: WorkspaceLeaf){
+  async setMindMapView(leaf: WorkspaceLeaf) {
     await leaf.setViewState({
       type: mindmapViewType,
       state: leaf.view.getState(),
@@ -151,7 +153,7 @@ export default class MindMapPlugin extends Plugin{
     // });
   }
 
-  registerMonkeyAround(){
+  registerMonkeyAround() {
     const self = this;
 
     this.register(
@@ -173,7 +175,7 @@ export default class MindMapPlugin extends Plugin{
         setViewState(next) {
 
           return function (state: ViewState, ...rest: any[]) {
-           // new Notice( state.type);
+            // new Notice( state.type);
             if (
               self._loaded &&
               state.type === "markdown" &&
@@ -184,7 +186,7 @@ export default class MindMapPlugin extends Plugin{
               // Then check for the kanban frontMatterKey
               const cache = self.app.metadataCache.getCache(state.state.file);
 
-           //   new Notice(cache.frontmatter[frontMatterKey]);
+              //   new Notice(cache.frontmatter[frontMatterKey]);
 
               if (cache?.frontmatter && cache.frontmatter[frontMatterKey]) {
                 // If we have it, force the view type to kanban
@@ -224,7 +226,7 @@ export default class MindMapPlugin extends Plugin{
               return next.call(this, menu);
             }
 
-          
+
 
             menu
               .addItem((item) => {
@@ -248,5 +250,5 @@ export default class MindMapPlugin extends Plugin{
 
   }
 
-  
+
 }
