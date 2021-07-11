@@ -110,16 +110,17 @@
   width: 0;
   height: 0;
   border: 20px solid transparent;
-  border-bottom: 40px solid green;
+  border-bottom: 40px solid  var(--interactive-accent);
   transform-origin: center center;
+  z-index:100;
 }
 
 .mm-node-layout-indicate.mm-arrow-left{
-    transform: rotate(90deg)
+    transform: rotate(-90deg)
 } 
 .mm-node-layout-indicate.mm-arrow-down{
   transform: rotate(180deg)
 } 
 .mm-node-layout-indicate.mm-arrow-right{
-  transform: rotate(270deg)
+  transform: rotate(-270deg)
 } 
