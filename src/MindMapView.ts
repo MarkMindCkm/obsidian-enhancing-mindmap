@@ -186,8 +186,8 @@ export class MindMapView extends TextFileView implements HoverParent {
 
   onQuickPreview(file: TFile, data: string) {
     if (file === this.file && data !== this.data) {
-      this.data = data;
       this.setViewData(data);
+      this.fileCache = this.app.metadataCache.getFileCache(file);
     }
   }
 

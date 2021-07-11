@@ -120,21 +120,29 @@ export class ChangeNodeText extends Command {
     }
 }
 
-
 export class MoveNode extends Command {
     data:any={};
     node:INode;
     oldParent:INode;
     parent:INode;
+    newParent?:INode;
+    dropNode?:INode;
+    type?:string;
     index:number = -1;
     constructor(data:any) {
         super('moveNode');
-        this.data = { ...data };
+        this.data = data;
         if (this.data.type.indexOf('child') > -1) {
             this.node = this.data.node;
             this.oldParent = this.data.oldParent;
             this.parent = this.data.parent;
-        } 
+        } else {
+            this.node = this.data.node;
+            this.oldParent = this.node.parent;
+            this.dropNode = this.data.dropNode;
+            this.newParent = this.dropNode.parent;
+            this.type = this.data.direct;
+        }
     }
 
     execute() {
@@ -145,15 +153,37 @@ export class MoveNode extends Command {
             this.parent.addChild(this.node);
             this.node.mindmap.traverseBF((n:INode) => {
                 n.boundingRect = null;
-                n.stroke='';
+                n.stroke = ''
             }, this.node);
 
             this.node.clearCacheData();
             this.oldParent.clearCacheData();
-            this.oldParent&&this.oldParent.clearCacheData();
+            this.refresh(this.node.mindmap);
+            this.node.select();
+        } else {
+
+            if (this.oldParent) {
+                this.index = this.oldParent.removeChild(this.node);
+            }
+            this.node.mindmap.traverseBF((n:INode) => {
+                n.boundingRect = null;
+                n.stroke = ''
+            }, this.node);
+
+            this.oldParent.clearCacheData();
+            var dropNodeIndex = this.newParent.children.indexOf(this.dropNode);
+
+            if (this.type == 'top' || this.type == 'left') {
+                this.newParent.addChild(this.node, dropNodeIndex)
+            }
+            else {
+                this.newParent.addChild(this.node, dropNodeIndex + 1);
+            }
+
+            this.node.clearCacheData();
+            this.refresh(this.node.mindmap);
+            this.node.select();
         }
-        this.refresh(this.node.mindmap);
-        this.node.select();
     }
 
     undo() {
@@ -162,16 +192,25 @@ export class MoveNode extends Command {
             if (this.oldParent) {
                 this.oldParent.addChild(this.node, this.index);
             }
+
             this.node.mindmap.traverseBF((n:INode) => {
                 n.boundingRect = null;
-                n.stroke='';
+                n.stroke = ''
             }, this.node);
+
+            this.parent.clearCacheData();
+            this.node.clearCacheData();
+            this.refresh(this.node.mindmap);
+            this.node.select();
         }
-        this.node.clearCacheData();
-        this.parent.clearCacheData();
-       
-        this.refresh(this.node.mindmap);
-        this.node.select();
+        else {
+            this.newParent.removeChild(this.node);
+            this.dropNode.clearCacheData();
+            this.oldParent.addChild(this.node, this.index);
+            this.node.clearCacheData();
+            this.refresh(this.node.mindmap);
+            this.node.select();
+        }
     }
 }
 

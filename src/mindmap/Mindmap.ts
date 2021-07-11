@@ -46,6 +46,9 @@ export default class MindMap {
     scalePointer: number[] = [];
     mindScale = 100;
     timeOut: any = null;
+    _indicateDom:HTMLElement;
+    _menuDom:HTMLElement;
+    _dragType:string='';
     constructor(data: INodeData, containerEL: HTMLElement, setting?: Setting) {
         this.setting = Object.assign({
             theme: 'default',
@@ -77,6 +80,20 @@ export default class MindMap {
         this.setAppSetting();
         containerEL.appendChild(this.appEl);
         this.containerEL = containerEL;
+
+
+        //layout direct
+        this._indicateDom = document.createElement('div');
+        this._indicateDom.classList.add('mm-node-layout-indicate');
+        this._indicateDom.style.display='none';
+
+        //menu
+        this._menuDom = document.createElement('div');
+        this._menuDom.classList.add('mm-node-menu');
+        this._menuDom.style.display='none';
+
+        this.contentEL.appendChild(this._indicateDom);
+        this.contentEL.appendChild(this._menuDom);
 
         //history
         this.exec = new Exec();
@@ -549,9 +566,99 @@ export default class MindMap {
     appDragover(evt: MouseEvent) {
         evt.preventDefault();
         evt.stopPropagation();
+        var target =evt.target as HTMLElement;
+        var x = evt.pageX;
+        var y = evt.pageY;
+
         if (this.drag) {
-            this.dx = evt.pageX - this.startX;
-            this.dx = evt.pageY - this.startY;
+            this.dx = x - this.startX;
+            this.dx = y - this.startY;
+        }
+
+        if(target.closest('.mm-node')){
+            var nodeId =target.closest('.mm-node').getAttribute('data-id');
+            var node = this.getNodeById(nodeId);
+            var box = node.getBox();
+            this._dragType = this._getDragType(node, x, y);
+            this._indicateDom.style.display = 'block';
+            this._indicateDom.style.left = box.x + box.width / 2 - 40 / 2 + 'px';
+            this._indicateDom.style.top = box.y - 90 + 'px';
+            this._indicateDom.className = 'mm-node-layout-indicate';
+
+            if( this._dragType == 'top') {
+                this._indicateDom.classList.add('mm-arrow-top');
+            } else if ( this._dragType == 'down') {
+                this._indicateDom.classList.add('mm-arrow-down');
+            } else if ( this._dragType == 'left') {
+                this._indicateDom.classList.add('mm-arrow-left');
+            } else if ( this._dragType == 'right') {
+                this._indicateDom.classList.add('mm-arrow-right');
+            } else {
+                this._indicateDom.classList.add('drag-type');
+                var arr = this._dragType.split('-');
+                if (arr[1]) {
+                    this._indicateDom.classList.add('mm-arrow-' + arr[1]);
+                } else {
+                    this._indicateDom.classList.add('mm-arrow-right');
+                }
+            }
+        }else{
+            this._indicateDom.style.display = 'none';
+        }
+        
+    }
+
+    _getDragType(node:INode, x:number, y:number) {
+        if (!node) return;
+    
+        var box = node.contentEl.getBoundingClientRect();
+
+        box.x = box.x
+        box.y = box.y;
+
+        var direct = node.direct;
+        switch (direct) {
+            case 'right':
+                if (y < box.y + box.height / 2 && x < box.x + box.width / 4 * 3) {
+                    return 'top'
+                }
+                if (y > box.y + box.height / 2 && x < box.x + box.width / 4 * 3) {
+                    return 'down'
+                }
+                return 'child-right'
+            case 'left':
+                if (y < box.y + box.height / 2 && x > box.x + box.width / 4) {
+                    return 'top'
+                }
+                if (y > box.y + box.height / 2 && x > box.x + box.width / 4) {
+                    return 'down'
+                }
+
+                return 'child-left'
+
+            case 'top':
+            case 'up':
+
+                if (x < box.x + box.width / 4) {
+                    return 'left'
+                }
+                if (x > box.x + box.width / 4 * 3) {
+                    return 'right'
+                }
+
+                return 'child-top'
+            case 'down':
+            case 'bottom':
+                if (x < box.x + box.width / 4) {
+                    return 'left'
+                }
+                if (x > box.x + box.width / 4 * 3) {
+                    return 'right'
+                }
+                return 'child-down'
+            default:
+                return 'child';
+
         }
     }
 
@@ -564,10 +671,12 @@ export default class MindMap {
                 if (this._dragNode.isRoot) {
 
                 } else {
-                    this.moveNode(this._dragNode, dropNode);
+                    this.moveNode(this._dragNode, dropNode,this._dragType);
                 }
             }
         }
+
+        this._indicateDom.style.display = 'none'
     }
 
     appMouseOverFn(evt: MouseEvent) {
@@ -703,7 +812,7 @@ export default class MindMap {
         return box;
     }
 
-    moveNode(dragNode: INode, dropNode: INode) {
+    moveNode(dragNode: INode, dropNode: INode,type:string) {
 
         if (dragNode == dropNode || dragNode.isRoot) {
             return
@@ -729,7 +838,20 @@ export default class MindMap {
             dropNode.expand();
         }
 
-        this.execute('moveNode', { type: 'child', node: dragNode, oldParent: dragNode.parent, parent: dropNode })
+        if (type == 'top' || type == 'left' ||type == 'down' || type == 'right') {   
+           this.execute('moveNode', { type: 'siblings', node: dragNode, oldParent: dragNode.parent, dropNode, direct: type })
+        }
+        else if (type.indexOf('child') > -1) {
+            var typeArr = type.split('-');
+            if (typeArr[1]) {
+                this.execute('moveNode', { type: 'child', node: dragNode, oldParent: dragNode.parent, parent: dropNode, direct: typeArr[1] })
+            }
+            else {
+                this.execute('moveNode', { type: 'child', node: dragNode, oldParent: dragNode.parent, parent: dropNode });
+            }
+        }
+
+       // this.execute('moveNode', { type: 'child', node: dragNode, oldParent: dragNode.parent, parent: dropNode })
     }
 
     //execute cmd , store history
