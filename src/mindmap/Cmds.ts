@@ -146,6 +146,7 @@ export class MoveNode extends Command {
     }
 
     execute() {
+        this.node.mindmap.clearSelectNode();
         if (this.data.type.indexOf('child') > -1) {
             if (this.oldParent) {
                 this.index = this.oldParent.removeChild(this.node)
@@ -187,6 +188,7 @@ export class MoveNode extends Command {
     }
 
     undo() {
+        this.node.mindmap.clearSelectNode();
         if (this.data.type.indexOf('child') > -1) {
             this.parent.removeChild(this.node);
             if (this.oldParent) {
