@@ -200,7 +200,10 @@ export default class Node {
         if (this.contentEl.innerText == t('Sub title')) {
             this.selectText();
         }
-        
+
+        if(!this.containEl.classList.contains('mm-edit-node')){
+            this.containEl.classList.add('mm-edit-node')
+        }
     }
 
     selectText() {
@@ -240,6 +243,10 @@ export default class Node {
        
         this.contentEl.setAttribute('contentEditable','false');
         this.isEdit = false;
+
+        if(this.containEl.classList.contains('mm-edit-node')){
+            this.containEl.classList.remove('mm-edit-node')
+        }
 
     }
 

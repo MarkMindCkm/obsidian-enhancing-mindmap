@@ -26,7 +26,7 @@
 .mm-node .mm-node-content {
   padding: 2px 4px;
   max-width: 800px;
-  word-break:break-all;
+  word-break: break-word;
 }
 
 .mm-node-content > p,
@@ -124,3 +124,15 @@
 .mm-node-layout-indicate.mm-arrow-right{
   transform: rotate(-270deg)
 } 
+
+
+/* edit node style */
+.mm-node.mm-edit-node .mm-node-content{
+    z-index:50;
+    background-color: #333;
+}
+
+.theme-light .mm-node.mm-edit-node .mm-node-content{
+  z-index:50;
+  background-color: white;
+}
