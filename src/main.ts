@@ -59,9 +59,11 @@ export default class MindMapPlugin extends Plugin {
   onunload() {
     const mindmapLeaves = this.app.workspace.getLeavesOfType(mindmapViewType);
     mindmapLeaves.forEach((leaf) => {
-      this.setMarkdownView(leaf);
+      leaf.detach();
     });
+
     //this.app.workspace.unregisterHoverLinkSource(frontMatterKey);
+
   }
 
   async newMindMap(folder?: TFolder) {
@@ -133,6 +135,23 @@ export default class MindMapPlugin extends Plugin {
               .setIcon('document')
               .onClick(() => this.newMindMap(file));
           });
+        }
+
+        //add markdown view menu  open as mind map view
+        let leaf = this.app.workspace.activeLeaf as WorkspaceLeaf;
+        if(this.mindmapFileModes[leaf.id] == 'markdown'){
+             const cache = this.app.metadataCache.getFileCache(file);
+             if(cache?.frontmatter && cache.frontmatter[frontMatterKey]){
+                  menu.addItem((item) => {
+                   item
+                   .setTitle(`${t('Open as mindmap board')}`)
+                   .setIcon("document")
+                   .onClick(() => {
+                     this.mindmapFileModes[leaf.id || file.path] = mindmapViewType;
+                     this.setMindMapView(leaf);
+                   });
+                 }).addSeparator();
+            }
         }
       })
     );
@@ -209,43 +228,43 @@ export default class MindMapPlugin extends Plugin {
 
 
 
-    this.register(
-      around(MarkdownView.prototype, {
-        onMoreOptionsMenu(next) {
-          return function (menu: Menu) {
-            const file = this.file;
-            const cache = file
-              ? self.app.metadataCache.getFileCache(file)
-              : null;
+    // this.register(
+    //   around(MarkdownView.prototype, {
+    //     onMoreOptionsMenu(next) {
+    //       return function (menu: Menu) {
+    //         const file = this.file;
+    //         const cache = file
+    //           ? self.app.metadataCache.getFileCache(file)
+    //           : null;
 
-            if (
-              !file ||
-              !cache?.frontmatter ||
-              !cache.frontmatter[frontMatterKey]
-            ) {
-              return next.call(this, menu);
-            }
+    //         if (
+    //           !file ||
+    //           !cache?.frontmatter ||
+    //           !cache.frontmatter[frontMatterKey]
+    //         ) {
+    //           return next.call(this, menu);
+    //         }
 
 
 
-            menu
-              .addItem((item) => {
-                item
-                  .setTitle(`${t('Open as mindmap board')}`)
-                  .setIcon("document")
-                  .onClick(() => {
-                    self.mindmapFileModes[this.leaf.id || file.path] =
-                      mindmapViewType;
-                    self.setMindMapView(this.leaf);
-                  });
-              })
-              .addSeparator();
+    //         menu
+    //           .addItem((item) => {
+    //             item
+    //               .setTitle(`${t('Open as mindmap board')}`)
+    //               .setIcon("document")
+    //               .onClick(() => {
+    //                 self.mindmapFileModes[this.leaf.id || file.path] =
+    //                   mindmapViewType;
+    //                 self.setMindMapView(this.leaf);
+    //               });
+    //           })
+    //           .addSeparator();
 
-            next.call(this, menu);
-          };
-        },
-      })
-    );
+    //         next.call(this, menu);
+    //       };
+    //     },
+    //   })
+    // );
 
 
   }

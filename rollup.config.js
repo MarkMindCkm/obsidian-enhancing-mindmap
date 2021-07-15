@@ -15,12 +15,13 @@ export default {
   input: 'src/main.ts',
   output: {
     dir: '.',
-    sourcemap: 'inline',
+    sourcemap: false,
     sourcemapExcludeSources: isProd,
     format: 'cjs',
     exports: 'default',
     banner,
   },
+
   external: ['obsidian'],
   plugins: [
     typescript(),
