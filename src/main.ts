@@ -5,7 +5,8 @@ import {
   TFolder,
   ViewState,
   MarkdownView,
-  Menu
+  Menu,
+  sortSearchResults
 } from 'obsidian';
 // import DEFAULT_SETTINGS from './setting'
 import { around } from 'monkey-around'
@@ -57,11 +58,8 @@ export default class MindMapPlugin extends Plugin {
   }
 
   onunload() {
-    const mindmapLeaves = this.app.workspace.getLeavesOfType(mindmapViewType);
-    mindmapLeaves.forEach((leaf) => {
-      leaf.detach();
-    });
-
+   
+    this.app.workspace.detachLeavesOfType(mindmapViewType);
     //this.app.workspace.unregisterHoverLinkSource(frontMatterKey);
 
   }
@@ -126,7 +124,7 @@ export default class MindMapPlugin extends Plugin {
 
   registerEvents() {
     this.registerEvent(
-      this.app.workspace.on("file-menu", (menu, file: TFile) => {
+      this.app.workspace.on("file-menu", (menu, file: TFile,source:string,leaf?:WorkspaceLeaf) => {
         // Add a menu item to the folder context menu to create a board
         if (file instanceof TFolder) {
           menu.addItem((item) => {
@@ -138,8 +136,8 @@ export default class MindMapPlugin extends Plugin {
         }
 
         //add markdown view menu  open as mind map view
-        let leaf = this.app.workspace.activeLeaf as WorkspaceLeaf;
-        if(this.mindmapFileModes[leaf.id] == 'markdown'){
+
+        if(leaf&&this.mindmapFileModes[leaf.id||file.path] == 'markdown'){
              const cache = this.app.metadataCache.getFileCache(file);
              if(cache?.frontmatter && cache.frontmatter[frontMatterKey]){
                   menu.addItem((item) => {

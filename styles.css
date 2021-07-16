@@ -127,12 +127,15 @@
 
 
 /* edit node style */
-.mm-node.mm-edit-node .mm-node-content{
+.mm-node.mm-edit-node{
     z-index:50;
+}
+.mm-node.mm-edit-node .mm-node-content{
     background-color: #333;
+    color:white;
 }
 
 .theme-light .mm-node.mm-edit-node .mm-node-content{
-  z-index:50;
   background-color: white;
+  color:#333
 }
