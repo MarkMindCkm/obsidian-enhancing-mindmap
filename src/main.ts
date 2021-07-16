@@ -3,10 +3,7 @@ import {
   WorkspaceLeaf,
   TFile,
   TFolder,
-  ViewState,
-  MarkdownView,
-  Menu,
-  sortSearchResults
+  ViewState
 } from 'obsidian';
 // import DEFAULT_SETTINGS from './setting'
 import { around } from 'monkey-around'
