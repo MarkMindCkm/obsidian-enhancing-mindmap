@@ -245,15 +245,17 @@ export class CollapseNode extends Command{
        super('collapseNOde')
        this.node = node;
        this.node.mindmap.clearSelectNode();
-       this.node.clearCacheData();
+    
        this.node.refreshBox();
    }
    execute(){
+       this.node.clearCacheData();
        this.node.collapse();
        this.refresh(this.node.mindmap);
        this.node.select();
    }
    undo(){
+    this.node.clearCacheData();
     this.node.expand();
     this.refresh(this.node.mindmap);
     this.node.select();
@@ -266,15 +268,16 @@ export class ExpandNode extends Command{
         super('collapseNOde')
         this.node = node;
         this.node.mindmap.clearSelectNode();
-        this.node.clearCacheData();
         this.node.refreshBox();
     }
     execute(){
+        this.node.clearCacheData();
         this.node.expand();
         this.refresh(this.node.mindmap);
         this.node.select();
     }
     undo(){
+     this.node.clearCacheData();
      this.node.collapse();
      this.refresh(this.node.mindmap);
      this.node.select();

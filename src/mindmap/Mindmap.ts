@@ -323,7 +323,7 @@ export default class MindMap {
         var shiftKey = e.shiftKey;
         if (!ctrlKey && !shiftKey) {
             //enter 
-            if (keyCode == 13) {
+            if (keyCode == 13 || e.key =='Enter') {
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
                     e.preventDefault();
@@ -339,7 +339,7 @@ export default class MindMap {
             }
 
             //delete
-            if (keyCode == 46) {
+            if (keyCode == 46 || e.key == 'Delete' || e.key == 'Backspace') {
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
                     e.preventDefault();
@@ -349,7 +349,7 @@ export default class MindMap {
             }
 
             //tab
-            if (keyCode == 9 || keyCode == 45) {
+            if (keyCode == 9 || keyCode == 45 || e.key == 'Tab') {
                 e.preventDefault();
                 e.stopPropagation();
                 var node = this.selectNode;
@@ -365,28 +365,28 @@ export default class MindMap {
             }
 
             // up
-            if (keyCode == 38) {
+            if (keyCode == 38 || e.key == 'ArrowUp') {
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
                     this._selectNode(node, "up");
                 }
             }
 
-            if (keyCode == 40) {
+            if (keyCode == 40 || e.key == 'ArrowDown') {
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
                     this._selectNode(node, "down");
                 }
             }
 
-            if (keyCode == 39) {
+            if (keyCode == 39 || e.key == 'ArrowRight') {
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
                     this._selectNode(node, "right");
                 }
             }
 
-            if (keyCode == 37) {
+            if (keyCode == 37 || e.key == 'ArrowLeft') {
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
                     this._selectNode(node, "left");
