@@ -6,6 +6,8 @@ import { MindMapView } from '../MindMapView'
 import { frontMatterKey, basicFrontmatter } from '../constants';
 import Exec from './Execute'
 
+let deleteIcon = '<svg class="icon" width="16px" height="16.00px" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path  d="M799.2 874.4c0 34.4-28 62.4-62.368 62.4H287.2a62.496 62.496 0 0 1-62.4-62.4V212h574.4v662.4zM349.6 100c0-7.2 5.6-12.8 12.8-12.8h300c7.2 0 12.768 5.6 12.768 12.8v37.6H349.6V100z m636.8 37.6H749.6V100c0-48-39.2-87.2-87.2-87.2h-300a87.392 87.392 0 0 0-87.2 87.2v37.6H37.6C16.8 137.6 0 154.4 0 175.2s16.8 37.6 37.6 37.6h112v661.6A137.6 137.6 0 0 0 287.2 1012h449.6a137.6 137.6 0 0 0 137.6-137.6V212h112c20.8 0 37.6-16.8 37.6-37.6s-16.8-36.8-37.6-36.8zM512 824c20.8 0 37.6-16.8 37.6-37.6v-400c0-20.8-16.768-37.6-37.6-37.6-20.8 0-37.6 16.8-37.6 37.6v400c0 20.8 16.8 37.6 37.6 37.6m-175.2 0c20.8 0 37.6-16.8 37.6-37.6v-400c0-20.8-16.8-37.6-37.6-37.6s-37.6 16.8-37.6 37.6v400c0.8 20.8 17.6 37.6 37.6 37.6m350.4 0c20.8 0 37.632-16.8 37.632-37.6v-400c0-20.8-16.8-37.6-37.632-37.6-20.768 0-37.6 16.8-37.6 37.6v400c0 20.8 16.8 37.6 37.6 37.6" /></svg>';
+let addIcon = '<svg class="icon" width="16px" height="16.00px" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path  d="M512 1024C230.4 1024 0 793.6 0 512S230.4 0 512 0s512 230.4 512 512-230.4 512-512 512z m0-960C265.6 64 64 265.6 64 512s201.6 448 448 448 448-201.6 448-448S758.4 64 512 64z"  /><path d="M800 544H224c-19.2 0-32-12.8-32-32s12.8-32 32-32h576c19.2 0 32 12.8 32 32s-12.8 32-32 32z"  /><path  d="M512 832c-19.2 0-32-12.8-32-32V224c0-19.2 12.8-32 32-32s32 12.8 32 32v576c0 19.2-12.8 32-32 32z"  /></svg>';
 
 interface Setting {
     theme?: string;
@@ -49,6 +51,8 @@ export default class MindMap {
     _indicateDom:HTMLElement;
     _menuDom:HTMLElement;
     _dragType:string='';
+    _left:number;
+    _top:number;
     constructor(data: INodeData, containerEL: HTMLElement, setting?: Setting) {
         this.setting = Object.assign({
             theme: 'default',
@@ -91,6 +95,7 @@ export default class MindMap {
         this._menuDom = document.createElement('div');
         this._menuDom.classList.add('mm-node-menu');
         this._menuDom.style.display='none';
+        this.setMenuIcon();
 
         this.contentEL.appendChild(this._indicateDom);
         this.contentEL.appendChild(this._menuDom);
@@ -113,6 +118,9 @@ export default class MindMap {
         this.appMousewheel = this.appMousewheel.bind(this);
         this.appMouseMove = this.appMouseMove.bind(this);
 
+        this.appMouseDown = this.appMouseDown.bind(this);
+        this.appMouseUp = this.appMouseUp.bind(this);
+
         //custom event
         this.initNode = this.initNode.bind(this);
         this.renderEditNode = this.renderEditNode.bind(this);
@@ -120,6 +128,17 @@ export default class MindMap {
 
         this.initEvent();
         //this.center();
+    }
+
+    setMenuIcon(){
+        var addNodeDom = document.createElement('span');
+        var deleteNodeDom = document.createElement('span');
+        addNodeDom.classList.add('mm-icon-add-node'); 
+        deleteNodeDom.classList.add('mm-icon-delete-node');
+        addNodeDom.innerHTML = addIcon;
+        deleteNodeDom.innerHTML = deleteIcon;
+        this._menuDom.appendChild(addNodeDom);
+        this._menuDom.appendChild(deleteNodeDom);
     }
 
     setAppSetting() {
@@ -225,9 +244,14 @@ export default class MindMap {
         this.appEl.addEventListener('drop', this.appDrop);
         document.addEventListener('keyup', this.appKeyup);
         document.addEventListener('keydown', this.appKeydown);
-        this.appEl.addEventListener('mousemove', this.appMouseMove);
         document.body.addEventListener('mousewheel', this.appMousewheel);
+        
+        if(Platform.isDesktop){
+            this.appEl.addEventListener('mousedown', this.appMouseDown);
+            this.appEl.addEventListener('mouseup', this.appMouseUp);
+        }
 
+        this.appEl.addEventListener('mousemove', this.appMouseMove);
         //custom event
         this.on('initNode', this.initNode);
         this.on('renderEditNode', this.renderEditNode);
@@ -245,9 +269,14 @@ export default class MindMap {
         this.appEl.removeEventListener('drop', this.appDrop);
         document.removeEventListener('keyup', this.appKeyup);
         document.removeEventListener('keydown', this.appKeydown);
-        this.appEl.removeEventListener('mousemove', this.appMouseMove);
         document.body.removeEventListener('mousewheel', this.appMousewheel);
 
+        if(Platform.isDesktop){
+            this.appEl.removeEventListener('mousedown', this.appMouseDown);
+            this.appEl.removeEventListener('mouseup', this.appMouseUp);
+        }
+        
+        this.appEl.removeEventListener('mousemove', this.appMouseMove);
 
         this.off('initNode', this.initNode);
         this.off('renderEditNode', this.renderEditNode);
@@ -268,7 +297,6 @@ export default class MindMap {
         var node = evt.detail.node || null;
         node?.clearCacheData();
         this.refresh();
-
     }
 
     mindMapChange() {
@@ -294,6 +322,7 @@ export default class MindMap {
                     e.preventDefault();
                     e.stopPropagation();
                     node.edit();
+                    this._menuDom.style.display = 'none';
                 }
             }
         }
@@ -335,6 +364,7 @@ export default class MindMap {
                     node.mindmap.execute('addSiblingNode', {
                         parent: node.parent
                     });
+                    this._menuDom.style.display='none';
                 }
             }
 
@@ -345,6 +375,7 @@ export default class MindMap {
                     e.preventDefault();
                     e.stopPropagation();
                     node.mindmap.execute("deleteNodeAndChild", { node });
+                    this._menuDom.style.display='none';
                 }
             }
 
@@ -358,6 +389,7 @@ export default class MindMap {
                         node.expand();
                     }
                     node.mindmap.execute("addChildNode", { parent: node });
+                    this._menuDom.style.display='none';
                 } else if (node && node.isEdit) {
                     node.cancelEdit();
                     node.select();
@@ -502,15 +534,18 @@ export default class MindMap {
         var targetEl = evt.target as HTMLElement;
 
         if (targetEl) {
-
+             
             if (targetEl.tagName == 'A' && targetEl.hasClass("internal-link")) {
                 evt.preventDefault();
                 var targetEl = evt.target as HTMLElement;
-                this.view.app.workspace.openLinkText(
-                    targetEl.getAttr("href"),
-                    this.view.file.path,
-                    evt.ctrlKey || evt.metaKey
-                );
+                var href = targetEl.getAttr("href");
+                if(href){
+                    this.view.app.workspace.openLinkText(
+                        href,
+                        this.view.file.path,
+                        evt.ctrlKey || evt.metaKey
+                    );
+                }
             }
 
             if (targetEl.hasClass('mm-node-bar')) {
@@ -531,6 +566,25 @@ export default class MindMap {
                 return
             }
 
+            if(targetEl.closest('.mm-node-menu')){
+                 if(targetEl.closest('.mm-icon-add-node')){
+                      var selectNode = this.selectNode;
+                      if(selectNode){
+                         selectNode.mindmap.execute("addChildNode", { parent: selectNode });
+                         this._menuDom.style.display='none';
+                      }
+                 }
+
+                 if(targetEl.closest('.mm-icon-delete-node')){
+                    var selectNode = this.selectNode;
+                    if(selectNode){
+                       selectNode.mindmap.execute("deleteNodeAndChild", { node: selectNode });
+                       this._menuDom.style.display='none';
+                    }
+                 }
+                 return;
+            }
+
             if (targetEl.closest('.mm-node')) {
                 var id = targetEl.closest('.mm-node').getAttribute('data-id');
                 var node = this.getNodeById(id);
@@ -538,10 +592,14 @@ export default class MindMap {
                     this.clearSelectNode();
                     this.selectNode = node;
                     this.selectNode?.select();
-
+                    this._menuDom.style.display='block';
+                    var box = this.selectNode.getBox();
+                    this._menuDom.style.left = `${box.x + box.width + 10}px`;
+                    this._menuDom.style.top = `${box.y + box.height/2 - 14}px`;
                 }
             } else {
                 this.clearSelectNode();
+                this._menuDom.style.display='none';
             }
         }
     }
@@ -561,6 +619,8 @@ export default class MindMap {
 
     appDragend(evt: MouseEvent) {
         this.drag = false;
+        this._indicateDom.style.display = 'none'
+        this._menuDom.style.display = 'none';
     }
 
     appDragover(evt: MouseEvent) {
@@ -677,6 +737,7 @@ export default class MindMap {
         }
 
         this._indicateDom.style.display = 'none'
+        this._menuDom.style.display = 'none';
     }
 
     appMouseOverFn(evt: MouseEvent) {
@@ -708,7 +769,27 @@ export default class MindMap {
                 this.scalePointer = [];
                 this.scalePointer.push(box.x + box.width / 2, box.y + box.height / 2);
             }
+        }else{
+            if(this.drag){
+                this.containerEL.scrollLeft = this._left - (evt.pageX - this.startX); 
+                this.containerEL.scrollTop = this._top - (evt.pageY - this.startY); 
+            }
         }
+    }
+
+    appMouseDown(evt:MouseEvent){
+        const targetEl = evt.target as HTMLElement;
+        if(!targetEl.closest('.mm-node')){
+            this.drag = true;
+            this.startX = evt.pageX;
+            this.startY = evt.pageY;
+            this._left = this.containerEL.scrollLeft;
+            this._top = this.containerEL.scrollTop;
+        }
+    }
+
+    appMouseUp(evt:MouseEvent){
+        this.drag = false;
     }
 
     appDblclickFn(evt: MouseEvent) {
@@ -725,6 +806,7 @@ export default class MindMap {
                 if (!this.editNode || (this.editNode && this.editNode != this.selectNode)) {
                     this.selectNode?.edit();
                     this.editNode = this.selectNode;
+                    this._menuDom.style.display='none';
                 }
             }
         }
@@ -910,7 +992,7 @@ export default class MindMap {
     //layout
     layout() {
         if (!this.mmLayout) {
-            this.mmLayout = new Layout(this.root, 'mind map', this.colors);
+            this.mmLayout = new Layout(this.root, this.setting.layoutDirect||'mind map', this.colors);
             return;
         }
 
