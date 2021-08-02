@@ -4,7 +4,7 @@ export default {
   // main.ts
   "Open as mindmap board": "打开为思维导图",
   "Create new mindmap": "创建新思维导图",
-  "New mindmap board": "新键思维导图",
+  "New mindmap board": "新建思维导图",
   "Untitled mindmap": "未命名思维导图",
   "Open as markdown": "打开为 Markdown 文件",
 
