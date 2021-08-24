@@ -32,6 +32,8 @@ export class MindMapSettingsTab extends PluginSettingTab {
                     .addOption('12000', '12000')
                     .addOption('16000', '16000')
                     .addOption('20000', '20000')
+                    .addOption('30000', '30000')
+                    .addOption('36000', '36000')
                     .setValue(this.plugin.settings.canvasSize.toString() || '8000')
                     .onChange((value: string) => {
                         var _v = Number.parseInt(value)
@@ -72,6 +74,7 @@ export class MindMapSettingsTab extends PluginSettingTab {
             .setDesc(`${t('Max level of node to markdown head desc')}`)
             .addDropdown(dropDown =>
                 dropDown
+                    .addOption('0', '0')
                     .addOption('1', '1')
                     .addOption('2', '2')
                     .addOption('3', '3')
@@ -133,5 +136,32 @@ export class MindMapSettingsTab extends PluginSettingTab {
                             v.mindmap.refresh();
                         });
                     }));
+
+             new Setting(containerEl)
+                    .setName(`${t('Stroke Array')}`)
+                    .setDesc(`${t('Stroke Array Desc')}`)
+                    .addText(text =>
+                        text
+                            .setValue(this.plugin.settings.strokeArray?.toString() || '')
+                            .setPlaceholder('Example: red,oragne,blue ...')
+                            .onChange((value: string) => {
+                                this.plugin.settings.strokeArray = value
+                                this.plugin.saveData(this.plugin.settings);
+                                const mindmapLeaves = this.app.workspace.getLeavesOfType(mindmapViewType);
+                                
+                                mindmapLeaves.forEach((leaf) => {
+                                    var v = leaf.view as MindMapView;
+                                    v.mindmap.setting.strokeArray = this.plugin.settings.strokeArray.split(',');
+                                    if( v.mindmap.mmLayout){
+                                        v.mindmap.mmLayout.colors=v.mindmap.setting.strokeArray;
+                                    }
+                                
+                                    v.mindmap.traverseBF((n: MyNode) => {
+                                        n.boundingRect = null;
+                                        n.refreshBox();
+                                    })
+                                    v.mindmap.refresh();
+                                });
+                            }));
     }
 }

@@ -17,7 +17,8 @@ interface Setting {
     color?: string,
     exportMdModel?: string,
     headLevel: number,
-    layoutDirect: string
+    layoutDirect: string,
+    strokeArray?:any[]
 }
 
 export default class MindMap {
@@ -1044,7 +1045,7 @@ export default class MindMap {
 
     getMarkdown() {
         var md = '';
-        var level = this.setting.headLevel || 2;
+        var level = this.setting.headLevel;
         this.traverseDF((n: INode) => {
             var l = n.getLevel() + 1;
             var hPrefix = '', space = '';

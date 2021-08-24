@@ -39,6 +39,9 @@ export default {
   "Remove node":"删除节点",
   "Only remove this node":"仅删除该节点",
   "Add child node":"添加子节点",
-  "Add brother node":"添加兄弟节点"
+  "Add brother node":"添加兄弟节点",
+
+  "Stroke Array":"颜色组",
+  "Stroke Array Desc":"节点连线颜色将按照颜色组生成,否则生成随机颜色",
 
 };

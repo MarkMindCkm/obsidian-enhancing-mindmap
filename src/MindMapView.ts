@@ -49,6 +49,17 @@ export class MindMapView extends TextFileView implements HoverParent {
   }
 
   setColors() {
+    var colors:any[] = []
+    try{
+      if( this.plugin.settings.strokeArray){
+         colors = this.plugin.settings.strokeArray.split(',')
+      }
+    }catch(err){
+       console.log(err,'stroke array is error');
+    }
+
+    this.colors = this.colors.concat(colors);
+
     for (var i = 0; i < 50; i++) {
       this.colors.push(randomColor());
     }
@@ -89,8 +100,8 @@ export class MindMapView extends TextFileView implements HoverParent {
 
   constructor(leaf: WorkspaceLeaf, plugin: MindMapPlugin) {
     super(leaf);
-    this.setColors();
     this.plugin = plugin;
+    this.setColors();
 
     this.fileCache = {
       'frontmatter': {

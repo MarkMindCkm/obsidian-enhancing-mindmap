@@ -139,3 +139,37 @@
   background-color: white;
   color:#333
 }
+
+/* menu */
+.mm-node-menu{
+  position:absolute;
+  background:#333;
+  border:1px solid #000;
+  width:56px;
+  border-radius: 0.25rem;
+  z-index: 60;
+}
+
+.theme-light .mm-node-menu{
+    background:white;
+    border:1px solid #666;
+}
+
+.mm-node-menu span {
+  vertical-align: middle;
+  cursor: pointer;
+  margin:0 5px
+}
+
+.mm-node-menu span svg{
+   fill:#ccc;
+}
+
+.mm-node-menu span svg:hover{
+  opacity: 0.8;
+}
+
+.theme-light .mm-node-menu svg{
+  fill: #333;
+}
+

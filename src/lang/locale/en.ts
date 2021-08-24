@@ -28,5 +28,8 @@ export default {
     "Mind map layout direct desc":"Specify the direction the nodes are placed in your Mindmap",
     "Right": "Right",
     "Left": "Left",
-    "Centered": "Centered"
+    "Centered": "Centered",
+
+    "Stroke Array":"Stroke array",
+    "Stroke Array Desc":"Node link color base on this value or random color"
 };
