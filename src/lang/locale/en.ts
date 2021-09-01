@@ -31,5 +31,7 @@ export default {
     "Centered": "Centered",
 
     "Stroke Array":"Stroke array",
-    "Stroke Array Desc":"Node link color base on this value or random color"
+    "Stroke Array Desc":"Node link color base on this value or random color",
+    "Save fail":"Save data err",
+    "Save success":"Save data success"
 };
