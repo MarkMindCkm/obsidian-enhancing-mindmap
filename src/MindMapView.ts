@@ -71,7 +71,14 @@ export class MindMapView extends TextFileView implements HoverParent {
       var frontMatter = this.getFrontMatter();
       this.data = frontMatter + md;
       // console.log(this.mindmap.path);
-      this.app.vault.adapter.write(this.mindmap.path, this.data);
+     // this.app.vault.adapter.write(this.mindmap.path, this.data);
+       try{
+        this.requestSave();
+        new Notice(`${t("Save success")}`);
+       }catch(err){
+        console.log(err);
+        new Notice(`${t("Save fail")}`)
+      }
     }
   }
 
