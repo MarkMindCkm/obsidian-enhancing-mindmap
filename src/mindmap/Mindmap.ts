@@ -229,7 +229,9 @@ export default class MindMap {
             this.selectNode = null
         }
         if (this.editNode) {
-            this.editNode.cancelEdit();
+            if(this.editNode.isEdit){
+                this.editNode.cancelEdit();
+            }
             this.editNode = null;
         }
     }
@@ -394,6 +396,7 @@ export default class MindMap {
                 } else if (node && node.isEdit) {
                     node.cancelEdit();
                     node.select();
+                    node.mindmap.editNode=null;
                 }
             }
 
