@@ -143,7 +143,7 @@ export class MindMapSettingsTab extends PluginSettingTab {
                     .addText(text =>
                         text
                             .setValue(this.plugin.settings.strokeArray?.toString() || '')
-                            .setPlaceholder('Example: red,oragne,blue ...')
+                            .setPlaceholder('Example: red,orange,blue ...')
                             .onChange((value: string) => {
                                 this.plugin.settings.strokeArray = value
                                 this.plugin.saveData(this.plugin.settings);
