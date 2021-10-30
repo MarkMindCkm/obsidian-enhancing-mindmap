@@ -68,6 +68,15 @@ export class MindMapView extends TextFileView implements HoverParent {
   mindMapChange() {
     if (this.mindmap) {
       var md = this.mindmap.getMarkdown();
+      var matchArray: string[] = []
+      var collapsedIds: string[] = []
+      const idRegexMultiline = /.+ \^([a-z0-9\-]+)$/gim
+      while ((matchArray = idRegexMultiline.exec(md)) != null) {
+        collapsedIds = [...collapsedIds, ...matchArray.slice(1, 2)];
+      }
+      if (collapsedIds.length > 0) {
+        this.fileCache.frontmatter.collapsedIds = collapsedIds;
+      }
       var frontMatter = this.getFrontMatter();
       this.data = frontMatter + md;
       // console.log(this.mindmap.path);
@@ -152,6 +161,18 @@ export class MindMapView extends TextFileView implements HoverParent {
     var mindData = this.mdToData(mdText);
     mindData.isRoot = true;
 
+    const frontmatterContentRegExResult = /^---$(.+?)^---$.+?/mis.exec(data)
+
+    if (frontmatterContentRegExResult != null && frontmatterContentRegExResult[1]) {
+      frontmatterContentRegExResult[1].split('\n').forEach((frontmatterLine) => {
+        const keyValue = frontmatterLine.split(': ')
+        if (keyValue.length === 2) {
+          const value = /^[{\[].+[}\]]$/.test(keyValue[1]) ? JSON.parse(keyValue[1]) : keyValue[1]
+          this.fileCache.frontmatter[keyValue[0]] = value
+        }
+      })
+    }
+
     this.mindmap = new MindMap(mindData, this.contentEl, this.plugin.settings);
     this.mindmap.path = this.app.workspace.getActiveFile()?.path || '';
     this.mindmap.colors = this.colors;
@@ -165,13 +186,13 @@ export class MindMapView extends TextFileView implements HoverParent {
             this.fileCache = this.app.metadataCache.getFileCache(view.file);
           }
         }
-        this.mindmap.init();
+        this.mindmap.init(this.fileCache.frontmatter.collapsedIds);
         this.mindmap.refresh();
         this.mindmap.view = this;
         this.firstInit = false;
       }, 100);
     } else {
-      this.mindmap.init();
+      this.mindmap.init(this.fileCache.frontmatter.collapsedIds);
       this.mindmap.refresh();
       this.mindmap.view = this;
     }
@@ -234,9 +255,12 @@ export class MindMapView extends TextFileView implements HoverParent {
         flag = false;
         mapData.v = '> ' + mapData.v;
       }
+      const regexResult = /^.+ \^([a-z0-9\-]+)$/i.exec(mapData.v)
+      const id = regexResult != null ? regexResult[1] : null
+
       var map: INodeData = {
-        id: uuid(),
-        text: mapData.v,
+        id: id || uuid(),
+        text: id ? mapData.v.replace(` ^${id}`, '') : mapData.v,
         children: []
       };
 

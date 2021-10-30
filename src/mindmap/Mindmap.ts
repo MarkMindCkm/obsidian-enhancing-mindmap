@@ -152,7 +152,7 @@ export default class MindMap {
         this.contentEL.style.fontSize = `${this.setting.fontSize}px`;
     }
     //create node
-    init() {
+    init(collapsedIds?: string[]) {
         var that = this;
         var data = this.data;
         var x = this.setting.canvasSize / 2 - 60;
@@ -161,6 +161,12 @@ export default class MindMap {
         function initNode(d: INodeData, isRoot: boolean, p?: INode) {
             that._nodeNum++;
             var n = new INode(d, that);
+            if (collapsedIds && collapsedIds.includes(n.getId())) {
+                n.isExpand = false;
+            }
+            if (p && (!p.isExpand || p.isHide)) {
+                n.isHide = true;
+            }
             that.contentEL.appendChild(n.containEl);
             if (isRoot) {
                 n.setPosition(x, y);
@@ -196,12 +202,14 @@ export default class MindMap {
 
     traverseDF(callback: Function, node?: INode, cbFirst?: boolean) {
         function recurse(currentNode: INode) {
-            if (currentNode && currentNode.children) {
+            if (currentNode) {
                 if (cbFirst) {
                     callback(currentNode);
                 }
-                for (var i = 0, length = currentNode.children.length; i < length; i++) {
-                    recurse(currentNode.children[i]);
+                if (currentNode.children) {
+                    for (var i = 0, length = currentNode.children.length; i < length; i++) {
+                        recurse(currentNode.children[i]);
+                    }
                 }
                 if (!cbFirst) {
                     callback(currentNode);
@@ -1055,12 +1063,13 @@ export default class MindMap {
             if (l > 1) {
                 hPrefix = '\n';
             }
+            const ending = n.isExpand ? '' : ` ^${n.getId()}`
             if (n.getLevel() < level) {
                 for (let i = 0; i < l; i++) {
                     hPrefix += '#';
                 }
                 md += (hPrefix + ' ');
-                md += n.getData().text.trim() + '\n';
+                md += n.getData().text.trim() + ending + '\n';
 
             } else {
                 for (var i = 0; i < n.getLevel() - level; i++) {
@@ -1072,20 +1081,20 @@ export default class MindMap {
                     var lineLength = textArr.length;
 
                     if (lineLength == 1) {
-                        md += `${space}- ${text}\n`;
+                        md += `${space}- ${text}${ending}\n`;
                     } else if (lineLength > 1) {
                         //code
                         if (text.startsWith('```')) {
                             md += `${space}-\n`;
                             textArr.forEach((t: string, i: number) => {
-                                md += `${space}  ${t.trim()}\n`
+                                md += `${space}  ${t.trim()}${i === textArr.length - 1 ? ending : '' }\n`
                             });
                         } else {
                             //text
                             md += `${space}- `;
                             textArr.forEach((t: string, i: number) => {
                                 if (i > 0) {
-                                    md += `${space}   ${t.trim()}\n`
+                                    md += `${space}   ${t.trim()}${i === textArr.length - 1 ? ending : '' }\n`
                                 } else {
                                     md += `${t.trim()}\n`
                                 }
