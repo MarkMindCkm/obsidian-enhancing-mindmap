@@ -3,7 +3,8 @@ import {
   WorkspaceLeaf,
   TFile,
   TFolder,
-  ViewState
+  ViewState,
+  MarkdownView
 } from 'obsidian';
 // import DEFAULT_SETTINGS from './setting'
 import { around } from 'monkey-around'
@@ -44,6 +45,23 @@ export default class MindMapPlugin extends Plugin {
         return false;
       }
     });
+    
+     this.addCommand({
+      id: 'Toggle to markdown or mindmap',
+      name: `${t('Toggle mardkown/mindmap')}`,
+      mobileOnly: false,
+      callback: () => {
+          const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+          const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
+          if(mindmapView!=null){
+            this.mindmapFileModes[(mindmapView.leaf as any).id || mindmapView.file.path] = 'markdown'; 
+            this.setMarkdownView(mindmapView.leaf);
+          }else if(markdownView!=null){
+            this.mindmapFileModes[(markdownView.leaf as any).id || markdownView.file.path] = mindmapViewType;
+            this.setMarkdownView(markdownView.leaf);
+          }
+      }
+  });
 
     this.registerView(mindmapViewType, (leaf) => new MindMapView(leaf, this));
     this.registerEvents();
