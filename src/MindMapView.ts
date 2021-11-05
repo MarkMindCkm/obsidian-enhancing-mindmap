@@ -76,7 +76,7 @@ export class MindMapView extends TextFileView implements HoverParent {
       while ((matchArray = idRegexMultiline.exec(md)) != null) {
         collapsedIds = [...collapsedIds, ...matchArray.slice(1, 2)];
       }
-      this.fileCache.frontmatter.collapsedIds=null;
+      this.fileCache.frontmatter.collapsedIds='';
       if (collapsedIds.length > 0) {
         this.fileCache.frontmatter.collapsedIds = collapsedIds;
       }
@@ -99,9 +99,6 @@ export class MindMapView extends TextFileView implements HoverParent {
     var v: any = '';
     if (this.fileCache.frontmatter) {
       for (var k in this.fileCache.frontmatter) {
-        if(!this.fileCache.frontmatter[k]){
-          return
-        }
         if (k != 'position') {
           if (Object.prototype.toString.call(this.fileCache.frontmatter[k]) == '[object Array]' || Object.prototype.toString.call(this.fileCache.frontmatter[k]) == '[object Object]') {
             v = JSON.stringify(this.fileCache.frontmatter[k]);
