@@ -1085,10 +1085,12 @@ export default class MindMap {
                     } else if (lineLength > 1) {
                         //code
                         if (text.startsWith('```')) {
+                            md+='\n'
                             md += `${space}-\n`;
                             textArr.forEach((t: string, i: number) => {
                                 md += `${space}  ${t.trim()}${i === textArr.length - 1 ? ending : '' }\n`
                             });
+                            md+='\n'
                         } else {
                             //text
                             md += `${space}- `;

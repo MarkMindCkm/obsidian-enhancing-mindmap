@@ -5,6 +5,8 @@ import {
   TextFileView,
   WorkspaceLeaf,
   TFile,
+  Notice,
+  Platform
 } from "obsidian";
 
 import MindMapPlugin from './main'
@@ -74,6 +76,7 @@ export class MindMapView extends TextFileView implements HoverParent {
       while ((matchArray = idRegexMultiline.exec(md)) != null) {
         collapsedIds = [...collapsedIds, ...matchArray.slice(1, 2)];
       }
+      this.fileCache.frontmatter.collapsedIds=null;
       if (collapsedIds.length > 0) {
         this.fileCache.frontmatter.collapsedIds = collapsedIds;
       }
@@ -83,7 +86,7 @@ export class MindMapView extends TextFileView implements HoverParent {
      // this.app.vault.adapter.write(this.mindmap.path, this.data);
        try{
         this.requestSave();
-        new Notice(`${t("Save success")}`);
+        //new Notice(`${t("Save success")}`);
        }catch(err){
         console.log(err);
         new Notice(`${t("Save fail")}`)
@@ -96,6 +99,9 @@ export class MindMapView extends TextFileView implements HoverParent {
     var v: any = '';
     if (this.fileCache.frontmatter) {
       for (var k in this.fileCache.frontmatter) {
+        if(!this.fileCache.frontmatter[k]){
+          return
+        }
         if (k != 'position') {
           if (Object.prototype.toString.call(this.fileCache.frontmatter[k]) == '[object Array]' || Object.prototype.toString.call(this.fileCache.frontmatter[k]) == '[object Object]') {
             v = JSON.stringify(this.fileCache.frontmatter[k]);
@@ -232,7 +238,9 @@ export class MindMapView extends TextFileView implements HoverParent {
 
   updateMindMap() {
     if (this.mindmap) {
-      this.mindmap.center();
+      if(Platform.isDesktopApp){
+        this.mindmap.center();
+      }
     }
   }
 
@@ -255,8 +263,10 @@ export class MindMapView extends TextFileView implements HoverParent {
         flag = false;
         mapData.v = '> ' + mapData.v;
       }
-      const regexResult = /^.+ \^([a-z0-9\-]+)$/i.exec(mapData.v)
+      const regexResult = /^.+ \^([a-z0-9\-]+)$/gim.exec(mapData.v);
       const id = regexResult != null ? regexResult[1] : null
+
+     // console.log(id);
 
       var map: INodeData = {
         id: id || uuid(),
