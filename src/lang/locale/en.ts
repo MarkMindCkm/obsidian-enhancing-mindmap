@@ -29,6 +29,7 @@ export default {
     "Right": "Right",
     "Left": "Left",
     "Centered": "Centered",
+    "Clockwise": "Clockwise",
 
     "Stroke Array":"Stroke array",
     "Stroke Array Desc":"Node link color base on this value or random color",

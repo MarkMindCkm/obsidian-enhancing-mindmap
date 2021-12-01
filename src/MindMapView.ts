@@ -14,7 +14,7 @@ import { FRONT_MATTER_REGEX } from './constants'
 import MindMap from "./mindmap/mindmap";
 import { INodeData } from './mindmap/INode'
 import { Transformer } from './markmapLib/markmap-lib';
-import randomColor from "randomColor";
+import randomColor from "randomcolor";
 import { t } from './lang/helpers'
 
 export function uuid(): string {
