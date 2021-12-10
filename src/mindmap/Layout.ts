@@ -1,6 +1,6 @@
 import Node from './INode'
 import MindMap from './mindmap';
-import randomColor  from 'randomColor';
+import randomColor  from 'randomcolor';
 
 export default class Layout {
     layoutName='mindmap';
@@ -50,7 +50,20 @@ export default class Layout {
                 this._setDirect(r, 'left')
             });
 
-        } else {
+        } else if (this.direct == 'clockwise') {
+            root.children.forEach(function (child, i) {
+                if (i < len / 2) {
+                    me.rights.push(child);
+                    me._setDirect(child, 'right');
+                } else {
+                    me.lefts.push(child);
+                    me._setDirect(child, 'left');
+                }
+            });
+            me.lefts.reverse();
+        }
+        
+        else {
 
             root.children.forEach(function (child, i) {
                 if (i < len / 2) {

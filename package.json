@@ -20,7 +20,8 @@
     "obsidian": "^0.12.0",
     "rollup": "^2.32.1",
     "tslib": "^2.2.0",
-    "typescript": "^4.2.4"
+    "typescript": "^4.2.4",
+    "randomcolor": "^0.6.2"
   },
   "dependencies": {
     "katex": "^0.13.11",
