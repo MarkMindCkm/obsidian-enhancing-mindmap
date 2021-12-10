@@ -63,6 +63,39 @@ export default class MindMapPlugin extends Plugin {
       }
   });
 
+  this.addCommand({
+    id: 'Copy Node',
+    name: `${t('Copy node')}`,
+    callback: () => {
+      const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+      if(mindmapView){
+           var mindmap = mindmapView.mindmap;
+           navigator.clipboard.writeText('');
+           var node = mindmap.selectNode;
+           if(node){
+             var text = mindmap.copyNode(node);
+             navigator.clipboard.writeText(text);
+           }
+      }
+     
+    }
+  });
+
+  this.addCommand({
+    id: 'Paste Node',
+    name: `${t('Paste node')}`,
+    callback: () => {
+       const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+       if(mindmapView){
+        var mindmap = mindmapView.mindmap;
+          navigator.clipboard.readText().then(text=>{
+              mindmap.pasteNode(text);
+          });
+       }
+    }
+  });
+
+
     this.registerView(mindmapViewType, (leaf) => new MindMapView(leaf, this));
     this.registerEvents();
     this.registerMonkeyAround();

@@ -285,6 +285,69 @@ export class ExpandNode extends Command{
  }
 
 
+ export class PasteNode extends Command {
+    node:INode
+    data:any
+    waitCollapse:any[]=[]
+    firstNode:INode
+    constructor(node:any, data:any) {
+        super('copyNode');
+        this.node = node;
+        this.data = data;
+        this.mind= this.node.mindmap;
+        this.waitCollapse = [];
+    }
+
+    execute() {
+        this.paste();
+    }
+
+    undo() {
+        if (this.firstNode) {
+            this.mind.removeNode(this.firstNode);
+            this.node.clearCacheData();
+           // this.updateItems(this.node);
+            this.refresh(this.node.mindmap);
+        }
+    }
+
+    paste() {
+        this.data.forEach((d:any, i:number) => {
+          
+            var n = new INode(d, this.mind);
+          
+            n.mindmap = this.mind;
+            if (!d.isExpand) {
+                this.waitCollapse.push(n);
+            }
+            if (i == 0) {
+                n.data.pid = this.node.getId();
+                this.mind.addNode(n, this.node);
+                this.firstNode = n;
+                n.setPosition(0,0);
+                n.refreshBox();
+              
+            }
+            else {
+                var parent = this.mind.getNodeById(d.pid);
+                if (parent) {
+                   this.mind.addNode(n, parent);
+                   n.setPosition(0,0);
+                   n.refreshBox();
+
+                }
+            }
+            
+            if (i == this.data.length - 1) {
+                n.clearCacheData();
+                this.refresh(this.mind);
+            }
+        });
+    }
+}
+
+
+
 
 
 

@@ -26,7 +26,7 @@ export function uuid(): string {
 const transformer = new Transformer();
 
 
-export const mindmapViewType = "mindmapview";
+export const mindmapViewType = "mindmapView";
 export const mindmapIcon = "blocks";
 
 export class MindMapView extends TextFileView implements HoverParent {
