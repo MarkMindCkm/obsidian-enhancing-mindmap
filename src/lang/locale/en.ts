@@ -37,5 +37,6 @@ export default {
     "Save success":"Save data success",
      "Toggle mardkown/mindmap":"Toggle to mardkown/mindmap mode",
      "Copy node":"Cpoy",
-     "Paste node":"Paste"
+     "Paste node":"Paste",
+     "Export to html":"Export to html"
 };

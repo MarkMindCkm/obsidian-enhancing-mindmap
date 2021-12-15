@@ -95,6 +95,17 @@ export default class MindMapPlugin extends Plugin {
     }
   });
 
+  this.addCommand({
+    id: 'Export to html',
+    name: `${t('Export to html')}`,
+    callback: () => {
+       const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+       if(mindmapView){
+           mindmapView.exportToSvg();
+       }
+    }
+  });
+
 
     this.registerView(mindmapViewType, (leaf) => new MindMapView(leaf, this));
     this.registerEvents();

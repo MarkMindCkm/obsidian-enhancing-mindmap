@@ -17,6 +17,9 @@ import { Transformer } from './markmapLib/markmap-lib';
 import randomColor from "randomcolor";
 import { t } from './lang/helpers'
 
+import domtoimage from './domtoimage.js'
+import { INode } from "./markmapLib/markmap-common/types";
+
 export function uuid(): string {
   function S4() {
     return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
@@ -65,6 +68,77 @@ export class MindMapView extends TextFileView implements HoverParent {
     for (var i = 0; i < 50; i++) {
       this.colors.push(randomColor());
     }
+  }
+
+  exportToSvg(){
+    if(!this.mindmap){
+      return;
+    }
+
+   // this.mindmap.contentEL.style.visibility='hidden';
+    var nodes:any[] = [];
+    this.mindmap.traverseDF((n:INode)=>{
+       nodes.push(n)
+    });
+
+ 
+
+    var oldScrollLeft = this.mindmap.containerEL.scrollLeft;
+    var oldScrollTop = this.mindmap.containerEL.scrollTop;
+  
+    var box  = this.mindmap.getBoundingRect(nodes);
+    var rootBox = this.mindmap.root.getPosition();
+
+    var disX =0,disY=0;
+    if(box.x>60){
+      disX = box.x - 60;
+    }
+
+    if(box.y>60){
+       disY = box.y - 60;
+    }
+
+    this.mindmap.root.setPosition(rootBox.x-disX,rootBox.y-disY);
+    this.mindmap.refresh();
+
+    var w = box.width + 120;
+    var h = box.height + 120;
+
+    this.mindmap.contentEL.style.width=w+'px';
+    this.mindmap.contentEL.style.height=h+'px';
+
+    domtoimage.toPng(this.mindmap.contentEL).then(dataUrl=>{  
+      var img = new Image()
+      img.src = dataUrl;
+      var str = img.outerHTML;
+
+       var p= this.mindmap.path.substr(0,this.mindmap.path.length-2);
+      try{
+        new Notice(p+'html');
+        this.app.vault.adapter.write(p+'html', str);
+        this.restoreMindmap(rootBox,oldScrollLeft,oldScrollTop)
+      }catch(err){
+        this.restoreMindmap(rootBox,oldScrollLeft,oldScrollTop)
+        new Notice(err);
+      }
+      
+    }).catch(err=>{
+      this.restoreMindmap(rootBox,oldScrollLeft,oldScrollTop)
+      new Notice(err);
+    })
+  }
+
+  restoreMindmap(rootBox:any,left:number,top:number){
+       if(this.mindmap){
+        var size = this.plugin.settings.canvasSize;
+         this.mindmap.contentEL.style.width=size+'px';
+         this.mindmap.contentEL.style.height=size+'px';
+         this.mindmap.containerEL.scrollTop=top;
+         this.mindmap.containerEL.scrollLeft=left;
+         this.mindmap.root.setPosition(rootBox.x,rootBox.y);
+         this.mindmap.refresh();
+      //   this.mindmap.contentEL.style.visibility='visible';
+       }
   }
 
   mindMapChange() {
