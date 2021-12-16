@@ -880,6 +880,7 @@ export default class MindMap {
         };
         list.forEach((item, i) => {
             var b = item.getBox();
+           // console.log(b.x,b.y);
             if (i == 0) {
                 box.x = b.x;
                 box.y = b.y;

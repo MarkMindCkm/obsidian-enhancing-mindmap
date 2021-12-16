@@ -18,7 +18,6 @@ import randomColor from "randomcolor";
 import { t } from './lang/helpers'
 
 import domtoimage from './domtoimage.js'
-import { INode } from "./markmapLib/markmap-common/types";
 
 export function uuid(): string {
   function S4() {
@@ -77,8 +76,10 @@ export class MindMapView extends TextFileView implements HoverParent {
 
    // this.mindmap.contentEL.style.visibility='hidden';
     var nodes:any[] = [];
-    this.mindmap.traverseDF((n:INode)=>{
-       nodes.push(n)
+    this.mindmap.traverseDF((n:any)=>{
+       if(n.isShow()){
+         nodes.push(n)
+       }
     });
 
  
@@ -107,25 +108,28 @@ export class MindMapView extends TextFileView implements HoverParent {
     this.mindmap.contentEL.style.width=w+'px';
     this.mindmap.contentEL.style.height=h+'px';
 
-    domtoimage.toPng(this.mindmap.contentEL).then(dataUrl=>{  
-      var img = new Image()
-      img.src = dataUrl;
-      var str = img.outerHTML;
-
-       var p= this.mindmap.path.substr(0,this.mindmap.path.length-2);
-      try{
-        new Notice(p+'html');
-        this.app.vault.adapter.write(p+'html', str);
-        this.restoreMindmap(rootBox,oldScrollLeft,oldScrollTop)
-      }catch(err){
+    setTimeout(()=>{
+      domtoimage.toPng(this.mindmap.contentEL).then(dataUrl=>{  
+        var img = new Image()
+        img.src = dataUrl;
+        var str = img.outerHTML;
+  
+         var p= this.mindmap.path.substr(0,this.mindmap.path.length-2);
+        try{
+          new Notice(p+'html');
+          this.app.vault.adapter.write(p+'html', str);
+          this.restoreMindmap(rootBox,oldScrollLeft,oldScrollTop)
+        }catch(err){
+          this.restoreMindmap(rootBox,oldScrollLeft,oldScrollTop)
+          new Notice(err);
+        }
+        
+      }).catch(err=>{
         this.restoreMindmap(rootBox,oldScrollLeft,oldScrollTop)
         new Notice(err);
-      }
-      
-    }).catch(err=>{
-      this.restoreMindmap(rootBox,oldScrollLeft,oldScrollTop)
-      new Notice(err);
-    })
+      })
+    },200);
+
   }
 
   restoreMindmap(rootBox:any,left:number,top:number){
