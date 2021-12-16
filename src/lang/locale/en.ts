@@ -36,7 +36,7 @@ export default {
     "Save fail":"Save data err",
     "Save success":"Save data success",
      "Toggle mardkown/mindmap":"Toggle to mardkown/mindmap mode",
-     "Copy node":"Cpoy",
+     "Copy node":"Copy",
      "Paste node":"Paste",
      "Export to html":"Export to html"
 };
