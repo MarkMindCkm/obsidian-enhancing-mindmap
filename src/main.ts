@@ -48,7 +48,7 @@ export default class MindMapPlugin extends Plugin {
     
      this.addCommand({
       id: 'Toggle to markdown or mindmap',
-      name: `${t('Toggle mardkown/mindmap')}`,
+      name: `${t('Toggle markdown/mindmap')}`,
       mobileOnly: false,
       callback: () => {
           const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);

@@ -45,7 +45,7 @@ export default {
   "Stroke Array Desc":"节点连线颜色将按照颜色组生成,否则生成随机颜色",
   "Save fail":"保存失败",
   "Save success":"保存成功",
-  "Toggle mardkown/mindmap":"切换为 markdown 或 mindmap 模式",
+  "Toggle markdown/mindmap":"切换为 markdown 或 mindmap 模式",
   "Copy node":"复制",
   "Paste node":"粘贴",
   "Export to html":"导出为 html"
