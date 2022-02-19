@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "dom-to-image": "^2.6.0",
+    "jszip": "^3.7.1",
     "katex": "^0.13.11",
     "randomcolor": "^0.6.2",
     "svg.js": "^2.7.1"

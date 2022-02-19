@@ -8910,7 +8910,7 @@ class Transformer {
         });
         // const text = md.renderer.render([token], md.options, {});
         let text=''
-        if(token.children&&token.children.length){
+        if(token.children&&token.children.length==1){
           if(token.children[0].type&&token.children[0].type=='link_open'){
             text = `[${token.children[1].content}](${token.children[0].href})`;
           }else{
