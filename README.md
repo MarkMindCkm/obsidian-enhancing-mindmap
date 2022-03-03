@@ -31,6 +31,10 @@ mindmap-plugin: basic
 - Katex - $x = {-b \pm \sqrt{b^2-4ac} \over 2a}$
 ```
 
+### notice
+
+The plug-in only support a limited markdown format 
+
 ## Short cuts
 
 | New Mind Map              | Ctrl/Cmd+P       |
