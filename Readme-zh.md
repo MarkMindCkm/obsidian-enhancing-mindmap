@@ -30,6 +30,9 @@ mindmap-plugin: basic
 - `inline code`
 - Katex - $x = {-b \pm \sqrt{b^2-4ac} \over 2a}$
 ```
+## 注意
+
+该插件支持如上以及无序列表等有限的markdown格式，无法支持其他格式，一定要注意这点，否则可能会丢失数据，切记。
 
 ## Short cuts
 
