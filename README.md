@@ -82,6 +82,7 @@ The plug-in only support a limited markdown format
 Pull requests are both welcome and appreciated. 😀
 
 ## Donating
+https://www.buymeacoffee.com/markmind
 <a href="https://www.buymeacoffee.com/markmind"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=markmind&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff"></a>
 
 
