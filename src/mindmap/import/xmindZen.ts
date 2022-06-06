@@ -78,7 +78,8 @@ function transferListToData(list:any):any{
         var nodeData:{[key:string]:any} = {
             id:data.id,
             text:data.text,
-            children:[]
+            children:[],
+            expanded:true
         }
         if(i==0){
             nodeData.main = true;
@@ -120,7 +121,7 @@ function transferData(data:any,parentId:any,list?:any,mainFlag?:any){
         //tag:data.data.resource
         marks:[],
        // resource:data.data.resource,
-        isExpand:true,
+        expanded:true,
         image:'',
         imageName:'',
         x:0,

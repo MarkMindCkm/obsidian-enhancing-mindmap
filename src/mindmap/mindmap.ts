@@ -781,6 +781,9 @@ export default class MindMap {
                                    files[k].async("text").then((res) => {
                                      var mindData = JSON.parse(res);
                                        var data:any = importXmind(mindData[0]);
+
+                                
+
                                        me.clearNode();
                                        me.data = data.basicData;
                                        me.init();
