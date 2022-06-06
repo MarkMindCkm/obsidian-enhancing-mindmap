@@ -25,6 +25,7 @@ interface INode {
     mdText?:string;
     isRoot?:Boolean;
     children?:INode[];
+    
 }
 
 interface BOX {
@@ -43,6 +44,7 @@ export class INodeData implements INode{
     mdText?:string;
     isRoot?:Boolean;
     children?:INodeData[]
+    expanded?:boolean;
 }
 
 export default class Node {
@@ -464,6 +466,7 @@ export default class Node {
         this.isExpand =true;
         function show(node:Node) {
             node.show();
+            node.refreshBox();
             node.boundingRect = null;
             if (node.isExpand) {
                 node.children.forEach(c => {

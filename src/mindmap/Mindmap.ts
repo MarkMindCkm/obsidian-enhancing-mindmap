@@ -157,16 +157,18 @@ export default class MindMap {
         var data = this.data;
         var x = this.setting.canvasSize / 2 - 60;
         var y = this.setting.canvasSize / 2 - 200;
+        var waitCollapseNodes:INode[]=[];
 
         function initNode(d: INodeData, isRoot: boolean, p?: INode) {
             that._nodeNum++;
             var n = new INode(d, that);
-            if (collapsedIds && collapsedIds.includes(n.getId())) {
-                n.isExpand = false;
-            }
-            if (p && (!p.isExpand || p.isHide)) {
-                n.isHide = true;
-            }
+            // if (collapsedIds && collapsedIds.includes(n.getId())) {
+            //     n.isExpand = false;
+            // }
+            // if (p && (!p.isExpand || p.isHide)) {
+            //     n.isHide = true;
+            // }
+
             that.contentEL.appendChild(n.containEl);
             if (isRoot) {
                 n.setPosition(x, y);
@@ -177,6 +179,12 @@ export default class MindMap {
                 p.children.push(n);
                 n.parent = p;
             }
+
+            n.refreshBox();
+
+            if(!d.expanded){
+                waitCollapseNodes.push(n)
+            }
             n.refreshBox();
             if (d.children && d.children.length) {
                 d.children.forEach((dd: INodeData) => {
@@ -185,6 +193,12 @@ export default class MindMap {
             }
         }
         initNode(data, true);
+
+        if(waitCollapseNodes.length){
+            waitCollapseNodes.forEach(n=>{
+                n.collapse();
+            });
+        }
     }
 
     traverseBF(callback: Function, node?: INode) {
@@ -1105,7 +1119,10 @@ export default class MindMap {
 
                     }
                 } else {
-                    md += `-\n`;
+                    for (var i = 0; i < n.getLevel() - level; i++) {
+                        space += '   ';
+                    }
+                    md += `${space}-\n`;
                 }
             }
         }, this.root, true);

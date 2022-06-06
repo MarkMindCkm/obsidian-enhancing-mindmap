@@ -38,6 +38,7 @@ export class MindMapView extends TextFileView implements HoverParent {
   timeOut: any = null;
   fileCache: any;
   firstInit: boolean = true;
+  yamlString:string=''
 
   getViewType() {
     return mindmapViewType;
@@ -70,18 +71,18 @@ export class MindMapView extends TextFileView implements HoverParent {
   mindMapChange() {
     if (this.mindmap) {
       var md = this.mindmap.getMarkdown();
-      var matchArray: string[] = []
-      var collapsedIds: string[] = []
-      const idRegexMultiline = /.+ \^([a-z0-9\-]+)$/gim
-      while ((matchArray = idRegexMultiline.exec(md)) != null) {
-        collapsedIds = [...collapsedIds, ...matchArray.slice(1, 2)];
-      }
-      this.fileCache.frontmatter.collapsedIds='';
-      if (collapsedIds.length > 0) {
-        this.fileCache.frontmatter.collapsedIds = collapsedIds;
-      }
-      var frontMatter = this.getFrontMatter();
-      this.data = frontMatter + md;
+    //  var matchArray: string[] = []
+      // var collapsedIds: string[] = []
+      // const idRegexMultiline = /.+ \^([a-z0-9\-]+)$/gim
+      // while ((matchArray = idRegexMultiline.exec(md)) != null) {
+      //   collapsedIds = [...collapsedIds, ...matchArray.slice(1, 2)];
+      // }
+      // this.fileCache.frontmatter.collapsedIds='';
+      // if (collapsedIds.length > 0) {
+      //   this.fileCache.frontmatter.collapsedIds = collapsedIds;
+      // }
+      //var frontMatter = this.getFrontMatter();
+      this.data = this.yamlString + md;
       // console.log(this.mindmap.path);
      // this.app.vault.adapter.write(this.mindmap.path, this.data);
        try{
@@ -96,24 +97,29 @@ export class MindMapView extends TextFileView implements HoverParent {
 
   getFrontMatter() {
     var frontMatter = '---\n\n';
-    var v: any = '';
+  //  var v: any = '';
     if (this.fileCache.frontmatter) {
-      for (var k in this.fileCache.frontmatter) {
-        if (k != 'position') {
-          if (Object.prototype.toString.call(this.fileCache.frontmatter[k]) == '[object Array]' || Object.prototype.toString.call(this.fileCache.frontmatter[k]) == '[object Object]') {
-            v = JSON.stringify(this.fileCache.frontmatter[k]);
-          } else if (Object.prototype.toString.call(this.fileCache.frontmatter[k]) == '[object Number]' || Object.prototype.toString.call(this.fileCache.frontmatter[k]) == "[object String]") {
-            v = this.fileCache.frontmatter[k];
-          }
+      // for (var k in this.fileCache.frontmatter) {
+      //   if (k != 'position') {
+      //     if (Object.prototype.toString.call(this.fileCache.frontmatter[k]) == '[object Array]' || Object.prototype.toString.call(this.fileCache.frontmatter[k]) == '[object Object]') {
+      //       v = JSON.stringify(this.fileCache.frontmatter[k]);
+      //     } else if (Object.prototype.toString.call(this.fileCache.frontmatter[k]) == '[object Number]' || Object.prototype.toString.call(this.fileCache.frontmatter[k]) == "[object String]") {
+      //       v = this.fileCache.frontmatter[k];
+      //     }
 
-          if (v) {
-            frontMatter += `${k}: ${v}\n`;
-          }
-        }
-      }
+      //     if (v) {
+      //       frontMatter += `${k}: ${v}\n`;
+      //     }
+      //   }
+      // }
+      var position = this.fileCache.frontmatter.position;
+      var end =  position['end'].offset;
+
+      frontMatter = this.data.substr(0,end);
     }
-
-    frontMatter += `\n---\n\n`;
+    
+    frontMatter+='\n\n';
+    //frontMatter += `\n---\n\n`;
     return frontMatter
   }
 
@@ -164,38 +170,44 @@ export class MindMapView extends TextFileView implements HoverParent {
     var mindData = this.mdToData(mdText);
     mindData.isRoot = true;
 
-    const frontmatterContentRegExResult = /^---$(.+?)^---$.+?/mis.exec(data)
+    // const frontmatterContentRegExResult = /^---$(.+?)^---$.+?/mis.exec(data)
 
-    if (frontmatterContentRegExResult != null && frontmatterContentRegExResult[1]) {
-      frontmatterContentRegExResult[1].split('\n').forEach((frontmatterLine) => {
-        const keyValue = frontmatterLine.split(': ')
-        if (keyValue.length === 2) {
-          const value = /^[{\[].+[}\]]$/.test(keyValue[1]) ? JSON.parse(keyValue[1]) : keyValue[1]
-          this.fileCache.frontmatter[keyValue[0]] = value
-        }
-      })
-    }
+    // if (frontmatterContentRegExResult != null && frontmatterContentRegExResult[1]) {
+    //   frontmatterContentRegExResult[1].split('\n').forEach((frontmatterLine) => {
+    //     const keyValue = frontmatterLine.split(': ')
+    //     if (keyValue.length === 2) {
+    //       const value = /^[{\[].+[}\]]$/.test(keyValue[1]) ? JSON.parse(keyValue[1]) : keyValue[1]
+    //       this.fileCache.frontmatter[keyValue[0]] = value
+    //     }
+    //   });
+    // }
 
     this.mindmap = new MindMap(mindData, this.contentEl, this.plugin.settings);
     this.mindmap.path = this.app.workspace.getActiveFile()?.path || '';
     this.mindmap.colors = this.colors;
     if (this.firstInit) {
+     
       setTimeout(() => {
         var leaf = this.app.workspace.activeLeaf;
         if (leaf) {
           var view = leaf.view as MindMapView;
+          
           this.mindmap.path = view?.file.path;
           if (view.file) {
             this.fileCache = this.app.metadataCache.getFileCache(view.file);
+            this.yamlString = this.getFrontMatter();
           }
         }
-        this.mindmap.init(this.fileCache.frontmatter.collapsedIds);
+        this.mindmap.init();
         this.mindmap.refresh();
         this.mindmap.view = this;
         this.firstInit = false;
       }, 100);
     } else {
-      this.mindmap.init(this.fileCache.frontmatter.collapsedIds);
+      var view = this.leaf.view as MindMapView;
+      this.fileCache = this.app.metadataCache.getFileCache(view.file);
+      this.yamlString = this.getFrontMatter();
+      this.mindmap.init();
       this.mindmap.refresh();
       this.mindmap.view = this;
     }
@@ -268,7 +280,8 @@ export class MindMapView extends TextFileView implements HoverParent {
       var map: INodeData = {
         id: id || uuid(),
         text: id ? mapData.v.replace(` ^${id}`, '') : mapData.v,
-        children: []
+        children: [],
+        expanded: id ? false:true
       };
 
       if (flag && mapData.c && mapData.c.length) {
