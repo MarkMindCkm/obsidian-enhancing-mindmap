@@ -29,10 +29,14 @@ export default {
     "Right": "Right",
     "Left": "Left",
     "Centered": "Centered",
+    "Clockwise": "Clockwise",
 
     "Stroke Array":"Stroke array",
     "Stroke Array Desc":"Node link color base on this value or random color",
     "Save fail":"Save data err",
     "Save success":"Save data success",
-     "Toggle mardkown/mindmap":"Toggle to mardkown/mindmap mode"
+     "Toggle markdown/mindmap":"Toggle to markdown/mindmap mode",
+     "Copy node":"Copy",
+     "Paste node":"Paste",
+     "Export to html":"Export to html"
 };

@@ -48,7 +48,7 @@ export default class MindMapPlugin extends Plugin {
     
      this.addCommand({
       id: 'Toggle to markdown or mindmap',
-      name: `${t('Toggle mardkown/mindmap')}`,
+      name: `${t('Toggle markdown/mindmap')}`,
       mobileOnly: false,
       callback: () => {
           const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
@@ -62,6 +62,50 @@ export default class MindMapPlugin extends Plugin {
           }
       }
   });
+
+  this.addCommand({
+    id: 'Copy Node',
+    name: `${t('Copy node')}`,
+    callback: () => {
+      const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+      if(mindmapView){
+           var mindmap = mindmapView.mindmap;
+           navigator.clipboard.writeText('');
+           var node = mindmap.selectNode;
+           if(node){
+             var text = mindmap.copyNode(node);
+             navigator.clipboard.writeText(text);
+           }
+      }
+     
+    }
+  });
+
+  this.addCommand({
+    id: 'Paste Node',
+    name: `${t('Paste node')}`,
+    callback: () => {
+       const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+       if(mindmapView){
+        var mindmap = mindmapView.mindmap;
+          navigator.clipboard.readText().then(text=>{
+              mindmap.pasteNode(text);
+          });
+       }
+    }
+  });
+
+  this.addCommand({
+    id: 'Export to html',
+    name: `${t('Export to html')}`,
+    callback: () => {
+       const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+       if(mindmapView){
+           mindmapView.exportToSvg();
+       }
+    }
+  });
+
 
     this.registerView(mindmapViewType, (leaf) => new MindMapView(leaf, this));
     this.registerEvents();

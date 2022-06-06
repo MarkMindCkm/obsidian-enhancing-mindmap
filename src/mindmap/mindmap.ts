@@ -5,6 +5,10 @@ import SVG from 'svg.js'
 import { MindMapView } from '../MindMapView'
 import { frontMatterKey, basicFrontmatter } from '../constants';
 import Exec from './Execute'
+import {uuid} from '../MindMapView'
+
+import importXmind  from './import/xmindZen'
+import jsZip from 'jszip'
 
 let deleteIcon = '<svg class="icon" width="16px" height="16.00px" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path  d="M799.2 874.4c0 34.4-28 62.4-62.368 62.4H287.2a62.496 62.496 0 0 1-62.4-62.4V212h574.4v662.4zM349.6 100c0-7.2 5.6-12.8 12.8-12.8h300c7.2 0 12.768 5.6 12.768 12.8v37.6H349.6V100z m636.8 37.6H749.6V100c0-48-39.2-87.2-87.2-87.2h-300a87.392 87.392 0 0 0-87.2 87.2v37.6H37.6C16.8 137.6 0 154.4 0 175.2s16.8 37.6 37.6 37.6h112v661.6A137.6 137.6 0 0 0 287.2 1012h449.6a137.6 137.6 0 0 0 137.6-137.6V212h112c20.8 0 37.6-16.8 37.6-37.6s-16.8-36.8-37.6-36.8zM512 824c20.8 0 37.6-16.8 37.6-37.6v-400c0-20.8-16.768-37.6-37.6-37.6-20.8 0-37.6 16.8-37.6 37.6v400c0 20.8 16.8 37.6 37.6 37.6m-175.2 0c20.8 0 37.6-16.8 37.6-37.6v-400c0-20.8-16.8-37.6-37.6-37.6s-37.6 16.8-37.6 37.6v400c0.8 20.8 17.6 37.6 37.6 37.6m350.4 0c20.8 0 37.632-16.8 37.632-37.6v-400c0-20.8-16.8-37.6-37.632-37.6-20.768 0-37.6 16.8-37.6 37.6v400c0 20.8 16.8 37.6 37.6 37.6" /></svg>';
 let addIcon = '<svg class="icon" width="16px" height="16.00px" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path  d="M512 1024C230.4 1024 0 793.6 0 512S230.4 0 512 0s512 230.4 512 512-230.4 512-512 512z m0-960C265.6 64 64 265.6 64 512s201.6 448 448 448 448-201.6 448-448S758.4 64 512 64z"  /><path d="M800 544H224c-19.2 0-32-12.8-32-32s12.8-32 32-32h576c19.2 0 32 12.8 32 32s-12.8 32-32 32z"  /><path  d="M512 832c-19.2 0-32-12.8-32-32V224c0-19.2 12.8-32 32-32s32 12.8 32 32v576c0 19.2-12.8 32-32 32z"  /></svg>';
@@ -748,7 +752,7 @@ export default class MindMap {
         }
     }
 
-    appDrop(evt: MouseEvent) {
+    appDrop(evt: any) {
         if (evt.target instanceof HTMLElement) {
             if (evt.target.closest('.mm-node')) {
                 evt.preventDefault();
@@ -761,6 +765,42 @@ export default class MindMap {
                 }
             }
         }
+
+        var files = evt.dataTransfer.files;
+            if(files.length){
+                  var f = files[0];
+                  if(f.name.toLowerCase().endsWith('.xmind')){
+                   try{
+                       var me = this;
+                       var reader = new FileReader();
+                       reader.onload=()=>{
+                            jsZip.loadAsync(reader.result).then((e)=>{
+                               var files = e.files;
+                               for (var k in files) {
+                                  if (k == "content.json") {
+                                   files[k].async("text").then((res) => {
+                                     var mindData = JSON.parse(res);
+                                       var data:any = importXmind(mindData[0]);
+                                       me.clearNode();
+                                       me.data = data.basicData;
+                                       me.init();
+                                       setTimeout(()=>{
+                                           me.center(); 
+                                           me.mindMapChange();
+                                       },100);
+                                   });
+                                 }
+                               }
+                            })
+                       }
+                       reader.readAsArrayBuffer(f);
+                   }catch(err){
+                      new Notice('Parse xmind error')
+                   }
+                  }
+
+            
+       }
 
         this._indicateDom.style.display = 'none'
         this._menuDom.style.display = 'none';
@@ -893,6 +933,7 @@ export default class MindMap {
         };
         list.forEach((item, i) => {
             var b = item.getBox();
+           // console.log(b.x,b.y);
             if (i == 0) {
                 box.x = b.x;
                 box.y = b.y;
@@ -1161,5 +1202,64 @@ export default class MindMap {
             new Notice(`${n} %`);
         }, 600);
     }
+
+    copyNode(node?:any){
+        var n = node||this.selectNode;
+        if(n){
+           var data:any = [];
+           function copyNode(n:INode, pid:any) {
+                  var d = n.getData();
+                  d.id = uuid();
+                  d.pid = pid;
+                  data.push({
+                      id:d.id,
+                      text:d.text,
+                      pid:pid,
+                      isExpand:d.isExpand,
+                      note:d.note
+                  });
+                  n.children.forEach((c) => {
+                     copyNode(c, d.id);
+                  });
+          }
+
+           copyNode(n,null)
+        
+           var _data = {
+               type:'copyNode',
+               text:data
+           };
+
+           return JSON.stringify(_data);
+
+        }else{
+            return ''
+        }
+  }
+
+  pasteNode(text:string){
+        var node = this.selectNode;
+        if(text){
+            try{
+                  var json =JSON.parse(text);
+                  if(json.type&&json.type=='copyNode'){
+                    var data = json.text;
+                    if(!node.isExpand){
+                       node.expand();
+                       node.clearCacheData();
+                    }
+                   this.execute('pasteNode',{
+                       node:node,
+                       data:data
+                   })
+
+                   navigator.clipboard.writeText('');
+                  }
+            }catch(err){
+                console.log(err)
+            }
+        }
+
+  }
 
 }

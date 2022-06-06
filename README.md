@@ -31,6 +31,10 @@ mindmap-plugin: basic
 - Katex - $x = {-b \pm \sqrt{b^2-4ac} \over 2a}$
 ```
 
+### notice
+
+The plug-in only support a limited markdown format 
+
 ## Short cuts
 
 | New Mind Map              | Ctrl/Cmd+P       |
@@ -78,6 +82,7 @@ mindmap-plugin: basic
 Pull requests are both welcome and appreciated. 😀
 
 ## Donating
+https://www.buymeacoffee.com/markmind  
 <a href="https://www.buymeacoffee.com/markmind"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=markmind&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff"></a>
 
 

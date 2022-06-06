@@ -21,7 +21,8 @@ interface DataProps {
     newPos?:{
         x:number,
         y:number
-    }
+    },
+    data?:any
 };
 
 export default class Exec{
@@ -73,6 +74,9 @@ export default class Exec{
                     this.history.execute(new cmd.CollapseNode(data.node));
                 }
             break
+            case 'pasteNode':
+                this.history.execute(new cmd.PasteNode(data.node,data.data));
+                break;
        }
     }
 

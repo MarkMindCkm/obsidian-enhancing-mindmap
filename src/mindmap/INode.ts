@@ -69,8 +69,9 @@ export default class Node {
     stroke?:string;
     isEdit:boolean=false;
     _barDom:HTMLElement=null;
-    constructor(private data:INode,mindMap?:MindMap){
-      
+    data:any
+    constructor( data:INode,mindMap?:MindMap){
+       this.data = data;
        this.mindmap = mindMap;
        this.initDom();
     }

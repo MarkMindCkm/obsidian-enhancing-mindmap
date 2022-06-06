@@ -125,6 +125,7 @@ export class MindMapSettingsTab extends PluginSettingTab {
                     .addOption('mind map', t('Centered'))
                     .addOption('right', t('Right'))
                     .addOption('left', t('Left'))
+                    .addOption('clockwise', t('Clockwise'))
                     .setValue(this.plugin.settings.layoutDirect.toString() || 'mind map')
                     .onChange((value: string) => {
                         this.plugin.settings.layoutDirect = value;
