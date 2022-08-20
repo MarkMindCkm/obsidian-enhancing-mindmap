@@ -261,12 +261,11 @@ export class MindMapView extends TextFileView implements HoverParent {
     // }
 
     this.mindmap = new MindMap(mindData, this.contentEl, this.plugin.settings);
-    this.mindmap.path = this.app.workspace.getActiveFile()?.path || '';
     this.mindmap.colors = this.colors;
     if (this.firstInit) {
      
       setTimeout(() => {
-        var leaf = this.app.workspace.activeLeaf;
+        var leaf = this.leaf;
         if (leaf) {
           var view = leaf.view as MindMapView;
           
@@ -285,6 +284,8 @@ export class MindMapView extends TextFileView implements HoverParent {
       var view = this.leaf.view as MindMapView;
       this.fileCache = this.app.metadataCache.getFileCache(view.file);
       this.yamlString = this.getFrontMatter();
+   
+      this.mindmap.path = view?.file.path;
       this.mindmap.init();
       this.mindmap.refresh();
       this.mindmap.view = this;
