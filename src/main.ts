@@ -138,10 +138,12 @@ export default class MindMapPlugin extends Plugin {
       );
 
       await this.app.vault.modify(mindmap, basicFrontmatter);
-      await this.app.workspace.activeLeaf.setViewState({
-        type: mindmapViewType,
-        state: { file: mindmap.path },
-      });
+       setTimeout(async ()=>{
+          await this.app.workspace.getLeaf().setViewState({
+            type: mindmapViewType,
+            state: { file: mindmap.path },
+          });
+       },100);
     } catch (e) {
       console.error("Error creating mindmap board:", e);
     }
