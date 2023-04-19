@@ -357,8 +357,16 @@ export default class MindMap {
                 if (node && !node.isEdit) {
                     e.preventDefault();
                     e.stopPropagation();
-                    node.edit();
-                    this._menuDom.style.display = 'none';
+                    // node.edit();
+                    // this._menuDom.style.display = 'none';
+                    if (!node.isExpand) {
+                        node.expand();
+                    }
+                    if (!node.parent) return;
+                    node.mindmap.execute('addSiblingNode', {
+                        parent: node.parent
+                    });
+                    this._menuDom.style.display='none';
                 } else if (node && node.isEdit) {
                     if (this.isComposing || e.isComposing || e.key === 'Process' || e.keyCode === 229) {
                         return
@@ -388,25 +396,25 @@ export default class MindMap {
         }
 
 
-        if (!ctrlKey && shiftKey) {
-            //enter > add node
-            if (keyCode == 13 || e.key =='Enter') {
+        // if (!ctrlKey && shiftKey) {
+        //     //enter > add node
+        //     if (keyCode == 13 || e.key =='Enter') {
 
-                var node = this.selectNode;
-                if (node && !node.isEdit) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (!node.isExpand) {
-                        node.expand();
-                    }
-                    if (!node.parent) return;
-                    node.mindmap.execute('addSiblingNode', {
-                        parent: node.parent
-                    });
-                    this._menuDom.style.display='none';
-                }
-            }
-        }
+        //         var node = this.selectNode;
+        //         if (node && !node.isEdit) {
+        //             e.preventDefault();
+        //             e.stopPropagation();
+        //             if (!node.isExpand) {
+        //                 node.expand();
+        //             }
+        //             if (!node.parent) return;
+        //             node.mindmap.execute('addSiblingNode', {
+        //                 parent: node.parent
+        //             });
+        //             this._menuDom.style.display='none';
+        //         }
+        //     }
+        // }
 
 
         if (ctrlKey && !shiftKey) {

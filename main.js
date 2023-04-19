@@ -8259,7 +8259,16 @@ class MindMap {
                 if (node && !node.isEdit) {
                     e.preventDefault();
                     e.stopPropagation();
-                    node.edit();
+                    // node.edit();
+                    // this._menuDom.style.display = 'none';
+                    if (!node.isExpand) {
+                        node.expand();
+                    }
+                    if (!node.parent)
+                        return;
+                    node.mindmap.execute('addSiblingNode', {
+                        parent: node.parent
+                    });
                     this._menuDom.style.display = 'none';
                 }
                 else if (node && node.isEdit) {
@@ -8288,25 +8297,24 @@ class MindMap {
                 }
             }
         }
-        if (!ctrlKey && shiftKey) {
-            //enter > add node
-            if (keyCode == 13 || e.key == 'Enter') {
-                var node = this.selectNode;
-                if (node && !node.isEdit) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (!node.isExpand) {
-                        node.expand();
-                    }
-                    if (!node.parent)
-                        return;
-                    node.mindmap.execute('addSiblingNode', {
-                        parent: node.parent
-                    });
-                    this._menuDom.style.display = 'none';
-                }
-            }
-        }
+        // if (!ctrlKey && shiftKey) {
+        //     //enter > add node
+        //     if (keyCode == 13 || e.key =='Enter') {
+        //         var node = this.selectNode;
+        //         if (node && !node.isEdit) {
+        //             e.preventDefault();
+        //             e.stopPropagation();
+        //             if (!node.isExpand) {
+        //                 node.expand();
+        //             }
+        //             if (!node.parent) return;
+        //             node.mindmap.execute('addSiblingNode', {
+        //                 parent: node.parent
+        //             });
+        //             this._menuDom.style.display='none';
+        //         }
+        //     }
+        // }
         if (ctrlKey && !shiftKey) {
             //ctrl + y
             if (keyCode == 89) {
