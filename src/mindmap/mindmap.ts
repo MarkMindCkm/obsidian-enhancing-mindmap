@@ -382,6 +382,9 @@ export default class MindMap {
         if (!ctrlKey && !shiftKey) {
             //enter 
             if (keyCode == 13 || e.key =='Enter') {
+                if (e.isComposing || e.key === 'Process' || e.keyCode === 229) {
+                    return
+                }
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
                     e.preventDefault();
