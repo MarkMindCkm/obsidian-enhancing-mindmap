@@ -400,12 +400,7 @@ export default class MindMap {
         if (!ctrlKey && !shiftKey) {
             //enter 
             if (keyCode == 13 || e.key =='Enter') {
-                // if (e.isComposing || e.key === 'Process' || e.keyCode === 229) {
-                //     return
-                // }
-                if (this.isComposing) {
-                    return
-                }
+
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
                     e.preventDefault();
@@ -418,6 +413,15 @@ export default class MindMap {
                         parent: node.parent
                     });
                     this._menuDom.style.display='none';
+                } else if (node && node.isEdit) {
+
+                    if (this.isComposing) {
+                        
+                    } else {
+                        node.cancelEdit();
+                        node.select();
+                        node.mindmap.editNode=null;
+                    }
                 }
             }
 
