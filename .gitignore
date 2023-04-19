@@ -1,6 +1,8 @@
 # Intellij
 *.iml
 .idea
+.vscode
+yarn.lock
 
 # npm
 node_modules
