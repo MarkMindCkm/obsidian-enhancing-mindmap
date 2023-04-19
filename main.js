@@ -8311,7 +8311,9 @@ class MindMap {
                     this._menuDom.style.display = 'none';
                 }
                 else if (node && node.isEdit) {
-                    if (this.isComposing) ;
+                    if (this.isComposing || e.isComposing || e.key === 'Process' || e.keyCode === 229) {
+                        return;
+                    }
                     else {
                         node.cancelEdit();
                         node.select();
