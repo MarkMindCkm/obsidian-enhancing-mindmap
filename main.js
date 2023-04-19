@@ -8008,6 +8008,7 @@ class MindMap {
         this.mindScale = 100;
         this.timeOut = null;
         this._dragType = '';
+        this.isComposing = false;
         this.setting = Object.assign({
             theme: 'default',
             canvasSize: 8000,
@@ -8055,6 +8056,8 @@ class MindMap {
         this.appMouseOverFn = this.appMouseOverFn.bind(this);
         this.appDrop = this.appDrop.bind(this);
         this.appKeyup = this.appKeyup.bind(this);
+        this.compositionStart = this.compositionStart.bind(this);
+        this.compositionEnd = this.compositionEnd.bind(this);
         this.appKeydown = this.appKeydown.bind(this);
         this.appMousewheel = this.appMousewheel.bind(this);
         this.appMouseMove = this.appMouseMove.bind(this);
@@ -8192,6 +8195,8 @@ class MindMap {
         this.appEl.addEventListener('drop', this.appDrop);
         document.addEventListener('keyup', this.appKeyup);
         document.addEventListener('keydown', this.appKeydown);
+        document.addEventListener('compositionstart', this.compositionStart);
+        document.addEventListener('compositionend', this.compositionEnd);
         document.body.addEventListener('mousewheel', this.appMousewheel);
         if (obsidian.Platform.isDesktop) {
             this.appEl.addEventListener('mousedown', this.appMouseDown);
@@ -8213,6 +8218,8 @@ class MindMap {
         this.appEl.removeEventListener('drop', this.appDrop);
         document.removeEventListener('keyup', this.appKeyup);
         document.removeEventListener('keydown', this.appKeydown);
+        document.removeEventListener('compositionstart', this.compositionStart);
+        document.removeEventListener('compositionend', this.compositionEnd);
         document.body.removeEventListener('mousewheel', this.appMousewheel);
         if (obsidian.Platform.isDesktop) {
             this.appEl.removeEventListener('mousedown', this.appMouseDown);
@@ -8276,6 +8283,12 @@ class MindMap {
             }
         }
     }
+    compositionStart(e) {
+        this.isComposing = true;
+    }
+    compositionEnd(e) {
+        this.isComposing = false;
+    }
     appKeyup(e) {
         var keyCode = e.keyCode || e.which || e.charCode;
         var ctrlKey = e.ctrlKey || e.metaKey;
@@ -8283,7 +8296,10 @@ class MindMap {
         if (!ctrlKey && !shiftKey) {
             //enter 
             if (keyCode == 13 || e.key == 'Enter') {
-                if (e.isComposing || e.key === 'Process' || e.keyCode === 229) {
+                // if (e.isComposing || e.key === 'Process' || e.keyCode === 229) {
+                //     return
+                // }
+                if (this.isComposing) {
                     return;
                 }
                 var node = this.selectNode;
