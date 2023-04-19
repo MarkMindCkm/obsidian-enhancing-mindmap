@@ -350,6 +350,26 @@ export default class MindMap {
         var ctrlKey = e.ctrlKey || e.metaKey;
         var shiftKey = e.shiftKey;
         if (!ctrlKey && !shiftKey) {
+            //enter 
+            if (keyCode == 13 || e.key =='Enter') {
+
+                var node = this.selectNode;
+                if (node && !node.isEdit) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    node.edit();
+                    this._menuDom.style.display = 'none';
+                } else if (node && node.isEdit) {
+                    if (this.isComposing || e.isComposing || e.key === 'Process' || e.keyCode === 229) {
+                        return
+                    } else {
+                        node.cancelEdit();
+                        node.select();
+                        node.mindmap.editNode=null;
+                    }
+                }
+            }
+
             // tab
             if (keyCode == 9 || keyCode == 45) {
                 e.preventDefault();
@@ -368,7 +388,29 @@ export default class MindMap {
         }
 
 
+        if (!ctrlKey && shiftKey) {
+            //enter > add node
+            if (keyCode == 13 || e.key =='Enter') {
+
+                var node = this.selectNode;
+                if (node && !node.isEdit) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!node.isExpand) {
+                        node.expand();
+                    }
+                    if (!node.parent) return;
+                    node.mindmap.execute('addSiblingNode', {
+                        parent: node.parent
+                    });
+                    this._menuDom.style.display='none';
+                }
+            }
+        }
+
+
         if (ctrlKey && !shiftKey) {
+            
             //ctrl + y
             if (keyCode == 89) {
                 e.preventDefault();
@@ -387,9 +429,11 @@ export default class MindMap {
     }
 
      compositionStart(e: KeyboardEvent) {
+
         this.isComposing = true;
      }
      compositionEnd(e: KeyboardEvent) {
+
         this.isComposing = false;
      }
 
@@ -398,32 +442,32 @@ export default class MindMap {
         var ctrlKey = e.ctrlKey || e.metaKey;
         var shiftKey = e.shiftKey;
         if (!ctrlKey && !shiftKey) {
-            //enter 
-            if (keyCode == 13 || e.key =='Enter') {
+            // //enter 
+            // if (keyCode == 13 || e.key =='Enter') {
 
-                var node = this.selectNode;
-                if (node && !node.isEdit) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (!node.isExpand) {
-                        node.expand();
-                    }
-                    if (!node.parent) return;
-                    node.mindmap.execute('addSiblingNode', {
-                        parent: node.parent
-                    });
-                    this._menuDom.style.display='none';
-                } else if (node && node.isEdit) {
+            //     var node = this.selectNode;
+            //     if (node && !node.isEdit) {
+            //         e.preventDefault();
+            //         e.stopPropagation();
+            //         if (!node.isExpand) {
+            //             node.expand();
+            //         }
+            //         if (!node.parent) return;
+            //         node.mindmap.execute('addSiblingNode', {
+            //             parent: node.parent
+            //         });
+            //         this._menuDom.style.display='none';
+            //     } else if (node && node.isEdit) {
 
-                    if (this.isComposing || e.isComposing || e.key === 'Process' || e.keyCode === 229) {
-                        return
-                    } else {
-                        node.cancelEdit();
-                        node.select();
-                        node.mindmap.editNode=null;
-                    }
-                }
-            }
+            //         if (this.isComposing || e.isComposing || e.key === 'Process' || e.keyCode === 229) {
+            //             return
+            //         } else {
+            //             node.cancelEdit();
+            //             node.select();
+            //             node.mindmap.editNode=null;
+            //         }
+            //     }
+            // }
 
             //delete
             if (keyCode == 46 || e.key == 'Delete' || e.key == 'Backspace') {
