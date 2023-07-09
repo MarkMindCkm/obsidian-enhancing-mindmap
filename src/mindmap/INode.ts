@@ -293,7 +293,9 @@ export default class Node {
 
     cancelEdit(){
         var text = this.contentEl.innerText.trim()||'';
+        if(text.length == 0){
             text = this._oldText
+        }
         this.data.text = text;
         this.contentEl.innerText = '';
         
