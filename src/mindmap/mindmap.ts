@@ -1131,7 +1131,7 @@ export default class MindMap {
 
             } else {
                 for (var i = 0; i < n.getLevel() - level; i++) {
-                    space += '   ';
+                    space += '\t';
                 }
                 var text = n.getData().text.trim();
                 if (text) {
@@ -1153,10 +1153,14 @@ export default class MindMap {
                             //text
                             md += `${space}- `;
                             textArr.forEach((t: string, i: number) => {
+                                var contentText = "void";
+                                if(t.trim().length > 0){
+                                    contentText = t.trim();
+                                }
                                 if (i > 0) {
-                                    md += `${space}   ${t.trim()}${i === textArr.length - 1 ? ending : '' }\n`
+                                    md += `${space}${contentText}${i === textArr.length - 1 ? ending : '' }\n`
                                 } else {
-                                    md += `${t.trim()}\n`
+                                    md += `${contentText}\n`
                                 }
                             });
                         }
@@ -1164,7 +1168,7 @@ export default class MindMap {
                     }
                 } else {
                     for (var i = 0; i < n.getLevel() - level; i++) {
-                        space += '   ';
+                        space += '\t';
                     }
                     md += `${space}-\n`;
                 }
