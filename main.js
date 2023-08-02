@@ -32,6 +32,11 @@ function __awaiter(thisArg, _arguments, P, generator) {
     });
 }
 
+typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+    var e = new Error(message);
+    return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+};
+
 function around(obj, factories) {
     const removers = Object.keys(factories).map(key => around1(obj, key, factories[key]));
     return removers.length === 1 ? removers[0] : function () { removers.forEach(r => r()); };
@@ -9033,7 +9038,7 @@ class MindMap {
             }
             else {
                 for (var i = 0; i < n.getLevel() - level; i++) {
-                    space += '   ';
+                    space += '\t';
                 }
                 var text = n.getData().text.trim();
                 if (text) {
@@ -9056,11 +9061,15 @@ class MindMap {
                             //text
                             md += `${space}- `;
                             textArr.forEach((t, i) => {
+                                var contentText = "void";
+                                if (t.trim().length > 0) {
+                                    contentText = t.trim();
+                                }
                                 if (i > 0) {
-                                    md += `${space}   ${t.trim()}${i === textArr.length - 1 ? ending : ''}\n`;
+                                    md += `${space}${contentText}${i === textArr.length - 1 ? ending : ''}\n`;
                                 }
                                 else {
-                                    md += `${t.trim()}\n`;
+                                    md += `${contentText}\n`;
                                 }
                             });
                         }
@@ -9068,7 +9077,7 @@ class MindMap {
                 }
                 else {
                     for (var i = 0; i < n.getLevel() - level; i++) {
-                        space += '   ';
+                        space += '\t';
                     }
                     md += `${space}-\n`;
                 }
@@ -37150,7 +37159,7 @@ class MindMapView extends obsidian.TextFileView {
             //     }
             //   }
             // }
-            var position = this.fileCache.frontmatter.position;
+            var position = this.fileCache.frontmatterPosition;
             var end = position['end'].offset;
             frontMatter = this.data.substr(0, end);
         }
