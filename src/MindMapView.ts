@@ -190,7 +190,7 @@ export class MindMapView extends TextFileView implements HoverParent {
       //     }
       //   }
       // }
-      var position = this.fileCache.frontmatter.position;
+      var position = this.fileCache.frontmatterPosition;
       var end =  position['end'].offset;
 
       frontMatter = this.data.substr(0,end);
