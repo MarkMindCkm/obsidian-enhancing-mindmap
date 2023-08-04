@@ -32,7 +32,7 @@ export class AddNode extends Command {
         this.parent = parent;
         this.mind = mind||this.node.mindmap;
     }
-    execute() {
+    execute():boolean {
         if (this.index > -1) {
             this.mind.addNode(this.node, this.parent, this.index);   //add node to position of parent children
         } else {
@@ -45,6 +45,7 @@ export class AddNode extends Command {
             this.node.select();
             this.node.edit();
         },0);
+        return true; //exit with no error
     }
 
     undo() {
@@ -70,12 +71,16 @@ export class RemoveNode extends Command {
         this.parent = this.node.parent||null;
         this.mind = mind||this.node.mindmap;
     }
-    execute() {
-            this.node.clearCacheData();
-            this.mind.clearSelectNode();
-            this.index = this.mind.removeNode(this.node);
-            this.refresh();
-            this.parent && this.parent.select();
+    execute():boolean {
+        if(this.node.isRoot == true){
+            return false;
+        }
+        this.node.clearCacheData();
+        this.mind.clearSelectNode();
+        this.index = this.mind.removeNode(this.node);
+        this.refresh();
+        this.parent && this.parent.select();
+        return true; //exit with no error
     }
 
     undo() {
@@ -103,13 +108,14 @@ export class ChangeNodeText extends Command {
         this.text = text;
         this.isFirst =true;
     }
-    execute() {
+    execute():boolean {
         if(!this.isFirst){
             this.node.setText(this.text);
         }
         this.node.refreshBox();
         this.node.clearCacheData();
         this.refresh(this.node.mindmap);
+        return true; //exit with no error
     }
     undo() {
         this.node.setText(this.oldText);
@@ -145,7 +151,7 @@ export class MoveNode extends Command {
         }
     }
 
-    execute() {
+    execute():boolean {
         this.node.mindmap.clearSelectNode();
         if (this.data.type.indexOf('child') > -1) {
             if (this.oldParent) {
@@ -185,6 +191,7 @@ export class MoveNode extends Command {
             this.refresh(this.node.mindmap);
             this.node.select();
         }
+        return true; //exit with no error
     }
 
     undo() {
@@ -228,9 +235,10 @@ export class MovePos extends Command {
         this.newPos = newPos;
     }
 
-    execute() {
+    execute():boolean {
         this.node.setPosition(this.newPos.x, this.newPos.y);
         this.refresh(this.node.mindmap);
+        return true; //exit with no error
     }
 
     undo() {
@@ -253,6 +261,7 @@ export class CollapseNode extends Command{
        this.node.collapse();
        this.refresh(this.node.mindmap);
        this.node.select();
+       return true; //exit with no error
    }
    undo(){
     this.node.clearCacheData();
@@ -275,6 +284,7 @@ export class ExpandNode extends Command{
         this.node.expand();
         this.refresh(this.node.mindmap);
         this.node.select();
+        return true; //exit with no error
     }
     undo(){
      this.node.clearCacheData();
@@ -298,8 +308,9 @@ export class ExpandNode extends Command{
         this.waitCollapse = [];
     }
 
-    execute() {
+    execute():boolean {
         this.paste();
+        return true; //exit with no error
     }
 
     undo() {
