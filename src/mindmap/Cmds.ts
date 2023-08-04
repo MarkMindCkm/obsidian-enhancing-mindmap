@@ -7,7 +7,7 @@ export abstract class Command {
     constructor(name:string) {
         this.name = name;
     }
-    execute(){}
+    execute(): boolean {return false}
     undo() {}
     redo() {
         this.execute();
