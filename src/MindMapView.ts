@@ -110,7 +110,7 @@ export class MindMapView extends TextFileView implements HoverParent {
     this.mindmap.contentEL.style.height=h+'px';
 
     setTimeout(()=>{
-      domtoimage.toPng(this.mindmap.contentEL).then(dataUrl=>{  
+      domtoimage.toPng(this.mindmap.contentEL,{}).then(dataUrl=>{  
         var img = new Image()
         img.src = dataUrl;
         var str = img.outerHTML;
@@ -415,7 +415,7 @@ export class MindMapView extends TextFileView implements HoverParent {
 
     // })
 
-    super.onMoreOptionsMenu(menu);
+    super.onPaneMenu(menu,'more-options');
   }
 
 }
