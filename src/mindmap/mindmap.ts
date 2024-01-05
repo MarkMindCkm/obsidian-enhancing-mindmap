@@ -35,6 +35,7 @@ export default class MindMap {
     path?: string;
     editNode?: INode;
     selectNode?: INode;
+    lastSelectedNode?: INode;
     setting: Setting;
     data: INodeData;
     drag?: boolean;
@@ -261,6 +262,7 @@ export default class MindMap {
 
     clearSelectNode() {
         if (this.selectNode) {
+            this.lastSelectedNode = this.selectNode;
             this.selectNode.unSelect();
             this.selectNode = null
         }
@@ -573,10 +575,55 @@ export default class MindMap {
                 }
             }
 
-            // ctrl + E  center
+            // ctrl + E  center to root
             if (keyCode == 69) {
-                this.center();
+                this.center(this.root);
             }
+
+            /* Move Between node with centered view 
+                if no any selectedd node then fallback to last selected node
+            */
+            /* begin here */
+            if (keyCode == 38 || e.key == 'ArrowUp') {
+                var node = this.selectNode;
+                if (node && !node.isEdit) {
+                    this._selectNode(node, "up");
+                    this.center(this.selectNode);
+                } else if(!node){
+                    this.center(this.lastSelectedNode);
+                }
+            }
+
+            if (keyCode == 40 || e.key == 'ArrowDown') {
+                var node = this.selectNode;
+                if (node && !node.isEdit) {
+                    this._selectNode(node, "down");
+                    this.center(this.selectNode)
+                }else if(!node){
+                    this.center(this.lastSelectedNode);
+                }
+            }
+
+            if (keyCode == 39 || e.key == 'ArrowRight') {
+                var node = this.selectNode;
+                if (node && !node.isEdit) {
+                    this._selectNode(node, "right");
+                    this.center(this.selectNode)
+                }else if(!node){
+                    this.center(this.lastSelectedNode);
+                }
+            }
+
+            if (keyCode == 37 || e.key == 'ArrowLeft') {
+                var node = this.selectNode;
+                if (node && !node.isEdit) {
+                    this._selectNode(node, "left");
+                    this.center(this.selectNode)
+                }else if(!node){
+                    this.center(this.lastSelectedNode);
+                }
+            }
+            /* end here */
         }
     }
 
@@ -1188,25 +1235,36 @@ export default class MindMap {
         }
     }
 
-    center() {
-        this._setMindScalePointer();
+    center(node: INode = this.root) {
+
+        this._setMindScalePointer(node);
         var oldScale = this.mindScale;
         this.scale(100);
 
         var w = this.containerEL.clientWidth;
         var h = this.containerEL.clientHeight;
-        this.containerEL.scrollTop = this.setting.canvasSize / 2 - h / 2 - 60;
-        this.containerEL.scrollLeft = this.setting.canvasSize / 2 - w / 2 + 30;
+        var targetScrollTop = this.scalePointer[1] - h / 2;
+        var targetScrollLeft = this.scalePointer[0] - w / 2;
+
+        this.containerEL.scroll({
+            top: targetScrollTop,
+            left: targetScrollLeft,
+            behavior: 'smooth'
+        });
 
         this.scale(oldScale);
     }
 
-    _setMindScalePointer() {
+    _setMindScalePointer(node: INode) {
         this.scalePointer = [];
-        var root = this.root;
-        if (root) {
-            var rbox = root.getBox();
+        // var root = this.root;
+        if (node) {
+            var rbox = node.getBox();
             this.scalePointer.push(rbox.x + rbox.width / 2, rbox.y + rbox.height / 2);
+            if(!node.isSelect){
+                this.clearSelectNode();
+                node.select();
+            }
         }
     }
 
