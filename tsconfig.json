@@ -16,9 +16,9 @@
       "es5",
       "scripthost",
       "es2015"
-    ]
+    ],
+    "outDir": "build",
   },
-  "include": [
-    "**/*.ts"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules","build/**/*"],
 }

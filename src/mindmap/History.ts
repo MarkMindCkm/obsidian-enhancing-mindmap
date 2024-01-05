@@ -12,13 +12,14 @@ class History {
 
     execute(command:Command) {
         this.clearRedo();
-        command.execute();
-        var length = this.undos.length;
-        if (length >= this.limit) {
-            this.undos.shift();
+        if (command.execute()){
+            var length = this.undos.length;
+            if (length >= this.limit) {
+                this.undos.shift();
+            }
+            this.undos.push(command);
+            this.change(command)
         }
-        this.undos.push(command);
-        this.change(command)
     }
 
     undo() {

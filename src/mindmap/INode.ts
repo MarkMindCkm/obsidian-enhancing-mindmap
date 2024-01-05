@@ -97,8 +97,10 @@ export default class Node {
         if(this.data.isRoot){
             this.containEl.classList.add('mm-root');
             this.isRoot = true;
+        }else{
+            this.isRoot = false;
+            this.containEl.classList.remove('mm-root');
         }
-
         this.parseText();
     }
 
