@@ -510,28 +510,28 @@ export default class MindMap {
             if (keyCode == 38 || e.key == 'ArrowUp') {
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
-                    this._selectNode(node, "up");
+                    this._hierarcySelectNode(node, "up");
                 }
             }
 
             if (keyCode == 40 || e.key == 'ArrowDown') {
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
-                    this._selectNode(node, "down");
+                    this._hierarcySelectNode(node, "down");
                 }
             }
 
             if (keyCode == 39 || e.key == 'ArrowRight') {
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
-                    this._selectNode(node, "right");
+                    this._hierarcySelectNode(node, "right");
                 }
             }
 
             if (keyCode == 37 || e.key == 'ArrowLeft') {
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
-                    this._selectNode(node, "left");
+                    this._hierarcySelectNode(node, "left");
                 }
             }
 
@@ -561,7 +561,154 @@ export default class MindMap {
             }
         }
     }
+    _hierarcySelectNode(node: INode, direct: string){
+        if (!node) {
+            return;
+        }
+        var viewportWidth = this.containerEL.clientWidth;
+        var viewportHeight = this.containerEL.clientHeight;
+        var diagonalViewport = Math.sqrt(viewportWidth * viewportWidth + viewportHeight * viewportHeight);
+        const MAX_PARENT_DISTANCE = diagonalViewport / 5;
+        var waitNode: INode = null;
+        var nodePos = node.getPosition();
+        // var mind = this;
+        var rootPos = this.root.getPosition();
+        var rootDirect = rootPos.x > nodePos.x ? 'right' : 'left';
 
+        if (node === this.root) {
+            waitNode = this.__selectChildren(node,direct);
+            if (waitNode) {
+                this.clearSelectNode();
+                waitNode.select();
+                return;
+            }
+        };
+
+        if(direct === 'up'){
+            if(node.parent){
+                var indexOfNode = node.parent.children.indexOf(node);
+                if (indexOfNode === 0 ) {
+                    var parentPos = node.parent.getPosition();
+                    var dx = Math.abs(parentPos.x - nodePos.x);
+                    var dy = Math.abs(parentPos.y - nodePos.y);
+                    var dis = Math.sqrt(dx * dx + dy * dy);
+                    if(dis > MAX_PARENT_DISTANCE){
+                        this._selectNode(node,direct);
+                        return;
+                    }
+                    waitNode = node.parent;
+                    this.clearSelectNode();
+                    waitNode.select();
+                    return;
+                }else if (indexOfNode > 0){
+                    waitNode = node.parent.children[indexOfNode - 1];
+                    this.clearSelectNode();
+                    waitNode.select();
+                    return;
+                }
+            }
+            this._selectNode(node,direct);
+        }
+        else if(direct === 'down'){
+            if(node.parent){
+                var indexOfNode = node.parent.children.indexOf(node);
+                if (indexOfNode === (node.parent.children.length - 1) ) {
+                    var parentPos = node.parent.getPosition();
+                    var dx = Math.abs(parentPos.x - nodePos.x);
+                    var dy = Math.abs(parentPos.y - nodePos.y);
+                    var dis = Math.sqrt(dx * dx + dy * dy);
+                    if(dis > MAX_PARENT_DISTANCE){
+                        this._selectNode(node,direct);
+                        return;
+                    }
+                    waitNode = node.parent;
+                    this.clearSelectNode();
+                    waitNode.select();
+                    return;
+                }else if (indexOfNode < (node.parent.children.length - 1)){
+                    waitNode = node.parent.children[indexOfNode + 1];
+                    this.clearSelectNode();
+                    waitNode.select();
+                    return;
+                }
+            }
+            this._selectNode(node,direct);
+        }
+        else if(direct === 'right') {
+            if(rootDirect === 'right' && node.parent){
+                waitNode = node.parent;
+                this.clearSelectNode();
+                waitNode.select();
+                return;
+            }else{
+                waitNode = this.__selectChildren(node,direct);
+                if (waitNode) {
+                    this.clearSelectNode();
+                    waitNode.select();
+                    return;
+                }
+            }
+            // this._selectNode(node,direct);
+        }
+        else if(direct === 'left') {
+            if(rootDirect === 'left' && node.parent){
+                waitNode = node.parent;
+                this.clearSelectNode();
+                waitNode.select();
+                return;
+            }else{
+                waitNode = this.__selectChildren(node,direct);
+                if (waitNode) {
+                    this.clearSelectNode();
+                    waitNode.select();
+                    return;
+                }
+            }
+            // this._selectNode(node,direct);
+        }
+    }
+    __selectChildren(node: INode, direct: string){
+        if (!node) return;
+        if (!node.isExpand) return;
+        var minDis: number;
+        var waitNode: INode = null;
+        var pos = node.getPosition();
+        if (node.children) {
+            node.children.forEach(n => {
+                var p = n.getPosition();
+                var dx = Math.abs(p.x - pos.x);
+                var dy = Math.abs(p.y - pos.y);
+                var dis = Math.sqrt(dx * dx + dy * dy);
+                var _helper = ()=>{
+                    if (minDis) {
+                        if (minDis > dis) {
+                            minDis = dis;
+                            waitNode = n;
+                        }
+                    } else {
+                        minDis = dis;
+                        waitNode = n;
+                    }
+                }
+                switch (direct) {
+                    case "right":
+                        if (p.x > pos.x) _helper()
+                        break;
+                    case "left":
+                        if (p.x < pos.x) _helper()
+                        break;
+                    case "up":
+                        if (p.y < pos.y) _helper()
+                        break;
+                    case "down":
+                        if (p.y > pos.y) _helper()
+                        break;
+                }
+            });
+        }
+        return waitNode;
+    }
+  
     _selectNode(node: INode, direct: string) {
         if (!node) {
             return;
