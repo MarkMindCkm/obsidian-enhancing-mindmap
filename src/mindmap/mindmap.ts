@@ -60,6 +60,7 @@ export default class MindMap {
     _left:number;
     _top:number;
     isComposing = false;
+    isFocused = true;
 
     constructor(data: INodeData, containerEL: HTMLElement, setting?: Setting) {
         this.setting = Object.assign({
@@ -131,6 +132,9 @@ export default class MindMap {
 
         this.appMouseDown = this.appMouseDown.bind(this);
         this.appMouseUp = this.appMouseUp.bind(this);
+
+        this.appFocusIn = this.appFocusIn.bind(this);
+        this.appFocusOut = this.appFocusOut.bind(this);
 
         //custom event
         this.initNode = this.initNode.bind(this);
@@ -289,6 +293,9 @@ export default class MindMap {
         }
 
         this.appEl.addEventListener('mousemove', this.appMouseMove);
+        
+        this.containerEL.addEventListener('focusin', this.appFocusIn);
+        this.containerEL.addEventListener('focusout', this.appFocusOut);
         //custom event
         this.on('initNode', this.initNode);
         this.on('renderEditNode', this.renderEditNode);
@@ -318,6 +325,9 @@ export default class MindMap {
         
         this.appEl.removeEventListener('mousemove', this.appMouseMove);
 
+        this.containerEL.removeEventListener('focusin', this.appFocusIn);
+        this.containerEL.removeEventListener('focusout', this.appFocusOut);
+
         this.off('initNode', this.initNode);
         this.off('renderEditNode', this.renderEditNode);
         this.off('mindMapChange', this.mindMapChange);
@@ -343,9 +353,16 @@ export default class MindMap {
         //console.log(this.view)
         this.view?.mindMapChange();
     }
-
+    appFocusIn(evt: FocusEvent){
+        if (this.containerEL.contains(evt.relatedTarget as Node)) return;
+        this.isFocused = true;
+    }
+    appFocusOut(evt: FocusEvent){
+        if (this.containerEL.contains(evt.relatedTarget as Node)) return;
+        this.isFocused = false;
+    }
     appKeydown(e: KeyboardEvent) {
-
+        if (!this.isFocused) return; // Check if Mindmap is in focus or not
         var keyCode = e.keyCode || e.which || e.charCode;
         var ctrlKey = e.ctrlKey || e.metaKey;
         var shiftKey = e.shiftKey;
@@ -446,6 +463,7 @@ export default class MindMap {
      }
 
     appKeyup(e: KeyboardEvent) {
+        if (!this.isFocused) return; // Check if Mindmap is in focus or not
         var keyCode = e.keyCode || e.which || e.charCode;
         var ctrlKey = e.ctrlKey || e.metaKey;
         var shiftKey = e.shiftKey;
@@ -644,7 +662,7 @@ export default class MindMap {
         var targetEl = evt.target as HTMLElement;
 
         if (targetEl) {
-             
+            
             if (targetEl.tagName == 'A' && targetEl.hasClass("internal-link")) {
                 evt.preventDefault();
                 var targetEl = evt.target as HTMLElement;
