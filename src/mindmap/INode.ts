@@ -236,6 +236,7 @@ export default class Node {
     select(){
         this.isSelect = true;
         this.containEl.setAttribute('draggable','true');
+        this.containEl.focus(); // set the dom to be focused
         Object.assign(window,{
             myNode:this
         });
