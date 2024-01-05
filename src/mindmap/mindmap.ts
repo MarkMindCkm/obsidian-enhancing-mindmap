@@ -577,6 +577,8 @@ export default class MindMap {
 
             // ctrl + E  center to root
             if (keyCode == 69) {
+                var node = this.selectNode;
+                if (node && node.isEdit) return;
                 this.center(this.root);
             }
 
