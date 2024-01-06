@@ -356,8 +356,10 @@ export default class MindMap {
         this.view?.mindMapChange();
     }
     appFocusIn(evt: FocusEvent){
-        if (this.containerEL.contains(evt.relatedTarget as Node)) return;
-        this.isFocused = true;
+        setTimeout(() => {
+            if (this.containerEL.contains(evt.relatedTarget as Node)) return;
+            this.isFocused = true;
+        }, 100);
     }
     appFocusOut(evt: FocusEvent){
         if (this.containerEL.contains(evt.relatedTarget as Node)) return;
