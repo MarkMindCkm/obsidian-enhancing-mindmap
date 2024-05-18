@@ -37349,31 +37349,9 @@ class MindMapView extends obsidian.TextFileView {
         if (!this.mindmap) {
             return;
         }
-        var nodes = [];
-        this.mindmap.traverseDF((n) => {
-            if (n.isShow()) {
-                nodes.push(n);
-            }
-        });
-        var oldScrollLeft = this.mindmap.containerEL.scrollLeft;
-        var oldScrollTop = this.mindmap.containerEL.scrollTop;
-        var box = this.mindmap.getBoundingRect(nodes);
-        var rootBox = this.mindmap.root.getPosition();
-        var disX = 0, disY = 0;
-        if (box.x > 60) {
-            disX = box.x - 60;
-        }
-        if (box.y > 60) {
-            disY = box.y - 60;
-        }
-        this.mindmap.root.setPosition(rootBox.x - disX, rootBox.y - disY);
-        this.mindmap.refresh();
-        var w = box.width + 120;
-        var h = box.height + 120;
-        this.mindmap.contentEL.style.width = w + 'px';
-        this.mindmap.contentEL.style.height = h + 'px';
+        this.prepareForExport();
         setTimeout(() => {
-            domtoimage.toPng(this.mindmap.contentEL).then((dataUrl) => __awaiter(this, void 0, void 0, function* () {
+            domtoimage.toPng(this.mindmap.contentEL, { scale: 2 }).then((dataUrl) => __awaiter(this, void 0, void 0, function* () {
                 var img = new Image();
                 img.src = dataUrl;
                 const fileName = this.mindmap.path.replace(/\.md$/, '.png');
@@ -37381,20 +37359,47 @@ class MindMapView extends obsidian.TextFileView {
                 this.app.vault.adapter.writeBinary(fileName, arrayBuffer)
                     .then(() => {
                     new obsidian.Notice(`Mindmap exported as PNG: ${fileName}`);
-                    this.restoreMindmap(rootBox, oldScrollLeft, oldScrollTop);
+                    this.restoreMindmap();
                 })
                     .catch(err => {
                     console.error('Failed to save PNG file:', err);
                     new obsidian.Notice(`Failed to export mindmap as PNG: ${err}`);
-                    this.restoreMindmap(rootBox, oldScrollLeft, oldScrollTop);
+                    this.restoreMindmap();
                 });
             })).catch(err => {
-                this.restoreMindmap(rootBox, oldScrollLeft, oldScrollTop);
+                this.restoreMindmap();
                 new obsidian.Notice(`Failed to export mindmap as PNG: ${err}`);
             });
         }, 200);
     }
     exportToJpeg() {
+        if (!this.mindmap) {
+            return;
+        }
+        this.prepareForExport();
+        setTimeout(() => {
+            domtoimage.toJpeg(this.mindmap.contentEL, { quality: 1.0, scale: 2 }).then((dataUrl) => __awaiter(this, void 0, void 0, function* () {
+                var img = new Image();
+                img.src = dataUrl;
+                const fileName = this.mindmap.path.replace(/\.md$/, '.jpeg');
+                const arrayBuffer = yield this.dataURLtoBlob(dataUrl).arrayBuffer();
+                this.app.vault.adapter.writeBinary(fileName, arrayBuffer)
+                    .then(() => {
+                    new obsidian.Notice(`Mindmap exported as JPEG: ${fileName}`);
+                    this.restoreMindmap();
+                })
+                    .catch(err => {
+                    console.error('Failed to save JPEG file:', err);
+                    new obsidian.Notice(`Failed to export mindmap as JPEG: ${err}`);
+                    this.restoreMindmap();
+                });
+            })).catch(err => {
+                this.restoreMindmap();
+                new obsidian.Notice(`Failed to export mindmap as JPEG: ${err}`);
+            });
+        }, 200);
+    }
+    prepareForExport() {
         if (!this.mindmap) {
             return;
         }
@@ -37404,8 +37409,6 @@ class MindMapView extends obsidian.TextFileView {
                 nodes.push(n);
             }
         });
-        var oldScrollLeft = this.mindmap.containerEL.scrollLeft;
-        var oldScrollTop = this.mindmap.containerEL.scrollTop;
         var box = this.mindmap.getBoundingRect(nodes);
         var rootBox = this.mindmap.root.getPosition();
         var disX = 0, disY = 0;
@@ -37421,27 +37424,15 @@ class MindMapView extends obsidian.TextFileView {
         var h = box.height + 120;
         this.mindmap.contentEL.style.width = w + 'px';
         this.mindmap.contentEL.style.height = h + 'px';
-        setTimeout(() => {
-            domtoimage.toJpeg(this.mindmap.contentEL, { quality: 1.0 }).then((dataUrl) => __awaiter(this, void 0, void 0, function* () {
-                var img = new Image();
-                img.src = dataUrl;
-                const fileName = this.mindmap.path.replace(/\.md$/, '.jpeg');
-                const arrayBuffer = yield this.dataURLtoBlob(dataUrl).arrayBuffer();
-                this.app.vault.adapter.writeBinary(fileName, arrayBuffer)
-                    .then(() => {
-                    new obsidian.Notice(`Mindmap exported as JPEG: ${fileName}`);
-                    this.restoreMindmap(rootBox, oldScrollLeft, oldScrollTop);
-                })
-                    .catch(err => {
-                    console.error('Failed to save JPEG file:', err);
-                    new obsidian.Notice(`Failed to export mindmap as JPEG: ${err}`);
-                    this.restoreMindmap(rootBox, oldScrollLeft, oldScrollTop);
-                });
-            })).catch(err => {
-                this.restoreMindmap(rootBox, oldScrollLeft, oldScrollTop);
-                new obsidian.Notice(`Failed to export mindmap as JPEG: ${err}`);
-            });
-        }, 200);
+    }
+    restoreMindmap() {
+        if (!this.mindmap) {
+            return;
+        }
+        var size = this.plugin.settings.canvasSize;
+        this.mindmap.contentEL.style.width = size + 'px';
+        this.mindmap.contentEL.style.height = size + 'px';
+        this.mindmap.refresh();
     }
     dataURLtoBlob(dataUrl) {
         var arr = dataUrl.split(','), mime = arr[0].match(/:(.*?);/)[1], bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
@@ -37449,18 +37440,6 @@ class MindMapView extends obsidian.TextFileView {
             u8arr[n] = bstr.charCodeAt(n);
         }
         return new Blob([u8arr], { type: mime });
-    }
-    restoreMindmap(rootBox, left, top) {
-        if (this.mindmap) {
-            var size = this.plugin.settings.canvasSize;
-            this.mindmap.contentEL.style.width = size + 'px';
-            this.mindmap.contentEL.style.height = size + 'px';
-            this.mindmap.containerEL.scrollTop = top;
-            this.mindmap.containerEL.scrollLeft = left;
-            this.mindmap.root.setPosition(rootBox.x, rootBox.y);
-            this.mindmap.refresh();
-            //   this.mindmap.contentEL.style.visibility='visible';
-        }
     }
     mindMapChange() {
         if (this.mindmap) {
