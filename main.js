@@ -145,7 +145,8 @@ var en = {
     "Toggle markdown/mindmap": "Toggle to markdown/mindmap mode",
     "Copy node": "Copy",
     "Paste node": "Paste",
-    "Export to html": "Export to html"
+    "Export to html": "Export to html",
+    "Export to PNG": "Export to PNG",
 };
 
 // British English
@@ -351,6 +352,9 @@ class Node {
         this.containEl.appendChild(this._barDom);
     }
     parseText() {
+        if (this.data.text.length === 0) {
+            this.data.text = "Sub title";
+        }
         obsidian.MarkdownRenderer.renderMarkdown(this.data.text, this.contentEl, this.mindmap.path || "", null).then(() => {
             this.data.mdText = this.contentEl.innerHTML;
             this.refreshBox();
@@ -464,6 +468,7 @@ class Node {
     select() {
         this.isSelect = true;
         this.containEl.setAttribute('draggable', 'true');
+        this.containEl.focus(); // set the dom to be focused
         Object.assign(window, {
             myNode: this
         });
@@ -515,6 +520,9 @@ class Node {
     }
     cancelEdit() {
         var text = this.contentEl.innerText.trim() || '';
+        if (text.length == 0) {
+            text = this._oldText;
+        }
         this.data.text = text;
         this.contentEl.innerText = '';
         obsidian.MarkdownRenderer.renderMarkdown(text, this.contentEl, this.mindmap.path || "", null).then(() => {
@@ -8014,6 +8022,7 @@ class MindMap {
         this.timeOut = null;
         this._dragType = '';
         this.isComposing = false;
+        this.isFocused = true;
         this.setting = Object.assign({
             theme: 'default',
             canvasSize: 8000,
@@ -8068,6 +8077,8 @@ class MindMap {
         this.appMouseMove = this.appMouseMove.bind(this);
         this.appMouseDown = this.appMouseDown.bind(this);
         this.appMouseUp = this.appMouseUp.bind(this);
+        this.appFocusIn = this.appFocusIn.bind(this);
+        this.appFocusOut = this.appFocusOut.bind(this);
         //custom event
         this.initNode = this.initNode.bind(this);
         this.renderEditNode = this.renderEditNode.bind(this);
@@ -8180,6 +8191,7 @@ class MindMap {
     }
     clearSelectNode() {
         if (this.selectNode) {
+            this.lastSelectedNode = this.selectNode;
             this.selectNode.unSelect();
             this.selectNode = null;
         }
@@ -8208,6 +8220,8 @@ class MindMap {
             this.appEl.addEventListener('mouseup', this.appMouseUp);
         }
         this.appEl.addEventListener('mousemove', this.appMouseMove);
+        this.containerEL.addEventListener('focusin', this.appFocusIn);
+        this.containerEL.addEventListener('focusout', this.appFocusOut);
         //custom event
         this.on('initNode', this.initNode);
         this.on('renderEditNode', this.renderEditNode);
@@ -8231,6 +8245,8 @@ class MindMap {
             this.appEl.removeEventListener('mouseup', this.appMouseUp);
         }
         this.appEl.removeEventListener('mousemove', this.appMouseMove);
+        this.containerEL.removeEventListener('focusin', this.appFocusIn);
+        this.containerEL.removeEventListener('focusout', this.appFocusOut);
         this.off('initNode', this.initNode);
         this.off('renderEditNode', this.renderEditNode);
         this.off('mindMapChange', this.mindMapChange);
@@ -8253,7 +8269,19 @@ class MindMap {
         //console.log(this.view)
         (_a = this.view) === null || _a === void 0 ? void 0 : _a.mindMapChange();
     }
+    appFocusIn(evt) {
+        if (this.containerEL.contains(evt.relatedTarget))
+            return;
+        this.isFocused = true;
+    }
+    appFocusOut(evt) {
+        if (this.containerEL.contains(evt.relatedTarget))
+            return;
+        this.isFocused = false;
+    }
     appKeydown(e) {
+        if (!this.isFocused)
+            return; // Check if Mindmap is in focus or not
         var keyCode = e.keyCode || e.which || e.charCode;
         var ctrlKey = e.ctrlKey || e.metaKey;
         var shiftKey = e.shiftKey;
@@ -8342,6 +8370,8 @@ class MindMap {
         this.isComposing = false;
     }
     appKeyup(e) {
+        if (!this.isFocused)
+            return; // Check if Mindmap is in focus or not
         var keyCode = e.keyCode || e.which || e.charCode;
         var ctrlKey = e.ctrlKey || e.metaKey;
         var shiftKey = e.shiftKey;
@@ -8402,25 +8432,25 @@ class MindMap {
             if (keyCode == 38 || e.key == 'ArrowUp') {
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
-                    this._selectNode(node, "up");
+                    this._hierarcySelectNode(node, "up");
                 }
             }
             if (keyCode == 40 || e.key == 'ArrowDown') {
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
-                    this._selectNode(node, "down");
+                    this._hierarcySelectNode(node, "down");
                 }
             }
             if (keyCode == 39 || e.key == 'ArrowRight') {
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
-                    this._selectNode(node, "right");
+                    this._hierarcySelectNode(node, "right");
                 }
             }
             if (keyCode == 37 || e.key == 'ArrowLeft') {
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
-                    this._selectNode(node, "left");
+                    this._hierarcySelectNode(node, "left");
                 }
             }
         }
@@ -8441,11 +8471,212 @@ class MindMap {
                     }
                 }
             }
-            // ctrl + E  center
+            // ctrl + E  center to root
             if (keyCode == 69) {
-                this.center();
+                this.center(this.root);
+            }
+            /* Move Between node with centered view
+                if no any selectedd node then fallback to last selected node
+            */
+            /* begin here */
+            if (keyCode == 38 || e.key == 'ArrowUp') {
+                var node = this.selectNode;
+                if (node && !node.isEdit) {
+                    this._selectNode(node, "up");
+                    this.center(this.selectNode);
+                }
+                else if (!node) {
+                    this.center(this.lastSelectedNode);
+                }
+            }
+            if (keyCode == 40 || e.key == 'ArrowDown') {
+                var node = this.selectNode;
+                if (node && !node.isEdit) {
+                    this._selectNode(node, "down");
+                    this.center(this.selectNode);
+                }
+                else if (!node) {
+                    this.center(this.lastSelectedNode);
+                }
+            }
+            if (keyCode == 39 || e.key == 'ArrowRight') {
+                var node = this.selectNode;
+                if (node && !node.isEdit) {
+                    this._selectNode(node, "right");
+                    this.center(this.selectNode);
+                }
+                else if (!node) {
+                    this.center(this.lastSelectedNode);
+                }
+            }
+            if (keyCode == 37 || e.key == 'ArrowLeft') {
+                var node = this.selectNode;
+                if (node && !node.isEdit) {
+                    this._selectNode(node, "left");
+                    this.center(this.selectNode);
+                }
+                else if (!node) {
+                    this.center(this.lastSelectedNode);
+                }
+            }
+            /* end here */
+        }
+    }
+    _hierarcySelectNode(node, direct) {
+        if (!node) {
+            return;
+        }
+        var viewportWidth = this.containerEL.clientWidth;
+        var viewportHeight = this.containerEL.clientHeight;
+        var diagonalViewport = Math.sqrt(viewportWidth * viewportWidth + viewportHeight * viewportHeight);
+        const MAX_PARENT_DISTANCE = diagonalViewport / 5;
+        var waitNode = null;
+        var nodePos = node.getPosition();
+        // var mind = this;
+        var rootPos = this.root.getPosition();
+        var rootDirect = rootPos.x > nodePos.x ? 'right' : 'left';
+        if (node === this.root) {
+            waitNode = this.__selectChildren(node, direct);
+            if (waitNode) {
+                this.clearSelectNode();
+                waitNode.select();
+                return;
             }
         }
+        if (direct === 'up') {
+            if (node.parent) {
+                var indexOfNode = node.parent.children.indexOf(node);
+                if (indexOfNode === 0) {
+                    var parentPos = node.parent.getPosition();
+                    var dx = Math.abs(parentPos.x - nodePos.x);
+                    var dy = Math.abs(parentPos.y - nodePos.y);
+                    var dis = Math.sqrt(dx * dx + dy * dy);
+                    if (dis > MAX_PARENT_DISTANCE) {
+                        this._selectNode(node, direct);
+                        return;
+                    }
+                    waitNode = node.parent;
+                    this.clearSelectNode();
+                    waitNode.select();
+                    return;
+                }
+                else if (indexOfNode > 0) {
+                    waitNode = node.parent.children[indexOfNode - 1];
+                    this.clearSelectNode();
+                    waitNode.select();
+                    return;
+                }
+            }
+            this._selectNode(node, direct);
+        }
+        else if (direct === 'down') {
+            if (node.parent) {
+                var indexOfNode = node.parent.children.indexOf(node);
+                if (indexOfNode === (node.parent.children.length - 1)) {
+                    var parentPos = node.parent.getPosition();
+                    var dx = Math.abs(parentPos.x - nodePos.x);
+                    var dy = Math.abs(parentPos.y - nodePos.y);
+                    var dis = Math.sqrt(dx * dx + dy * dy);
+                    if (dis > MAX_PARENT_DISTANCE) {
+                        this._selectNode(node, direct);
+                        return;
+                    }
+                    waitNode = node.parent;
+                    this.clearSelectNode();
+                    waitNode.select();
+                    return;
+                }
+                else if (indexOfNode < (node.parent.children.length - 1)) {
+                    waitNode = node.parent.children[indexOfNode + 1];
+                    this.clearSelectNode();
+                    waitNode.select();
+                    return;
+                }
+            }
+            this._selectNode(node, direct);
+        }
+        else if (direct === 'right') {
+            if (rootDirect === 'right' && node.parent) {
+                waitNode = node.parent;
+                this.clearSelectNode();
+                waitNode.select();
+                return;
+            }
+            else {
+                waitNode = this.__selectChildren(node, direct);
+                if (waitNode) {
+                    this.clearSelectNode();
+                    waitNode.select();
+                    return;
+                }
+            }
+            // this._selectNode(node,direct);
+        }
+        else if (direct === 'left') {
+            if (rootDirect === 'left' && node.parent) {
+                waitNode = node.parent;
+                this.clearSelectNode();
+                waitNode.select();
+                return;
+            }
+            else {
+                waitNode = this.__selectChildren(node, direct);
+                if (waitNode) {
+                    this.clearSelectNode();
+                    waitNode.select();
+                    return;
+                }
+            }
+            // this._selectNode(node,direct);
+        }
+    }
+    __selectChildren(node, direct) {
+        if (!node)
+            return;
+        if (!node.isExpand)
+            return;
+        var minDis;
+        var waitNode = null;
+        var pos = node.getPosition();
+        if (node.children) {
+            node.children.forEach(n => {
+                var p = n.getPosition();
+                var dx = Math.abs(p.x - pos.x);
+                var dy = Math.abs(p.y - pos.y);
+                var dis = Math.sqrt(dx * dx + dy * dy);
+                var _helper = () => {
+                    if (minDis) {
+                        if (minDis > dis) {
+                            minDis = dis;
+                            waitNode = n;
+                        }
+                    }
+                    else {
+                        minDis = dis;
+                        waitNode = n;
+                    }
+                };
+                switch (direct) {
+                    case "right":
+                        if (p.x > pos.x)
+                            _helper();
+                        break;
+                    case "left":
+                        if (p.x < pos.x)
+                            _helper();
+                        break;
+                    case "up":
+                        if (p.y < pos.y)
+                            _helper();
+                        break;
+                    case "down":
+                        if (p.y > pos.y)
+                            _helper();
+                        break;
+                }
+            });
+        }
+        return waitNode;
     }
     _selectNode(node, direct) {
         if (!node) {
@@ -9001,22 +9232,31 @@ class MindMap {
             this.appEl.removeEventListener(name, fn);
         }
     }
-    center() {
-        this._setMindScalePointer();
+    center(node = this.root) {
+        this._setMindScalePointer(node);
         var oldScale = this.mindScale;
         this.scale(100);
         var w = this.containerEL.clientWidth;
         var h = this.containerEL.clientHeight;
-        this.containerEL.scrollTop = this.setting.canvasSize / 2 - h / 2 - 60;
-        this.containerEL.scrollLeft = this.setting.canvasSize / 2 - w / 2 + 30;
+        var targetScrollTop = this.scalePointer[1] - h / 2;
+        var targetScrollLeft = this.scalePointer[0] - w / 2;
+        this.containerEL.scroll({
+            top: targetScrollTop,
+            left: targetScrollLeft,
+            behavior: 'smooth'
+        });
         this.scale(oldScale);
     }
-    _setMindScalePointer() {
+    _setMindScalePointer(node) {
         this.scalePointer = [];
-        var root = this.root;
-        if (root) {
-            var rbox = root.getBox();
+        // var root = this.root;
+        if (node) {
+            var rbox = node.getBox();
             this.scalePointer.push(rbox.x + rbox.width / 2, rbox.y + rbox.height / 2);
+            if (!node.isSelect) {
+                this.clearSelectNode();
+                node.select();
+            }
         }
     }
     getMarkdown() {
@@ -37104,6 +37344,62 @@ class MindMapView extends obsidian.TextFileView {
             });
         }, 200);
     }
+    exportToPng() {
+        if (!this.mindmap) {
+            return;
+        }
+        var nodes = [];
+        this.mindmap.traverseDF((n) => {
+            if (n.isShow()) {
+                nodes.push(n);
+            }
+        });
+        var oldScrollLeft = this.mindmap.containerEL.scrollLeft;
+        var oldScrollTop = this.mindmap.containerEL.scrollTop;
+        var box = this.mindmap.getBoundingRect(nodes);
+        var rootBox = this.mindmap.root.getPosition();
+        var disX = 0, disY = 0;
+        if (box.x > 60) {
+            disX = box.x - 60;
+        }
+        if (box.y > 60) {
+            disY = box.y - 60;
+        }
+        this.mindmap.root.setPosition(rootBox.x - disX, rootBox.y - disY);
+        this.mindmap.refresh();
+        var w = box.width + 120;
+        var h = box.height + 120;
+        this.mindmap.contentEL.style.width = w + 'px';
+        this.mindmap.contentEL.style.height = h + 'px';
+        setTimeout(() => {
+            domtoimage.toPng(this.mindmap.contentEL).then((dataUrl) => __awaiter(this, void 0, void 0, function* () {
+                var img = new Image();
+                img.src = dataUrl;
+                const fileName = this.mindmap.path.replace(/\.md$/, '.png');
+                const arrayBuffer = yield this.dataURLtoBlob(dataUrl).arrayBuffer();
+                this.app.vault.adapter.writeBinary(fileName, arrayBuffer)
+                    .then(() => {
+                    new obsidian.Notice(`Mindmap exported as PNG: ${fileName}`);
+                    this.restoreMindmap(rootBox, oldScrollLeft, oldScrollTop);
+                })
+                    .catch(err => {
+                    console.error('Failed to save PNG file:', err);
+                    new obsidian.Notice(`Failed to export mindmap as PNG: ${err}`);
+                    this.restoreMindmap(rootBox, oldScrollLeft, oldScrollTop);
+                });
+            })).catch(err => {
+                this.restoreMindmap(rootBox, oldScrollLeft, oldScrollTop);
+                new obsidian.Notice(`Failed to export mindmap as PNG: ${err}`);
+            });
+        }, 200);
+    }
+    dataURLtoBlob(dataUrl) {
+        var arr = dataUrl.split(','), mime = arr[0].match(/:(.*?);/)[1], bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new Blob([u8arr], { type: mime });
+    }
     restoreMindmap(rootBox, left, top) {
         if (this.mindmap) {
             var size = this.plugin.settings.canvasSize;
@@ -37578,6 +37874,16 @@ class MindMapPlugin extends obsidian.Plugin {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView) {
                         mindmapView.exportToSvg();
+                    }
+                }
+            });
+            this.addCommand({
+                id: 'Export to PNG',
+                name: `${t('Export to PNG')}`,
+                callback: () => {
+                    const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+                    if (mindmapView) {
+                        mindmapView.exportToPng();
                     }
                 }
             });

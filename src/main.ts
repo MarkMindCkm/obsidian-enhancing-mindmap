@@ -106,6 +106,17 @@ export default class MindMapPlugin extends Plugin {
     }
   });
 
+  this.addCommand({
+    id: 'Export to PNG',
+    name: `${t('Export to PNG')}`,
+    callback: () => {
+      const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+      if(mindmapView){
+          mindmapView.exportToPng();
+      }
+    }
+  });
+
 
     this.registerView(mindmapViewType, (leaf) => new MindMapView(leaf, this));
     this.registerEvents();
