@@ -147,6 +147,7 @@ var en = {
     "Paste node": "Paste",
     "Export to html": "Export to html",
     "Export to PNG": "Export to PNG",
+    "Export to JPEG": "Export to JPEG",
 };
 
 // British English
@@ -37393,6 +37394,55 @@ class MindMapView extends obsidian.TextFileView {
             });
         }, 200);
     }
+    exportToJpeg() {
+        if (!this.mindmap) {
+            return;
+        }
+        var nodes = [];
+        this.mindmap.traverseDF((n) => {
+            if (n.isShow()) {
+                nodes.push(n);
+            }
+        });
+        var oldScrollLeft = this.mindmap.containerEL.scrollLeft;
+        var oldScrollTop = this.mindmap.containerEL.scrollTop;
+        var box = this.mindmap.getBoundingRect(nodes);
+        var rootBox = this.mindmap.root.getPosition();
+        var disX = 0, disY = 0;
+        if (box.x > 60) {
+            disX = box.x - 60;
+        }
+        if (box.y > 60) {
+            disY = box.y - 60;
+        }
+        this.mindmap.root.setPosition(rootBox.x - disX, rootBox.y - disY);
+        this.mindmap.refresh();
+        var w = box.width + 120;
+        var h = box.height + 120;
+        this.mindmap.contentEL.style.width = w + 'px';
+        this.mindmap.contentEL.style.height = h + 'px';
+        setTimeout(() => {
+            domtoimage.toJpeg(this.mindmap.contentEL, { quality: 1.0 }).then((dataUrl) => __awaiter(this, void 0, void 0, function* () {
+                var img = new Image();
+                img.src = dataUrl;
+                const fileName = this.mindmap.path.replace(/\.md$/, '.jpeg');
+                const arrayBuffer = yield this.dataURLtoBlob(dataUrl).arrayBuffer();
+                this.app.vault.adapter.writeBinary(fileName, arrayBuffer)
+                    .then(() => {
+                    new obsidian.Notice(`Mindmap exported as JPEG: ${fileName}`);
+                    this.restoreMindmap(rootBox, oldScrollLeft, oldScrollTop);
+                })
+                    .catch(err => {
+                    console.error('Failed to save JPEG file:', err);
+                    new obsidian.Notice(`Failed to export mindmap as JPEG: ${err}`);
+                    this.restoreMindmap(rootBox, oldScrollLeft, oldScrollTop);
+                });
+            })).catch(err => {
+                this.restoreMindmap(rootBox, oldScrollLeft, oldScrollTop);
+                new obsidian.Notice(`Failed to export mindmap as JPEG: ${err}`);
+            });
+        }, 200);
+    }
     dataURLtoBlob(dataUrl) {
         var arr = dataUrl.split(','), mime = arr[0].match(/:(.*?);/)[1], bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
         while (n--) {
@@ -37874,6 +37924,16 @@ class MindMapPlugin extends obsidian.Plugin {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView) {
                         mindmapView.exportToSvg();
+                    }
+                }
+            });
+            this.addCommand({
+                id: 'Export to JPEG',
+                name: `${t('Export to JPEG')}`,
+                callback: () => {
+                    const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+                    if (mindmapView) {
+                        mindmapView.exportToJpeg();
                     }
                 }
             });

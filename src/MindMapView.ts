@@ -194,6 +194,67 @@ export class MindMapView extends TextFileView implements HoverParent {
     },200);
   }
 
+  exportToJpeg() {
+    if (!this.mindmap) {
+      return;
+    }
+
+    var nodes: any[] = [];
+    this.mindmap.traverseDF((n: any) => {
+      if (n.isShow()) {
+        nodes.push(n);
+      }
+    });
+
+    var oldScrollLeft = this.mindmap.containerEL.scrollLeft;
+    var oldScrollTop = this.mindmap.containerEL.scrollTop;
+
+    var box = this.mindmap.getBoundingRect(nodes);
+    var rootBox = this.mindmap.root.getPosition();
+
+    var disX = 0, disY = 0;
+    if (box.x > 60) {
+      disX = box.x - 60;
+    }
+
+    if (box.y > 60) {
+      disY = box.y - 60;
+    }
+
+    this.mindmap.root.setPosition(rootBox.x - disX, rootBox.y - disY);
+    this.mindmap.refresh();
+
+    var w = box.width + 120;
+    var h = box.height + 120;
+
+    this.mindmap.contentEL.style.width = w + 'px';
+    this.mindmap.contentEL.style.height = h + 'px';
+
+    setTimeout(() => {
+      domtoimage.toJpeg(this.mindmap.contentEL, { quality: 1.0 }).then(async (dataUrl: string) => {
+        var img = new Image();
+        img.src = dataUrl;
+        
+        const fileName = this.mindmap.path.replace(/\.md$/, '.jpeg');
+        const arrayBuffer = await this.dataURLtoBlob(dataUrl).arrayBuffer();
+        this.app.vault.adapter.writeBinary(fileName, arrayBuffer) 
+        .then(() => {
+            new Notice(`Mindmap exported as JPEG: ${fileName}`);
+            this.restoreMindmap(rootBox, oldScrollLeft, oldScrollTop);
+          })
+          .catch(err => {
+            console.error('Failed to save JPEG file:', err);
+            new Notice(`Failed to export mindmap as JPEG: ${err}`);
+            this.restoreMindmap(rootBox, oldScrollLeft, oldScrollTop);
+          });
+        
+      }).catch(err => {
+        this.restoreMindmap(rootBox, oldScrollLeft, oldScrollTop);
+        new Notice(`Failed to export mindmap as JPEG: ${err}`);
+      });
+    }, 200);
+  }
+
   dataURLtoBlob(dataUrl: string) {
     var arr = dataUrl.split(','), mime = arr[0].match(/:(.*?);/)[1],
         bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
