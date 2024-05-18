@@ -138,28 +138,28 @@ export class MindMapView extends TextFileView implements HoverParent {
       return;
     }
 
-    this.prepareForExport();
+    const { rootBox, oldScrollLeft, oldScrollTop } = this.prepareForExport();
 
     setTimeout(() => {
       domtoimage.toPng(this.mindmap.contentEL, { scale: 2 }).then(async (dataUrl: string) => {
         var img = new Image();
         img.src = dataUrl;
-        
+
         const fileName = this.mindmap.path.replace(/\.md$/, '.png');
         const arrayBuffer = await this.dataURLtoBlob(dataUrl).arrayBuffer();
-        this.app.vault.adapter.writeBinary(fileName, arrayBuffer) 
-        .then(() => {
+        this.app.vault.adapter.writeBinary(fileName, arrayBuffer)
+          .then(() => {
             new Notice(`Mindmap exported as PNG: ${fileName}`);
-            this.restoreMindmap();
+            this.restoreMindmap(rootBox, oldScrollLeft, oldScrollTop);
           })
           .catch(err => {
             console.error('Failed to save PNG file:', err);
             new Notice(`Failed to export mindmap as PNG: ${err}`);
-            this.restoreMindmap();
+            this.restoreMindmap(rootBox, oldScrollLeft, oldScrollTop);
           });
-        
+
       }).catch(err => {
-        this.restoreMindmap();
+        this.restoreMindmap(rootBox, oldScrollLeft, oldScrollTop);
         new Notice(`Failed to export mindmap as PNG: ${err}`);
       });
     }, 200);
@@ -170,28 +170,28 @@ export class MindMapView extends TextFileView implements HoverParent {
       return;
     }
 
-    this.prepareForExport();
+    const { rootBox, oldScrollLeft, oldScrollTop } = this.prepareForExport();
 
     setTimeout(() => {
       domtoimage.toJpeg(this.mindmap.contentEL, { quality: 1.0, scale: 2 }).then(async (dataUrl: string) => {
         var img = new Image();
         img.src = dataUrl;
-        
+
         const fileName = this.mindmap.path.replace(/\.md$/, '.jpeg');
         const arrayBuffer = await this.dataURLtoBlob(dataUrl).arrayBuffer();
-        this.app.vault.adapter.writeBinary(fileName, arrayBuffer) 
-        .then(() => {
+        this.app.vault.adapter.writeBinary(fileName, arrayBuffer)
+          .then(() => {
             new Notice(`Mindmap exported as JPEG: ${fileName}`);
-            this.restoreMindmap();
+            this.restoreMindmap(rootBox, oldScrollLeft, oldScrollTop);
           })
           .catch(err => {
             console.error('Failed to save JPEG file:', err);
             new Notice(`Failed to export mindmap as JPEG: ${err}`);
-            this.restoreMindmap();
+            this.restoreMindmap(rootBox, oldScrollLeft, oldScrollTop);
           });
-        
+
       }).catch(err => {
-        this.restoreMindmap();
+        this.restoreMindmap(rootBox, oldScrollLeft, oldScrollTop);
         new Notice(`Failed to export mindmap as JPEG: ${err}`);
       });
     }, 200);
@@ -199,7 +199,7 @@ export class MindMapView extends TextFileView implements HoverParent {
 
   prepareForExport() {
     if (!this.mindmap) {
-      return;
+      return { rootBox: null, oldScrollLeft: 0, oldScrollTop: 0 };
     }
 
     var nodes: any[] = [];
@@ -208,6 +208,9 @@ export class MindMapView extends TextFileView implements HoverParent {
         nodes.push(n);
       }
     });
+
+    var oldScrollLeft = this.mindmap.containerEL.scrollLeft;
+    var oldScrollTop = this.mindmap.containerEL.scrollTop;
 
     var box = this.mindmap.getBoundingRect(nodes);
     var rootBox = this.mindmap.root.getPosition();
@@ -229,9 +232,11 @@ export class MindMapView extends TextFileView implements HoverParent {
 
     this.mindmap.contentEL.style.width = w + 'px';
     this.mindmap.contentEL.style.height = h + 'px';
+
+    return { rootBox, oldScrollLeft, oldScrollTop };
   }
 
-  restoreMindmap() {
+  restoreMindmap(rootBox: any, left: number, top: number) {
     if (!this.mindmap) {
       return;
     }
@@ -239,16 +244,19 @@ export class MindMapView extends TextFileView implements HoverParent {
     var size = this.plugin.settings.canvasSize;
     this.mindmap.contentEL.style.width = size + 'px';
     this.mindmap.contentEL.style.height = size + 'px';
+    this.mindmap.containerEL.scrollTop = top;
+    this.mindmap.containerEL.scrollLeft = left;
+    this.mindmap.root.setPosition(rootBox.x, rootBox.y);
     this.mindmap.refresh();
   }
 
   dataURLtoBlob(dataUrl: string) {
     var arr = dataUrl.split(','), mime = arr[0].match(/:(.*?);/)[1],
-        bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-    while(n--){
-        u8arr[n] = bstr.charCodeAt(n);
+      bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
     }
-    return new Blob([u8arr], {type:mime});
+    return new Blob([u8arr], { type: mime });
   }
 
   mindMapChange() {

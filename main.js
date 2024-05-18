@@ -37349,7 +37349,7 @@ class MindMapView extends obsidian.TextFileView {
         if (!this.mindmap) {
             return;
         }
-        this.prepareForExport();
+        const { rootBox, oldScrollLeft, oldScrollTop } = this.prepareForExport();
         setTimeout(() => {
             domtoimage.toPng(this.mindmap.contentEL, { scale: 2 }).then((dataUrl) => __awaiter(this, void 0, void 0, function* () {
                 var img = new Image();
@@ -37359,15 +37359,15 @@ class MindMapView extends obsidian.TextFileView {
                 this.app.vault.adapter.writeBinary(fileName, arrayBuffer)
                     .then(() => {
                     new obsidian.Notice(`Mindmap exported as PNG: ${fileName}`);
-                    this.restoreMindmap();
+                    this.restoreMindmap(rootBox, oldScrollLeft, oldScrollTop);
                 })
                     .catch(err => {
                     console.error('Failed to save PNG file:', err);
                     new obsidian.Notice(`Failed to export mindmap as PNG: ${err}`);
-                    this.restoreMindmap();
+                    this.restoreMindmap(rootBox, oldScrollLeft, oldScrollTop);
                 });
             })).catch(err => {
-                this.restoreMindmap();
+                this.restoreMindmap(rootBox, oldScrollLeft, oldScrollTop);
                 new obsidian.Notice(`Failed to export mindmap as PNG: ${err}`);
             });
         }, 200);
@@ -37376,7 +37376,7 @@ class MindMapView extends obsidian.TextFileView {
         if (!this.mindmap) {
             return;
         }
-        this.prepareForExport();
+        const { rootBox, oldScrollLeft, oldScrollTop } = this.prepareForExport();
         setTimeout(() => {
             domtoimage.toJpeg(this.mindmap.contentEL, { quality: 1.0, scale: 2 }).then((dataUrl) => __awaiter(this, void 0, void 0, function* () {
                 var img = new Image();
@@ -37386,22 +37386,22 @@ class MindMapView extends obsidian.TextFileView {
                 this.app.vault.adapter.writeBinary(fileName, arrayBuffer)
                     .then(() => {
                     new obsidian.Notice(`Mindmap exported as JPEG: ${fileName}`);
-                    this.restoreMindmap();
+                    this.restoreMindmap(rootBox, oldScrollLeft, oldScrollTop);
                 })
                     .catch(err => {
                     console.error('Failed to save JPEG file:', err);
                     new obsidian.Notice(`Failed to export mindmap as JPEG: ${err}`);
-                    this.restoreMindmap();
+                    this.restoreMindmap(rootBox, oldScrollLeft, oldScrollTop);
                 });
             })).catch(err => {
-                this.restoreMindmap();
+                this.restoreMindmap(rootBox, oldScrollLeft, oldScrollTop);
                 new obsidian.Notice(`Failed to export mindmap as JPEG: ${err}`);
             });
         }, 200);
     }
     prepareForExport() {
         if (!this.mindmap) {
-            return;
+            return { rootBox: null, oldScrollLeft: 0, oldScrollTop: 0 };
         }
         var nodes = [];
         this.mindmap.traverseDF((n) => {
@@ -37409,6 +37409,8 @@ class MindMapView extends obsidian.TextFileView {
                 nodes.push(n);
             }
         });
+        var oldScrollLeft = this.mindmap.containerEL.scrollLeft;
+        var oldScrollTop = this.mindmap.containerEL.scrollTop;
         var box = this.mindmap.getBoundingRect(nodes);
         var rootBox = this.mindmap.root.getPosition();
         var disX = 0, disY = 0;
@@ -37424,14 +37426,18 @@ class MindMapView extends obsidian.TextFileView {
         var h = box.height + 120;
         this.mindmap.contentEL.style.width = w + 'px';
         this.mindmap.contentEL.style.height = h + 'px';
+        return { rootBox, oldScrollLeft, oldScrollTop };
     }
-    restoreMindmap() {
+    restoreMindmap(rootBox, left, top) {
         if (!this.mindmap) {
             return;
         }
         var size = this.plugin.settings.canvasSize;
         this.mindmap.contentEL.style.width = size + 'px';
         this.mindmap.contentEL.style.height = size + 'px';
+        this.mindmap.containerEL.scrollTop = top;
+        this.mindmap.containerEL.scrollLeft = left;
+        this.mindmap.root.setPosition(rootBox.x, rootBox.y);
         this.mindmap.refresh();
     }
     dataURLtoBlob(dataUrl) {
