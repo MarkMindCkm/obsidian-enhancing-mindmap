@@ -356,8 +356,10 @@ export default class MindMap {
         this.view?.mindMapChange();
     }
     appFocusIn(evt: FocusEvent){
-        if (this.containerEL.contains(evt.relatedTarget as Node)) return;
-        this.isFocused = true;
+        setTimeout(() => {
+            if (this.containerEL.contains(evt.relatedTarget as Node)) return;
+            this.isFocused = true;
+        }, 100);
     }
     appFocusOut(evt: FocusEvent){
         if (this.containerEL.contains(evt.relatedTarget as Node)) return;
@@ -530,28 +532,28 @@ export default class MindMap {
             if (keyCode == 38 || e.key == 'ArrowUp') {
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
-                    this._hierarcySelectNode(node, "up");
+                    this._selectNode(node, "up");
                 }
             }
 
             if (keyCode == 40 || e.key == 'ArrowDown') {
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
-                    this._hierarcySelectNode(node, "down");
+                    this._selectNode(node, "down");
                 }
             }
 
             if (keyCode == 39 || e.key == 'ArrowRight') {
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
-                    this._hierarcySelectNode(node, "right");
+                    this._selectNode(node, "right");
                 }
             }
 
             if (keyCode == 37 || e.key == 'ArrowLeft') {
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
-                    this._hierarcySelectNode(node, "left");
+                    this._selectNode(node, "left");
                 }
             }
 
@@ -577,6 +579,8 @@ export default class MindMap {
 
             // ctrl + E  center to root
             if (keyCode == 69) {
+                var node = this.selectNode;
+                if (node && node.isEdit) return;
                 this.center(this.root);
             }
 
@@ -587,7 +591,7 @@ export default class MindMap {
             if (keyCode == 38 || e.key == 'ArrowUp') {
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
-                    this._selectNode(node, "up");
+                    this._hierarchySelectNode(node, "up");
                     this.center(this.selectNode);
                 } else if(!node){
                     this.center(this.lastSelectedNode);
@@ -597,7 +601,7 @@ export default class MindMap {
             if (keyCode == 40 || e.key == 'ArrowDown') {
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
-                    this._selectNode(node, "down");
+                    this._hierarchySelectNode(node, "down");
                     this.center(this.selectNode)
                 }else if(!node){
                     this.center(this.lastSelectedNode);
@@ -607,7 +611,7 @@ export default class MindMap {
             if (keyCode == 39 || e.key == 'ArrowRight') {
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
-                    this._selectNode(node, "right");
+                    this._hierarchySelectNode(node, "right");
                     this.center(this.selectNode)
                 }else if(!node){
                     this.center(this.lastSelectedNode);
@@ -617,7 +621,7 @@ export default class MindMap {
             if (keyCode == 37 || e.key == 'ArrowLeft') {
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
-                    this._selectNode(node, "left");
+                    this._hierarchySelectNode(node, "left");
                     this.center(this.selectNode)
                 }else if(!node){
                     this.center(this.lastSelectedNode);
@@ -626,7 +630,7 @@ export default class MindMap {
             /* end here */
         }
     }
-    _hierarcySelectNode(node: INode, direct: string){
+    _hierarchySelectNode(node: INode, direct: string){
         if (!node) {
             return;
         }
