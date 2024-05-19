@@ -38,5 +38,7 @@ export default {
      "Toggle markdown/mindmap":"Toggle to markdown/mindmap mode",
      "Copy node":"Copy",
      "Paste node":"Paste",
-     "Export to html":"Export to html"
+     "Export to html":"Export to html",
+     "Export to PNG":"Export to PNG",
+     "Export to JPEG":"Export to JPEG",
 };
