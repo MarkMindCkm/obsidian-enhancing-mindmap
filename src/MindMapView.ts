@@ -57,7 +57,7 @@ export class MindMapView extends TextFileView implements HoverParent {
     var colors:any[] = []
     try{
       if( this.plugin.settings.strokeArray){
-         colors = this.plugin.settings.strokeArray.split(',')
+         colors = this.plugin.settings.strokeArray;
       }
     }catch(err){
        console.log(err,'stroke array is error');
@@ -110,7 +110,7 @@ export class MindMapView extends TextFileView implements HoverParent {
     this.mindmap.contentEL.style.height=h+'px';
 
     setTimeout(()=>{
-      domtoimage.toPng(this.mindmap.contentEL).then(dataUrl=>{  
+      domtoimage.toPng(this.mindmap.contentEL,{}).then(dataUrl=>{  
         var img = new Image()
         img.src = dataUrl;
         var str = img.outerHTML;
@@ -312,9 +312,9 @@ export class MindMapView extends TextFileView implements HoverParent {
     this.registerEvent(
       this.app.workspace.on("quick-preview", () => this.onQuickPreview, this)
     );
-    this.registerEvent(
-      this.app.workspace.on('resize', () => this.updateMindMap(), this)
-    );
+//    this.registerEvent(
+//      this.app.workspace.on('resize', () => this.updateMindMap(), this)
+//    );
   }
 
   onQuickPreview(file: TFile, data: string) {
@@ -415,7 +415,7 @@ export class MindMapView extends TextFileView implements HoverParent {
 
     // })
 
-    super.onMoreOptionsMenu(menu);
+    super.onPaneMenu(menu,'more-options');
   }
 
 }
