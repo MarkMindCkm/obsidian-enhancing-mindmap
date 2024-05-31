@@ -5,7 +5,7 @@ import {t} from '../lang/helpers'
 import INode from './INode'
 
 interface DataProps {
-    node?:INode
+    node?:INode,
     parent?:INode,
     oldParent?:INode,
 
@@ -22,6 +22,9 @@ interface DataProps {
         x:number,
         y:number
     },
+
+    // Add command to history
+    inHistory?:boolean,
 
     data?:any
 };
@@ -58,10 +61,18 @@ export default class Exec{
                 }
                 break;
             case 'moveNode':
-                if(data){
+                console.log("inHistory:");
+                console.log(data.inHistory);
+                if(data.inHistory === undefined || data.inHistory == true) {
+                    if(data){
                     this.history.execute(new cmd.MoveNode(data));
                 }
-                break;
+                } else {// inHistory == false
+                    if(data){
+                        (new cmd.MoveNode(data)).execute();
+                    }
+                }
+            break;
             case 'movePosition':
                 if(data){
                     this.history.execute(new cmd.MovePos(data.node,data.oldPos,data.newPos));

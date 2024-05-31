@@ -220,7 +220,8 @@ export default class MindMapPlugin extends Plugin {
               mindmap._menuDom.style.display='none';
 
               // Move the new node under the previously selected one
-              mindmap.moveNode(newNode, node, 'down');
+              // Do not add this command to the history
+              mindmap.moveNode(newNode, node, 'down', false);
             }
             else {// Editing mode => end edit mode
               //node.cancelEdit();

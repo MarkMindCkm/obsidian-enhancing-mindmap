@@ -1871,7 +1871,7 @@ export default class MindMap {
         return box;
     }
 
-    moveNode(dragNode: INode, dropNode: INode,type:string) {
+    moveNode(dragNode: INode, dropNode: INode, type:string, setInHistory: boolean = true) {
 
         if (dragNode == dropNode || dragNode.isRoot) {
             return
@@ -1900,7 +1900,7 @@ export default class MindMap {
         }
 
         if (type == 'top' || type == 'left' ||type == 'down' || type == 'right') {
-            this.execute('moveNode', { type: 'siblings', node: dragNode, oldParent: dragNode.parent, dropNode, direct: type})
+            this.execute('moveNode', { type: 'siblings', node: dragNode, oldParent: dragNode.parent, dropNode, direct: type, inHistory: setInHistory})
         }
         else if (type.indexOf('child') > -1) {
             var typeArr = type.split('-');

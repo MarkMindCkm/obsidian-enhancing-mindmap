@@ -8017,8 +8017,17 @@ class Exec {
                 }
                 break;
             case 'moveNode':
-                if (data) {
-                    this.history.execute(new MoveNode(data));
+                console.log("inHistory:");
+                console.log(data.inHistory);
+                if (data.inHistory === undefined || data.inHistory == true) {
+                    if (data) {
+                        this.history.execute(new MoveNode(data));
+                    }
+                }
+                else { // inHistory == false
+                    if (data) {
+                        (new MoveNode(data)).execute();
+                    }
                 }
                 break;
             case 'movePosition':
@@ -9686,7 +9695,7 @@ class MindMap {
         box.height = box.bottom - box.y;
         return box;
     }
-    moveNode(dragNode, dropNode, type) {
+    moveNode(dragNode, dropNode, type, setInHistory = true) {
         if (dragNode == dropNode || dragNode.isRoot) {
             return;
         }
@@ -9710,7 +9719,7 @@ class MindMap {
             }
         }
         if (type == 'top' || type == 'left' || type == 'down' || type == 'right') {
-            this.execute('moveNode', { type: 'siblings', node: dragNode, oldParent: dragNode.parent, dropNode, direct: type });
+            this.execute('moveNode', { type: 'siblings', node: dragNode, oldParent: dragNode.parent, dropNode, direct: type, inHistory: setInHistory });
         }
         else if (type.indexOf('child') > -1) {
             var typeArr = type.split('-');
@@ -38703,7 +38712,8 @@ class MindMapPlugin extends obsidian.Plugin {
                                 });
                                 mindmap._menuDom.style.display = 'none';
                                 // Move the new node under the previously selected one
-                                mindmap.moveNode(newNode, node, 'down');
+                                // Do not add this command to the history
+                                mindmap.moveNode(newNode, node, 'down', false);
                             }
                             else { // Editing mode => end edit mode
                                 //node.cancelEdit();
