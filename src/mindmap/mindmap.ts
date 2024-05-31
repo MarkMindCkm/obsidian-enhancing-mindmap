@@ -1893,8 +1893,10 @@ export default class MindMap {
         dropNode.clearCacheData();
         dragNode.clearCacheData();
 
-        if (!dropNode.isExpand) {
-            dropNode.expand();
+        if (type == 'right' || type == 'left'){
+            if (!dropNode.isExpand) {
+                dropNode.expand();
+            }
         }
 
         if (type == 'top' || type == 'left' ||type == 'down' || type == 'right') {

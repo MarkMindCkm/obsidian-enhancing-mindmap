@@ -243,8 +243,8 @@ var fr = {
     'Center mindmap view': 'Centrer la vue de la carte mentale',
     'Display the node\'s info in console': 'Afficher les informations du nœud dans la console',
     "Export to html": "Exporter en html",
-    "Export to PNG": "Export en PNG",
-    "Export to JPEG": "Export en JPEG",
+    "Export to PNG": "Exporter en PNG",
+    "Export to JPEG": "Exporter en JPEG",
 };
 
 // हिन्दी
@@ -9704,8 +9704,10 @@ class MindMap {
         }
         dropNode.clearCacheData();
         dragNode.clearCacheData();
-        if (!dropNode.isExpand) {
-            dropNode.expand();
+        if (type == 'right' || type == 'left') {
+            if (!dropNode.isExpand) {
+                dropNode.expand();
+            }
         }
         if (type == 'top' || type == 'left' || type == 'down' || type == 'right') {
             this.execute('moveNode', { type: 'siblings', node: dragNode, oldParent: dragNode.parent, dropNode, direct: type });
