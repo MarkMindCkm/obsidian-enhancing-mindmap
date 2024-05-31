@@ -13,6 +13,7 @@ import { t } from 'src/lang/helpers'
 
 let deleteIcon = '<svg class="icon" width="16px" height="16.00px" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path  d="M799.2 874.4c0 34.4-28 62.4-62.368 62.4H287.2a62.496 62.496 0 0 1-62.4-62.4V212h574.4v662.4zM349.6 100c0-7.2 5.6-12.8 12.8-12.8h300c7.2 0 12.768 5.6 12.768 12.8v37.6H349.6V100z m636.8 37.6H749.6V100c0-48-39.2-87.2-87.2-87.2h-300a87.392 87.392 0 0 0-87.2 87.2v37.6H37.6C16.8 137.6 0 154.4 0 175.2s16.8 37.6 37.6 37.6h112v661.6A137.6 137.6 0 0 0 287.2 1012h449.6a137.6 137.6 0 0 0 137.6-137.6V212h112c20.8 0 37.6-16.8 37.6-37.6s-16.8-36.8-37.6-36.8zM512 824c20.8 0 37.6-16.8 37.6-37.6v-400c0-20.8-16.768-37.6-37.6-37.6-20.8 0-37.6 16.8-37.6 37.6v400c0 20.8 16.8 37.6 37.6 37.6m-175.2 0c20.8 0 37.6-16.8 37.6-37.6v-400c0-20.8-16.8-37.6-37.6-37.6s-37.6 16.8-37.6 37.6v400c0.8 20.8 17.6 37.6 37.6 37.6m350.4 0c20.8 0 37.632-16.8 37.632-37.6v-400c0-20.8-16.8-37.6-37.632-37.6-20.768 0-37.6 16.8-37.6 37.6v400c0 20.8 16.8 37.6 37.6 37.6" /></svg>';
 let addIcon = '<svg class="icon" width="16px" height="16.00px" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path  d="M512 1024C230.4 1024 0 793.6 0 512S230.4 0 512 0s512 230.4 512 512-230.4 512-512 512z m0-960C265.6 64 64 265.6 64 512s201.6 448 448 448 448-201.6 448-448S758.4 64 512 64z"  /><path d="M800 544H224c-19.2 0-32-12.8-32-32s12.8-32 32-32h576c19.2 0 32 12.8 32 32s-12.8 32-32 32z"  /><path  d="M512 832c-19.2 0-32-12.8-32-32V224c0-19.2 12.8-32 32-32s32 12.8 32 32v576c0 19.2-12.8 32-32 32z"  /></svg>';
+let tempDispLevel = 0;
 
 interface Setting {
     theme?: string;
@@ -36,6 +37,8 @@ export default class MindMap {
     editNode?: INode;
     selectNode?: INode;
     lastSelectedNode?: INode;
+    // selectingNodes?:boolean;
+    // selectedNodes?: INode[];
     setting: Setting;
     data: INodeData;
     drag?: boolean;
@@ -60,13 +63,15 @@ export default class MindMap {
     _dragType:string='';
     _left:number;
     _top:number;
+    dispLevel:number;
     isComposing = false;
     isFocused = true;
 
     constructor(data: INodeData, containerEL: HTMLElement, setting?: Setting) {
         this.setting = Object.assign({
             theme: 'default',
-            canvasSize: 8000,
+            //canvasSize: 8000,
+            canvasSize: 36000,
             fontSize: 16,
             background: 'transparent',
             color: 'inherit',
@@ -144,12 +149,13 @@ export default class MindMap {
 
         this.initEvent();
         //this.center();
+        this.dispLevel=0;
     }
 
     setMenuIcon(){
         var addNodeDom = document.createElement('span');
         var deleteNodeDom = document.createElement('span');
-        addNodeDom.classList.add('mm-icon-add-node'); 
+        addNodeDom.classList.add('mm-icon-add-node');
         deleteNodeDom.classList.add('mm-icon-delete-node');
         addNodeDom.innerHTML = addIcon;
         deleteNodeDom.innerHTML = deleteIcon;
@@ -272,6 +278,26 @@ export default class MindMap {
             }
             this.editNode = null;
         }
+
+        // if(this.selectingNodes)
+        // {// Add the node to the selectedNodes
+        //     this.selectedNodes.push(this.selectNode);
+        // }
+        // else {
+        //     this.selectedNodes = [];
+        // }
+        // console.log(this.selectedNodes.length+" selected: "+this.selectedNodes);
+
+        // if (this.selectNode) {
+        //     this.selectNode.unSelect();
+        //     this.selectNode = null
+        // }
+        // if (this.editNode) {
+        //     if(this.editNode.isEdit){
+        //         this.editNode.cancelEdit();
+        //     }
+        //     this.editNode = null;
+        // }
     }
 
 
@@ -288,14 +314,14 @@ export default class MindMap {
         document.addEventListener('compositionstart',this.compositionStart)
         document.addEventListener('compositionend',this.compositionEnd)
         document.body.addEventListener('mousewheel', this.appMousewheel);
-        
+
         if(Platform.isDesktop){
             this.appEl.addEventListener('mousedown', this.appMouseDown);
             this.appEl.addEventListener('mouseup', this.appMouseUp);
         }
 
         this.appEl.addEventListener('mousemove', this.appMouseMove);
-        
+
         this.containerEL.addEventListener('focusin', this.appFocusIn);
         this.containerEL.addEventListener('focusout', this.appFocusOut);
         //custom event
@@ -324,7 +350,7 @@ export default class MindMap {
             this.appEl.removeEventListener('mousedown', this.appMouseDown);
             this.appEl.removeEventListener('mouseup', this.appMouseUp);
         }
-        
+
         this.appEl.removeEventListener('mousemove', this.appMouseMove);
 
         this.containerEL.removeEventListener('focusin', this.appFocusIn);
@@ -370,57 +396,58 @@ export default class MindMap {
         var keyCode = e.keyCode || e.which || e.charCode;
         var ctrlKey = e.ctrlKey || e.metaKey;
         var shiftKey = e.shiftKey;
-        if (!ctrlKey && !shiftKey) {
-            //enter 
-            if (keyCode == 13 || e.key =='Enter') {
+        var altKey = e.altKey;
 
-                var node = this.selectNode;
-                if (node && !node.isEdit) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    // node.edit();
-                    // this._menuDom.style.display = 'none';
-                    if (!node.isExpand) {
-                        node.expand();
-                    }
-                    if (!node.parent) return;
-                    node.mindmap.execute('addSiblingNode', {
-                        parent: node.parent
-                    });
-                    this._menuDom.style.display='none';
-                } else if (node && node.isEdit) {
-                    if (this.isComposing || e.isComposing || e.key === 'Process' || e.keyCode === 229) {
-                        return
-                    } else {
-                        node.cancelEdit();
-                        node.select();
-                        node.mindmap.editNode=null;
-                    }
-                }
-            }
+        // if (ctrlKey) {                         // Shift -> Selecting
+        //     // ctrl -> selecting
+        //     this.selectingNodes = true;
+        // } else {
+        //     this.selectingNodes = false;
+        // }
 
-            // tab
-            if (keyCode == 9 || keyCode == 45) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
+        if (!ctrlKey && !shiftKey && !altKey) { // No special key
+            // // tab
+            // // tab (OK) / Insert (OK)
+            // if (keyCode == 9 || keyCode == 45) {
+            //     e.preventDefault();
+            //     e.stopPropagation();
+            // }
 
-            if (keyCode == 32) {
-                var node = this.selectNode;
-                if (node && !node.isEdit) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    node.edit();
-                    this._menuDom.style.display = 'none';
-                }
-            }
+            // // Space
+            // if (keyCode == 32) {
+            //     var node = this.selectNode;
+            //     if (node && !node.isEdit) {
+            //         e.preventDefault();
+            //         e.stopPropagation();
+            //         node.edit();
+            //         this._menuDom.style.display = 'none';
+            //     }
+            // }
+
+
         }
 
 
-        // if (!ctrlKey && shiftKey) {
-        //     //enter > add node
-        //     if (keyCode == 13 || e.key =='Enter') {
+        if (ctrlKey && !shiftKey && !altKey) {  // CTRL key
+        //     //ctrl + y
+        //     if (keyCode == 89) {
+        //         e.preventDefault();
+        //         e.stopPropagation();
+        //         this.redo();
+        //     }
 
+        //     //ctrl + z
+        //     if (keyCode == 90) {
+        //         e.preventDefault();
+        //         e.stopPropagation();
+        //         this.undo();
+        //     }
+        }
+
+            // Shift + F2 : Edit as space does
+        // if (!ctrlKey && shiftKey && !altKey) {  // SHIFT key
+        //     if (keyCode == 113) {
+        //     // if (keyCode == 45) {
         //         var node = this.selectNode;
         //         if (node && !node.isEdit) {
         //             e.preventDefault();
@@ -436,25 +463,6 @@ export default class MindMap {
         //         }
         //     }
         // }
-
-
-        if (ctrlKey && !shiftKey) {
-            
-            //ctrl + y
-            if (keyCode == 89) {
-                e.preventDefault();
-                e.stopPropagation();
-                this.redo();
-            }
-
-            //ctrl + z
-            if (keyCode == 90) {
-                e.preventDefault();
-                e.stopPropagation();
-                this.undo();
-            }
-
-        }
     }
 
      compositionStart(e: KeyboardEvent) {
@@ -471,98 +479,201 @@ export default class MindMap {
         var keyCode = e.keyCode || e.which || e.charCode;
         var ctrlKey = e.ctrlKey || e.metaKey;
         var shiftKey = e.shiftKey;
-        if (!ctrlKey && !shiftKey) {
-            // //enter 
-            // if (keyCode == 13 || e.key =='Enter') {
+        var altKey = e.altKey;
 
+        // if (ctrlKey) {                         // Shift -> Selecting
+        //     // Ctrl -> selecting
+        //     this.selectingNodes = true;
+        // } else {
+        //     this.selectingNodes = false;
+        // }
+
+        if (!ctrlKey && !shiftKey && !altKey) { // NO SPECIAL KEY
+            // Enter
+            // if (keyCode == 13 || e.key =='Enter') {
             //     var node = this.selectNode;
-            //     if (node && !node.isEdit) {
+            //     e.preventDefault();
+            //     e.stopPropagation();
+            //     if(node) {// A node is selected
+            //         if (!node.isEdit) {// Not editing a node => Add sibling node
+            //             if (!node.isExpand) {
+            //                 node.expand();
+            //             }
+            //             if (!node.parent) return;
+            //             node.mindmap.execute('addSiblingNode', {
+            //                 parent: node.parent
+            //             });
+            //             this._menuDom.style.display='none';
+            //         }
+            //         else {// Editing mode => end edit mode
+            //             //node.cancelEdit();
+
+            //             this.clearSelectNode();
+            //             node.select();
+            //             node.mindmap.editNode=null;
+            //             //this.selectNode.unSelect();
+            //         }
+            //     }
+            //     //else: no node selected: nothing to do
+            // }
+
+            //delete
+            // if (keyCode == 46 || e.key == 'Delete' || e.key == 'Backspace') {
+            //     var node = this.selectNode;
+            //     if (node && !node.isRoot && !node.isEdit) {
             //         e.preventDefault();
             //         e.stopPropagation();
-            //         if (!node.isExpand) {
-            //             node.expand();
-            //         }
-            //         if (!node.parent) return;
-            //         node.mindmap.execute('addSiblingNode', {
-            //             parent: node.parent
-            //         });
+            //         node.mindmap.execute("deleteNodeAndChild", { node });
             //         this._menuDom.style.display='none';
-            //     } else if (node && node.isEdit) {
+            //     }
+            //     //else: Deletion makes no sense
+            // }
 
-            //         if (this.isComposing || e.isComposing || e.key === 'Process' || e.keyCode === 229) {
-            //             return
-            //         } else {
-            //             node.cancelEdit();
+
+            // Tab / Insert
+            // if (keyCode == 9 || keyCode == 45 || e.key == 'Tab') {
+            //     e.preventDefault();
+            //     e.stopPropagation();
+            //     var node = this.selectNode;
+            //     if(node) {
+            //         if (!node.isEdit) {// Not editing
+            //             if (!node.isExpand) {
+            //                 node.expand();
+            //             }
+            //             node.mindmap.execute("addChildNode", { parent: node });
+            //             this._menuDom.style.display='none';
+            //         } else{
+            //             // this.selectNode.unSelect();
+            //             this.clearSelectNode();
             //             node.select();
             //             node.mindmap.editNode=null;
             //         }
             //     }
+            //     //else: no node selected -> nothing to do
             // }
 
-            //delete
-            if (keyCode == 46 || e.key == 'Delete' || e.key == 'Backspace') {
-                var node = this.selectNode;
-                if (node && !node.isEdit) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    node.mindmap.execute("deleteNodeAndChild", { node });
-                    this._menuDom.style.display='none';
-                }
-            }
-
-            //tab
-            if (keyCode == 9 || keyCode == 45 || e.key == 'Tab') {
+                // Escape
+            if (keyCode == 27) {
                 e.preventDefault();
                 e.stopPropagation();
+
                 var node = this.selectNode;
-                if (node && !node.isEdit) {
-                    if (!node.isExpand) {
-                        node.expand();
-                    }
-                    node.mindmap.execute("addChildNode", { parent: node });
-                    this._menuDom.style.display='none';
-                } else if (node && node.isEdit) {
-                    node.cancelEdit();
+                if (node && node.isEdit) {
                     node.select();
-                    node.mindmap.editNode=null;
+                    node.mindmap.editNode = null;
+                    node.cancelEdit();
+                    this.undo();
+                    //this.selectNode.unSelect();
                 }
             }
 
             // up
             if (keyCode == 38 || e.key == 'ArrowUp') {
+                e.preventDefault();
+                e.stopPropagation();
+
                 var node = this.selectNode;
-                if (node && !node.isEdit) {
-                    this._selectNode(node, "up");
+                if( node && !node.isEdit )
+                {
+                    var l_selectedNode = node;
+                    while(  (this.selectNode == node)       &&
+                            (l_selectedNode != this.root)   )
+                    {
+                        this._selectNode(l_selectedNode, "up");
+                        l_selectedNode = l_selectedNode.parent;
+                    }
                 }
             }
 
             if (keyCode == 40 || e.key == 'ArrowDown') {
+                e.preventDefault();
+                e.stopPropagation();
+
                 var node = this.selectNode;
-                if (node && !node.isEdit) {
-                    this._selectNode(node, "down");
+                if( node && !node.isEdit )
+                {
+                    var l_selectedNode = node;
+                    while(  (this.selectNode == node)       &&
+                            (l_selectedNode != this.root)   )
+                    {
+                        this._selectNode(l_selectedNode, "down");
+                        l_selectedNode = l_selectedNode.parent;
+                    }
                 }
             }
 
             if (keyCode == 39 || e.key == 'ArrowRight') {
+                e.preventDefault();
+                e.stopPropagation();
+
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
-                    this._selectNode(node, "right");
+                    var rootPos = this.root.getPosition();
+                    var nodePos = node.getPosition();
+                    if(rootPos.x > nodePos.x)
+                    {// Node on left side of the mindmap
+                        node.unSelect();
+                        node.parent.select();
+                    }
+                    else
+                    {
+                        var node = this.selectNode;
+                        node.mindmap.execute('expandNode', {
+                            node
+                        });
+                        this._selectNode(node, "right");
+                    }
                 }
             }
 
             if (keyCode == 37 || e.key == 'ArrowLeft') {
+                e.preventDefault();
+                e.stopPropagation();
+
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
-                    this._selectNode(node, "left");
+                    var rootPos = this.root.getPosition();
+                    var nodePos = node.getPosition();
+                    if(rootPos.x < nodePos.x)
+                    {// Node on right side of the mindmap
+                        node.unSelect();
+                        node.parent.select();
+                    }
+                    else
+                    {
+                        var node = this.selectNode;
+                        node.mindmap.execute('expandNode', {
+                            node
+                        });
+                        this._selectNode(node, "left");
+                    }
                 }
             }
 
+            // Home : Select root node
+            if (keyCode == 36) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                if( (!this.selectNode)          ||
+                    (!this.selectNode.isEdit)   )
+                {// No edition: select root node
+                    if(this.selectNode)
+                    { this.selectNode.unSelect(); }
+                    this.root.select();
+                    this.center();
+                }
+            }
         }
 
 
-        if (ctrlKey && !shiftKey) {
-            //ctr + /  toggle expand node
-            if (keyCode == 191) {
+        if (ctrlKey && !shiftKey && !altKey) {  // CTRL KEY
+            /*//ctr + /  (or Ctrl + NumpadDivide) toggle expand node
+            // if ((keyCode == 191) || (keyCode == 111)) {
+            //     var node = this.selectNode;
+            //     this._toggleExpandNode(node);
+            // }
+            if ((keyCode == 191) || (keyCode == 111)) {
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
                     if (node.isExpand) {
@@ -575,60 +686,446 @@ export default class MindMap {
                         })
                     }
                 }
-            }
+            }*/
 
-            // ctrl + E  center to root
-            if (keyCode == 69) {
-                var node = this.selectNode;
-                if (node && node.isEdit) return;
-                this.center(this.root);
-            }
+            // Ctrl + B => Bold
+            // if (keyCode == 66) {
+            //     e.preventDefault();
+            //     e.stopPropagation();
 
-            /* Move Between node with centered view 
-                if no any selectedd node then fallback to last selected node
-            */
-            /* begin here */
-            if (keyCode == 38 || e.key == 'ArrowUp') {
-                var node = this.selectNode;
-                if (node && !node.isEdit) {
-                    this._hierarchySelectNode(node, "up");
-                    this.center(this.selectNode);
-                } else if(!node){
-                    this.center(this.lastSelectedNode);
+            //     if(this.selectNode) {
+            //         var l_prefix_1 = "**";
+            //         var l_prefix_2 = "__";
+            //         var node = this.selectNode;
+
+            //         if(node.isEdit)
+            //         {// A node is edited: set in bold only the selected part
+            //             var l_check_prefix = true;
+            //             node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix);
+            //         }
+
+            //         else
+            //         {// Set in bold the whole node
+            //             this._formatNode(node, l_prefix_1, l_prefix_2);
+            //             e.preventDefault();
+            //             e.stopPropagation();
+            //         }
+
+            //         this.refresh();
+            //         this.scale(this.mindScale);
+            //     }
+            //     //else: no node selected: nothing to do
+            // }
+
+
+            // Ctrl + I => Italic
+            // if (keyCode == 73) {
+            //     e.preventDefault();
+            //     e.stopPropagation();
+
+            //     if(this.selectNode) {
+            //         var node = this.selectNode;
+
+            //         if(node.isEdit)
+            //         {// A node is edited: set in italics only the selected part
+            //             node.setSelectedText_italic();
+            //         }
+
+            //         else
+            //         {// Set in italics the whole node
+            //             var text = node.data.text;
+            //             if( (  ((text.substring(0,1)=="*") ||
+            //                     (text.substring(0,1)=="_") )        &&
+            //                 (text.substring(0,2)!="**")             &&
+            //                 (text.substring(0,2)!="__")             )   ||
+            //                 (text.substring(0,3)=="***")                ||
+            //                 (text.substring(0,3)=="___")                )
+            //             {// Already italic
+            //                 text = text.substring(1); // Remove leading * / _
+
+            //                 if( (text.substring(text.length-1)=="*") ||
+            //                     (text.substring(text.length-1)=="_") )   {
+            //                     // Remove trailing * / _
+            //                     text = text.substring(0,text.length-1);
+            //                 }
+            //                 // else: no trailing *
+            //             }
+            //             else {// Not in italic
+            //                 text = "*"+text+"*"; // Use "*" to allow bold/italic change in whatever order
+            //             }
+
+            //             // Set in node text
+            //             node.data.oldText = node.data.text;
+            //             node.setText(text);
+            //             e.preventDefault();
+            //             e.stopPropagation();
+            //         }
+
+            //         this.refresh();
+            //         this.scale(this.mindScale);
+            //     }
+            //     //else: no node selected: nothing to do
+            // }
+
+
+            // ctrl + E  center mindmap view
+            // if (keyCode == 69) {
+            //     e.preventDefault();
+            //     e.stopPropagation();
+
+            //     //this.center();
+            //     this.centerOnNode(this.selectNode);
+            // }
+
+
+            // ctrl + Up: Move one node above
+            // if (keyCode == 38 || e.key == 'ArrowUp') {
+            //     e.preventDefault();
+            //     e.stopPropagation();
+
+            //     var node = this.selectNode;
+            //     if(!node)
+            //     {// No node selected: select root node
+            //         this.root.select();
+            //         node = this.selectNode;
+            //     }
+            //     else if((!node.isEdit)  &&
+            //             (!node.isRoot)  )
+            //     {// The node can be moved
+            //         var type='top';
+            //         if(node.getIndex() == 0)
+            //         {// First sibling: move BELOW "previous" (=last) node
+            //             type='down';
+            //         }
+            //         //else: no special treatment
+            //         this.moveNode(node, node.getPreviousSibling(), type);
+            //     }
+            //     this.centerOnNode(this.selectNode);
+            // }
+
+
+            // // Ctrl + Down: Move one step below
+            // if (keyCode == 40 || e.key == 'ArrowDown') {
+            //     e.preventDefault();
+            //     e.stopPropagation();
+
+            //     var node = this.selectNode;
+            //     if(!node)
+            //     {// No node selected: select root node
+            //         this.root.select();
+            //         node = this.selectNode;
+            //     }
+            //     else if((!node.isEdit)  &&
+            //             (!node.isRoot)  )
+            //     {// The node can be moved
+            //         var type='down';
+            //         if(node.getIndex() == node.parent.children.length-1)
+            //         {// Last sibling: move ABOVE "next" (=first) node
+            //             type='top';
+            //         }
+            //         //else: no special treatment
+            //         this.moveNode(node, node.getNextSibling(), type);
+            //     }
+            //     this.centerOnNode(this.selectNode);
+            // }
+
+
+            // // Ctrl + Left
+            // if (keyCode == 37 || e.key == 'ArrowLeft') {
+            //     e.preventDefault();
+            //     e.stopPropagation();
+
+            //     var node = this.selectNode;
+            //     if(!node)
+            //     {// No node selected: select root node
+            //         this.root.select();
+            //         node = this.selectNode;
+            //     }
+            //     else {// Move current node as parent/child depending on the position
+            //         var rootPos = this.root.getPosition();
+            //         var nodePos = node.getPosition();
+            //         if(rootPos.x < nodePos.x)
+            //         {
+            //             this._moveAsParent(node);
+            //         }
+            //         else
+            //         {
+            //             this._moveAsChild(node, node.getPreviousSibling());
+            //         }
+            //     }
+            //     this.centerOnNode(this.selectNode);
+            // }
+
+
+            // // Ctrl + Right
+            // if (keyCode == 39 || e.key == 'ArrowRight') {
+            //     e.preventDefault();
+            //     e.stopPropagation();
+
+            //     var node = this.selectNode;
+            //     if(!node)
+            //     {// No node selected
+            //         this.root.select();
+            //         node = this.selectNode;
+            //     }
+            //     else {
+            //         var rootPos = this.root.getPosition();
+            //         var nodePos = node.getPosition();
+            //         if(rootPos.x < nodePos.x)
+            //         {
+            //             // this.selectedNodes.forEach((n:INode) => {
+            //             //     this._moveAsChild(n);
+            //             // });
+            //             this._moveAsChild(node, node.getPreviousSibling());
+            //         }
+            //         else
+            //         {
+            //             this._moveAsParent(node);
+            //         }
+            //     }
+            //     this.centerOnNode(this.selectNode);
+            // }
+
+
+            // // Ctrl + J: Join with following node
+            // if (keyCode == 74) {
+            //     e.preventDefault();
+            //     e.stopPropagation();
+
+            //     var node = this.selectNode;
+            //     if(node)
+            //     {  this.joinWithFollowingNode(node); }
+            //     // else: No node selected: nothing to do
+            // }
+
+
+
+            // Ctrl + Home : Select root node
+            if (keyCode == 36) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                if( (!this.selectNode)          ||
+                    (!this.selectNode.isEdit)   )
+                {// No edition: select root node
+                    if(this.selectNode && !this.selectNode.isRoot)
+                    {
+                        this.selectNode.unSelect();
+                        this.root.select();
+                    }
+                    this.center();
                 }
             }
-
-            if (keyCode == 40 || e.key == 'ArrowDown') {
-                var node = this.selectNode;
-                if (node && !node.isEdit) {
-                    this._hierarchySelectNode(node, "down");
-                    this.center(this.selectNode)
-                }else if(!node){
-                    this.center(this.lastSelectedNode);
-                }
-            }
-
-            if (keyCode == 39 || e.key == 'ArrowRight') {
-                var node = this.selectNode;
-                if (node && !node.isEdit) {
-                    this._hierarchySelectNode(node, "right");
-                    this.center(this.selectNode)
-                }else if(!node){
-                    this.center(this.lastSelectedNode);
-                }
-            }
-
-            if (keyCode == 37 || e.key == 'ArrowLeft') {
-                var node = this.selectNode;
-                if (node && !node.isEdit) {
-                    this._hierarchySelectNode(node, "left");
-                    this.center(this.selectNode)
-                }else if(!node){
-                    this.center(this.lastSelectedNode);
-                }
-            }
-            /* end here */
         }
+
+
+        if (ctrlKey && shiftKey && !altKey) {   // CTRL + SHIFT key
+            // //Shift + Ctrl + space: toggle expand node
+            // if (keyCode == 32) {
+            //     e.preventDefault();
+            //     e.stopPropagation();
+
+            //     var node = this.selectNode;
+            //     if(node)
+            //     { this._toggleExpandNode(node); }
+            // }
+
+
+            // Ctrl + Shift + Z => Old text
+            // if (keyCode == 90) {
+            //     e.preventDefault();
+            //     e.stopPropagation();
+
+            //     var node = this.selectNode;
+            //     if(node) {
+            //         // var text = (node.data.oldText as string);
+            //         var text = (node.data.oldText);
+            //         node.setText(text);
+            //         e.preventDefault();
+            //         e.stopPropagation();
+            //         console.log(text+" / "+node.data.text);
+            //     }
+            // }
+
+
+            // Ctrl + Shift + Home : Center map
+            // if (keyCode == 36) {
+            //     e.preventDefault();
+            //     e.stopPropagation();
+
+            //     this.center();
+            // }
+
+        }
+
+
+        if (altKey && !ctrlKey && !shiftKey) {          // Alt key
+
+            // Alt + H => Highlight
+            // if (keyCode == 72) {
+            //     e.preventDefault();
+            //     e.stopPropagation();
+
+            //     if(this.selectNode) {// There is a node selected: format
+            //         var l_prefix_1 = "==";
+            //         var l_prefix_2 = l_prefix_1;
+            //         var node = this.selectNode;
+
+            //         if(node.isEdit)
+            //         {// A node is edited: set in bold only the selected part
+            //             var l_check_prefix = true;
+            //             node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix);
+            //         }
+
+            //         else
+            //         {// Set in bold the whole node
+            //             this._formatNode(node, l_prefix_1, l_prefix_2);
+            //             e.preventDefault();
+            //             e.stopPropagation();
+            //         }
+            //     }
+            //     //else: no node selected: nothing to do
+            // }
+
+
+            // Alt + é => Strike through
+            // if (keyCode == 50) {
+            //     e.preventDefault();
+            //     e.stopPropagation();
+
+            //     if(this.selectNode) {// There is a node selected: format
+            //         var l_prefix_1 = "~~";
+            //         var l_prefix_2 = l_prefix_1;
+            //         var node = this.selectNode;
+
+            //         if(node.isEdit)
+            //         {// A node is edited: set in bold only the selected part
+            //             var l_check_prefix = true;
+            //             node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix);
+            //         }
+
+            //         else
+            //         {// Set in bold the whole node
+            //             this._formatNode(node, l_prefix_1, l_prefix_2);
+            //             e.preventDefault();
+            //             e.stopPropagation();
+            //         }
+            //     }
+            //     //else: no node selected: nothing to do
+            // }
+
+
+            // Alt + Home : Node info in console
+            // if (keyCode == 36) {
+            //     e.preventDefault();
+            //     e.stopPropagation();
+
+            //     var node = this.selectNode;
+            //     if(node) {
+            //         console.log("Node idx: "+node.getIndex());
+            //         console.log("Previous node idx: "+node.getPreviousSibling().getIndex());
+            //         console.log("Next node idx: "+node.getNextSibling().getIndex());
+            //         console.log("Node pos: x="+node.getPosition().x+" / y="+node.getPosition().y);
+            //         console.log("Node dim: x="+node.getDimensions().x+" / y="+node.getDimensions().y);
+            //         console.log("Canvas: "+this.setting.canvasSize);
+            //         console.log("Disp scroll: x="+this.containerEL.scrollLeft+" / y="+this.containerEL.scrollTop);
+            //         console.log("Disp client: x="+this.containerEL.clientWidth+" / y="+this.containerEL.clientHeight);
+
+            //         //node.setText
+            //     }
+            // }
+
+
+            // // Alt + PageUp: collapse one level from max displayed level
+            // if (keyCode == 33) {
+            //     e.preventDefault();
+            //     e.stopPropagation();
+
+            //     node = this.selectNode;
+            //     if( (node)                                                  &&
+            //         (this.getMaxNodeDisplayedLevel(node)>node.getLevel())   )
+            //     {// Collapse only if current selected node would not be hidden
+            //         this.setChildrenDisplayedLevel(this.getMaxNodeDisplayedLevel(node)-1);
+            //         this.refresh();
+            //         this.scale(this.mindScale);
+            //         this.selectNode.select();
+            //     }
+            // }
+
+
+            // // Alt + PageDn: expand one level
+            // if (keyCode == 34) {
+            //     e.preventDefault();
+            //     e.stopPropagation();
+
+            //     node = this.selectNode;
+            //     if(node) {
+            //         this.setChildrenDisplayedLevel(this.getMaxNodeDisplayedLevel(node)+1);
+            //         this.refresh();
+            //         this.scale(this.mindScale);
+            //         this.selectNode.select();
+            //     }
+            // }
+
+
+        }
+
+
+        if (altKey && !ctrlKey && shiftKey) {           // Alt + Shift key
+
+            // Alt + Shift + PageUp: collapse one level from current node
+            // if (keyCode == 33) {
+            //     if(this.selectNode) {
+            //         this.setDisplayedLevel(this.selectNode.getLevel()-1);
+            //         this.refresh();
+            //         this.selectNode.parent.select();
+            //     }
+            // }
+
+
+            // Alt + PageDn: expand one level
+            // if (keyCode == 34) {
+            //     if(this.selectNode) {
+            //         this.setDisplayedLevel(this.selectNode.getLevel()+1);
+            //         this.refresh();
+            //         this.selectNode.select();
+            //     }
+            // }
+
+        }
+
+
+        if (altKey && ctrlKey && !shiftKey) {           // Alt + Ctrl key
+            // Alt + Ctrl + S: Select node's text
+            // if (keyCode == 83) {
+            //     e.preventDefault();
+            //     e.stopPropagation();
+
+            //     let node = this.selectNode;
+            //     if(node) {
+            //         node.edit();
+            //         node.selectText();
+            //     }
+            // }
+
+
+        }
+
+
+        if (altKey && ctrlKey && shiftKey) {            // Alt + Ctrl+ Shift key
+            // None
+            // if (keyCode == xx) {
+            //     e.preventDefault();
+            //     e.stopPropagation();
+
+            //     let node = this.selectNode;
+            //     if(node) {
+            //         TBD
+            //     }
+            // }
+        }
+
+
     }
     _hierarchySelectNode(node: INode, direct: string){
         if (!node) {
@@ -736,6 +1233,7 @@ export default class MindMap {
             // this._selectNode(node,direct);
         }
     }
+
     __selectChildren(node: INode, direct: string){
         if (!node) return;
         if (!node.isExpand) return;
@@ -777,7 +1275,74 @@ export default class MindMap {
         }
         return waitNode;
     }
-  
+
+    _formatNode(node: INode, i_prefix_1: string, i_prefix_2: string) {
+        var text = node.data.text;
+        if( (text.substring(0,2) == i_prefix_1) ||
+            (text.substring(0,2) == i_prefix_2) )
+        {// Already formatted
+            text = text.substring(i_prefix_1.length); // Remove leading prefix
+
+            if( (text.substring(text.length-2) == i_prefix_1)   ||
+                (text.substring(text.length-2) == i_prefix_2)   )
+            {// Remove trailing prefix
+                text = text.substring(0,text.length-i_prefix_1.length);
+            }
+            // else: no trailing prefix
+        }
+        else {// Not formatted
+            text = i_prefix_1+text+i_prefix_1;
+        }
+
+        // Set the text in the node
+        node.data.oldText = node.data.text;
+        node.setText(text);
+        node.select();
+    }
+
+
+    _moveAsParent(node: INode) {
+        if( (!node.isEdit)          &&
+            (!node.isRoot)          &&
+            (node.getLevel() > 1)   )
+        {// The node can be moved
+            this.moveNode(node, node.parent, 'down');
+        }
+
+        return;
+    }
+
+
+    _moveAsChild(movedNode: INode, newParentNode: INode) {
+        if( (!movedNode.isEdit)  &&
+            (!movedNode.isRoot)  )
+        {// The node can be moved
+            this.moveNode(movedNode, newParentNode, 'child-right');
+        }
+
+
+        return;
+    }
+
+
+    _toggleExpandNode(node: INode) {
+        if (node && !node.isEdit) {
+            if (node.isExpand) {
+                node.mindmap.execute('collapseNode', {
+                    node
+                });
+            }
+            else {
+                node.mindmap.execute('expandNode', {
+                    node
+                });
+            }
+        }
+
+        return;
+    }
+
+
     _selectNode(node: INode, direct: string) {
         if (!node) {
             return;
@@ -786,64 +1351,109 @@ export default class MindMap {
         var minDis: number;
         var waitNode: INode = null;
         var pos = node.getPosition();
+        var rootPos = this.root.getPosition();
+        var level = node.getLevel();
         var mind = this;
 
 
         mind.traverseDF((n: INode) => {
             var p = n.getPosition();
+            var l = n.getLevel();
             var dx = Math.abs(p.x - pos.x);
             var dy = Math.abs(p.y - pos.y);
             var dis = Math.sqrt(dx * dx + dy * dy);
             switch (direct) {
                 case "right":
-                    if (p.x > pos.x) {
-                        if (minDis) {
-                            if (minDis > dis) {
-                                minDis = dis;
-                                waitNode = n;
+                    if( ((pos.x>this.root.getPosition().x)  &&
+                         (l == level+1)                     )   ||
+                        ((pos.x<this.root.getPosition().x)  &&
+                         (l == level-1)                     )   ||
+                        ((level == 0)                       &&
+                         l==1)                                  )
+                    {// The tested node is at the correct level
+                        if( (n == node.parent) || (node == n.parent) )
+                        {// Move only within same lineage
+                            if (p.x > pos.x) {
+                                if (minDis) {
+                                    if (minDis > dis) {
+                                        minDis = dis;
+                                        waitNode = n;
+                                    }
+                                } else {
+                                    minDis = dis;
+                                    waitNode = n;
+                                }
                             }
-                        } else {
-                            minDis = dis;
-                            waitNode = n;
                         }
                     }
                     break;
                 case "left":
-                    if (p.x < pos.x) {
-                        if (minDis) {
-                            if (minDis > dis) {
-                                minDis = dis;
-                                waitNode = n;
+                    if( ((pos.x>this.root.getPosition().x)  &&
+                         (l == level-1)                     )   ||
+                        ((pos.x<this.root.getPosition().x)  &&
+                         (l == level+1)                     )   ||
+                         ((level == 0)                      &&
+                          l==1)                                 )
+                    {// The tested node is at the correct level
+                        if( (n == node.parent) || (node == n.parent) )
+                        {// Move only within same lineage
+                            if (p.x < pos.x) {
+                                if (minDis) {
+                                    if (minDis > dis) {
+                                        minDis = dis;
+                                        waitNode = n;
+                                    }
+                                } else {
+                                    minDis = dis;
+                                    waitNode = n;
+                                }
                             }
-                        } else {
-                            minDis = dis;
-                            waitNode = n;
                         }
                     }
                     break;
                 case "up":
-                    if (p.y < pos.y) {
-                        if (minDis) {
-                            if (minDis > dis) {
-                                minDis = dis;
-                                waitNode = n;
+                    if( (n.isShow())                &&
+                        (((pos.x<rootPos.x) &&
+                          (p.x<rootPos.x)   )   ||
+                         ((pos.x>rootPos.x) &&
+                          (p.x>rootPos.x)   )   )   )
+                    {// Move only on shown nodes + on the same side of the root
+                        if (p.y < pos.y) {
+                            if(level == l)
+                            {
+                                if (minDis) {
+                                    if (minDis > dis) {
+                                        minDis = dis;
+                                        waitNode = n;
+                                    }
+                                } else {
+                                    minDis = dis;
+                                    waitNode = n;
+                                }
                             }
-                        } else {
-                            minDis = dis;
-                            waitNode = n;
                         }
                     }
                     break;
                 case "down":
-                    if (p.y > pos.y) {
-                        if (minDis) {
-                            if (minDis > dis) {
-                                minDis = dis;
-                                waitNode = n;
+                    if( (n.isShow())                &&
+                        (((pos.x<rootPos.x) &&
+                          (p.x<rootPos.x)   )   ||
+                         ((pos.x>rootPos.x) &&
+                          (p.x>rootPos.x)   )   )   )
+                    {// Move only on shown nodes + on the same side of the root
+                        if (p.y > pos.y) {
+                            if(level == l)
+                            {
+                                if (minDis) {
+                                    if (minDis > dis) {
+                                        minDis = dis;
+                                        waitNode = n;
+                                    }
+                                } else {
+                                    minDis = dis;
+                                    waitNode = n;
+                                }
                             }
-                        } else {
-                            minDis = dis;
-                            waitNode = n;
                         }
                     }
                     break;
@@ -860,7 +1470,7 @@ export default class MindMap {
         var targetEl = evt.target as HTMLElement;
 
         if (targetEl) {
-            
+
             if (targetEl.tagName == 'A' && targetEl.hasClass("internal-link")) {
                 evt.preventDefault();
                 var targetEl = evt.target as HTMLElement;
@@ -903,7 +1513,7 @@ export default class MindMap {
 
                  if(targetEl.closest('.mm-icon-delete-node')){
                     var selectNode = this.selectNode;
-                    if(selectNode){
+                    if(!node.isRoot && selectNode){
                        selectNode.mindmap.execute("deleteNodeAndChild", { node: selectNode });
                        this._menuDom.style.display='none';
                     }
@@ -918,10 +1528,11 @@ export default class MindMap {
                     this.clearSelectNode();
                     this.selectNode = node;
                     this.selectNode?.select();
-                    this._menuDom.style.display='block';
+                    // this._menuDom.style.display='block';
+                    this._menuDom.style.display='none';
                     var box = this.selectNode.getBox();
-                    this._menuDom.style.left = `${box.x + box.width + 10}px`;
-                    this._menuDom.style.top = `${box.y + box.height/2 - 14}px`;
+                    // this._menuDom.style.left = `${box.x + box.width + 10}px`;
+                    // this._menuDom.style.top = `${box.y + box.height/2 - 14}px`;
                 }
             } else {
                 this.clearSelectNode();
@@ -991,12 +1602,12 @@ export default class MindMap {
         }else{
             this._indicateDom.style.display = 'none';
         }
-        
+
     }
 
     _getDragType(node:INode, x:number, y:number) {
         if (!node) return;
-    
+
         var box = node.contentEl.getBoundingClientRect();
 
         box.x = box.x
@@ -1078,13 +1689,13 @@ export default class MindMap {
                                      var mindData = JSON.parse(res);
                                        var data:any = importXmind(mindData[0]);
 
-                                
+
 
                                        me.clearNode();
                                        me.data = data.basicData;
                                        me.init();
                                        setTimeout(()=>{
-                                           me.center(); 
+                                           me.center();
                                            me.mindMapChange();
                                        },100);
                                    });
@@ -1098,7 +1709,7 @@ export default class MindMap {
                    }
                   }
 
-            
+
        }
 
         this._indicateDom.style.display = 'none'
@@ -1136,8 +1747,8 @@ export default class MindMap {
             }
         }else{
             if(this.drag){
-                this.containerEL.scrollLeft = this._left - (evt.pageX - this.startX); 
-                this.containerEL.scrollTop = this._top - (evt.pageY - this.startY); 
+                this.containerEL.scrollLeft = this._left - (evt.pageX - this.startX);
+                this.containerEL.scrollTop = this._top - (evt.pageY - this.startY);
             }
         }
     }
@@ -1286,8 +1897,8 @@ export default class MindMap {
             dropNode.expand();
         }
 
-        if (type == 'top' || type == 'left' ||type == 'down' || type == 'right') {   
-           this.execute('moveNode', { type: 'siblings', node: dragNode, oldParent: dragNode.parent, dropNode, direct: type })
+        if (type == 'top' || type == 'left' ||type == 'down' || type == 'right') {
+            this.execute('moveNode', { type: 'siblings', node: dragNode, oldParent: dragNode.parent, dropNode, direct: type})
         }
         else if (type.indexOf('child') > -1) {
             var typeArr = type.split('-');
@@ -1302,16 +1913,45 @@ export default class MindMap {
        // this.execute('moveNode', { type: 'child', node: dragNode, oldParent: dragNode.parent, parent: dropNode })
     }
 
+    // Join the current node with the following node
+    joinWithFollowingNode(node: INode) {
+        let joinedNode = node.getNextSibling();
+
+        // Set node's text
+        node.setText(node.data.text + joinedNode.data.text);
+
+        if(!joinedNode.isLeaf())
+        {// The joined node has children: copy them to the current node
+            joinedNode.children.forEach((n) => {
+                //this._moveAsChild(n, node);
+                let copiedNode = this.copyNode(n);
+                this.selectNode.unSelect();
+                node.select();
+                this.pasteNode(copiedNode);
+            });
+        }
+
+        // Delete joined node
+        this.removeNode(joinedNode);
+
+        this.clearSelectNode();
+        this.refresh();
+        this.scale(this.mindScale);
+        node.select();
+    }
+
     //execute cmd , store history
     execute(name: string, data?: any) {
-        this.exec.execute(name, data);
+        return this.exec.execute(name, data);
     }
     undo() {
         this.exec.undo();
+        console.log("Undo");
     }
 
     redo() {
         this.exec.redo();
+        console.log("Redo");
     }
 
     addNode(node: INode, parent?: INode, index = -1) {
@@ -1386,24 +2026,165 @@ export default class MindMap {
         }
     }
 
-    center(node: INode = this.root) {
-
-        this._setMindScalePointer(node);
+    center() {
+        //console.log("Center mindmap")
+        this._setMindScalePointer(this.root);
         var oldScale = this.mindScale;
         this.scale(100);
 
         var w = this.containerEL.clientWidth;
         var h = this.containerEL.clientHeight;
-        var targetScrollTop = this.scalePointer[1] - h / 2;
-        var targetScrollLeft = this.scalePointer[0] - w / 2;
-
-        this.containerEL.scroll({
-            top: targetScrollTop,
-            left: targetScrollLeft,
-            behavior: 'smooth'
-        });
+        this.containerEL.scrollTop = this.setting.canvasSize / 2 - h / 2 - 60;
+        this.containerEL.scrollLeft = this.setting.canvasSize / 2 - w / 2 + 30;
 
         this.scale(oldScale);
+    }
+
+
+    centerOnNode(node: INode) {
+        if(node == null)
+        {//No node given as input argument
+            this.center();
+        } else {
+            //console.log("Center mindmap on node "+node.getId())
+            this._setMindScalePointer(node);
+            var oldScale = this.mindScale;
+            this.scale(100);
+
+            var w = this.containerEL.clientWidth;
+            var h = this.containerEL.clientHeight;
+            let pos_x = node.getPosition().x;
+            let pos_y = node.getPosition().y;
+            let dim_x = node.getDimensions().x;
+            let dim_y = node.getDimensions().y;
+            //this.containerEL.scrollTop = this.setting.canvasSize / 2 - h / 2 - 60 ;
+            //this.containerEL.scrollLeft = this.setting.canvasSize / 2 - w / 2 + 30 ;
+            this.containerEL.scrollTop  = pos_y - (h/2 - dim_y/2) + 90;
+            this.containerEL.scrollLeft = pos_x - (w/2 - dim_x/2) + 40;
+
+            this.scale(oldScale);
+        }
+    }
+
+
+    _resetMaxDisplayedLevel() {
+        this.dispLevel = 0;
+        return;
+    }
+
+
+    _getMaxDisplayedLevel(node: INode)
+    {// Returns the highest displayed level.
+     // Use getMaxDisplayedLevel (without _).
+        if( (node.getLevel() > tempDispLevel)   &&
+            (node.isShow())                     )
+        {// Displayed node with higher level
+            tempDispLevel = node.getLevel();
+        }
+
+        if(!node.isLeaf())
+        {// The node has children
+            node.children.forEach((n) => {
+                this._getMaxDisplayedLevel(n);
+            });
+        }
+
+        return;
+    }
+
+
+    getMaxDisplayedLevel()
+    {// Returns the highest displayed level.
+        tempDispLevel = 0;
+        this._getMaxDisplayedLevel(this.root);
+        this.dispLevel = tempDispLevel;
+
+        return this.dispLevel;
+    }
+
+
+    getMaxNodeDisplayedLevel(node: INode)
+    {// Returns the highest displayed level.
+        tempDispLevel = 0;
+        this._getMaxDisplayedLevel(node);
+
+        return tempDispLevel;
+    }
+
+
+    _setDisplayedLevel(node: INode, level:number)
+    {// Display nodes whose level is <= number
+        var currentLevel = 0;
+
+        if( (node.getLevel()<level) )
+        {// Current level is to be displayed
+            node.expand();
+            if(!node.isLeaf())
+            {// The node has children
+                node.children.forEach((n) => {
+                    this._setDisplayedLevel(n, level);
+                });
+            }
+        }
+        else{
+            node.collapse();
+        }
+
+        return;
+    }
+
+
+    setDisplayedLevel(level:number)
+    {// Display nodes whose level is <= number
+        var currentLevel = 0;
+
+        if(level>0) {
+            var minLevel = 0;
+
+            this.root.expand();
+            this.root.children.forEach((n) => {
+                this._setDisplayedLevel(n, level);
+            });
+        }
+        else
+        {
+            this.root.collapse();
+        }
+
+        return;
+    }
+
+
+    setChildrenDisplayedLevel(level:number)
+    {// Display children nodes whose level is <= number
+        var currentLevel = 0;
+        let node = this.selectNode;
+
+        if(level>0 && node) {
+            var minLevel = 0;
+
+            if(node.getLevel() == level)
+            {// Max required displayed level is node level
+                node.mindmap.execute('collapseNode', {
+                    node
+                });
+            }
+            else
+            {// Expand to required level
+                node.expand();
+                node.children.forEach((n) => {
+                    this._setDisplayedLevel(n, level);
+                });
+            }
+        }
+        else
+        {
+            this.root.collapse();
+        }
+
+        this.scale(this.mindScale);
+
+        return;
     }
 
     _setMindScalePointer(node: INode) {
@@ -1438,7 +2219,7 @@ export default class MindMap {
 
             } else {
                 for (var i = 0; i < n.getLevel() - level; i++) {
-                    space += '\t';
+                    space += '   ';
                 }
                 var text = n.getData().text.trim();
                 if (text) {
@@ -1475,7 +2256,7 @@ export default class MindMap {
                     }
                 } else {
                     for (var i = 0; i < n.getLevel() - level; i++) {
-                        space += '\t';
+                        space += '   ';
                     }
                     md += `${space}-\n`;
                 }
@@ -1538,7 +2319,7 @@ export default class MindMap {
           }
 
            copyNode(n,null)
-        
+
            var _data = {
                type:'copyNode',
                text:data

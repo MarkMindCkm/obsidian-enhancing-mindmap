@@ -8,5 +8,6 @@ export class MindMapSettings {
     layoutDirect:string = 'mindmap'
     color?:string;
     exportMdModel?:string;
+    //strokeArray?:string=''
     strokeArray?:any[];
 }
