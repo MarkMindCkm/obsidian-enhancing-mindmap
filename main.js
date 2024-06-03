@@ -38702,9 +38702,9 @@ class MindMapPlugin extends obsidian.Plugin {
                         var node = mindmap.selectNode;
                         if (node) { // A node is selected
                             if (!node.isEdit) { // Not editing a node => Add sibling node
-                                if (!node.isExpand) {
-                                    node.expand();
-                                }
+                                // if (!node.isExpand) {
+                                //   node.expand();
+                                // }
                                 if (!node.parent)
                                     return;
                                 var newNode = node.mindmap.execute('addSiblingNode', {
