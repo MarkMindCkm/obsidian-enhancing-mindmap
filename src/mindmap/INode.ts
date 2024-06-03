@@ -294,7 +294,129 @@ export default class Node {
         }
     }
 
+
+    setSelectedText(i_str_1: string, i_str_2: string, i_check: boolean) {
+        // Get selection and Create new text
+        let l_selection = window.getSelection();
+        let l_selectedText = l_selection.toString();
+
+        // Remove leading space(s)
+        let l_leadingSpace = false;
+        while (l_selectedText.substring(0,1) == " ") {
+            l_selectedText = l_selectedText.substring(1);
+            l_leadingSpace = true;
+        }
+
+        // Remove trailing space(s)
+        let l_trailingSpace = false;
+        while (l_selectedText.substring(l_selectedText.length-1) == " ") {
+            l_selectedText = l_selectedText.substring(0,l_selectedText.length-1);
+            l_trailingSpace = true;
+        }
+
+        if(i_check)
+        {// Check in case the pre-/suf-fix must be substracted
+            if( (l_selectedText.substring(0,2) == i_str_1)  || 
+                (l_selectedText.substring(0,2) == i_str_2)  )
+            {// Prefix must be substracted
+                l_selectedText = l_selectedText.substring(i_str_1.length); // Remove leading prefix
+
+                if( (l_selectedText.substring(l_selectedText.length-2) == i_str_1)  || 
+                    (l_selectedText.substring(l_selectedText.length-2) == i_str_2)  )
+                {// Suffix must be substracted
+                    l_selectedText = l_selectedText.substring(0,l_selectedText.length-i_str_1.length);
+                }
+                // else: no trailing prefix
+            }
+            else {// No pre-/suf-fix: add it
+                l_selectedText = i_str_1+l_selectedText+i_str_1;
+            }
+        }
+        else {// No need to check: add the string
+            l_selectedText = i_str_1+l_selectedText+i_str_1;
+        }
+
+        // Add a leading/trailing space if needed
+        if (l_leadingSpace) {
+            l_selectedText = (" "+l_selectedText);
+        }
+        if (l_trailingSpace) {
+            l_selectedText = (l_selectedText+" ");
+        }
+
+
+        // Create a new selection range
+        let range = l_selection.getRangeAt(0);
+        range.deleteContents();
+        let textNode = document.createTextNode(l_selectedText);
+        range.insertNode(textNode);
+
+        // Unselect modified text
+        //selection.removeAllRanges();
+    }
+
+    setSelectedText_italic() {
+        // Get selection and Create new text
+        let l_selection = window.getSelection();
+        let l_selectedText = l_selection.toString();
+
+        // Remove leading space(s)
+        let l_leadingSpace = false;
+        while (l_selectedText.substring(0,1) == " ") {
+            l_selectedText = l_selectedText.substring(1);
+            l_leadingSpace = true;
+        }
+
+        // Remove trailing space(s)
+        let l_trailingSpace = false;
+        while (l_selectedText.substring(l_selectedText.length-1) == " ") {
+            l_selectedText = l_selectedText.substring(0,l_selectedText.length-1);
+            l_trailingSpace = true;
+        }
+
+        {// Check in case the pre-/suf-fix must be substracted
+            if( (  ((l_selectedText.substring(0,1)=="*")    ||
+                    (l_selectedText.substring(0,1)=="_")    )   &&   
+                (l_selectedText.substring(0,2)!="**")           &&
+                (l_selectedText.substring(0,2)!="__")           )   ||
+                (l_selectedText.substring(0,3)=="***")              ||
+                (l_selectedText.substring(0,3)=="___")              )
+            {// Already italic
+                l_selectedText = l_selectedText.substring(1); // Remove leading prefix
+
+                if( (l_selectedText.substring(l_selectedText.length-1) == "*")  || 
+                    (l_selectedText.substring(l_selectedText.length-1) == "_")  )
+                {// Suffix must be substracted
+                    l_selectedText = l_selectedText.substring(0,l_selectedText.length-1);
+                }
+                // else: no trailing prefix
+            }
+            else {// No pre-/suf-fix: add it
+                l_selectedText = "*"+l_selectedText+"*"; // Use "*" so that bold/italic can be changed in whetever order
+            }
+        }
+
+        // Add a leading/trailing space if needed
+        if (l_leadingSpace) {
+            l_selectedText = (" "+l_selectedText);
+        }
+        if (l_trailingSpace) {
+            l_selectedText = (l_selectedText+" ");
+        }
+
+        // Create a new selection range
+        let range = l_selection.getRangeAt(0);
+        range.deleteContents();
+        let textNode = document.createTextNode(l_selectedText);
+        range.insertNode(textNode);
+
+        // Unselect modified text
+        //selection.removeAllRanges();
+    }
+
+
     cancelEdit(){
+        console.log("CancelEdit");
         var text = this.contentEl.innerText.trim()||'';
         if(text.length == 0){
             text = this._oldText
@@ -341,6 +463,15 @@ export default class Node {
         return level;
     }
 
+
+    getIndex() {
+        var l_index = 0;
+        if(!this.isRoot)
+        { l_index = this.parent.children.indexOf(this); }
+        return l_index;
+    }
+
+
     getChildren(){
         return this.children;
     }
@@ -356,6 +487,13 @@ export default class Node {
         return {
             x:this.box.x,
             y:this.box.y
+        }
+    }
+
+    getDimensions(){
+        return {
+            x:this.box.width,
+            y:this.box.height
         }
     }
 
@@ -417,6 +555,87 @@ export default class Node {
             return [];
         }
     }
+
+
+    getPreviousSibling() {
+        var nodeIdx = this.getIndex();
+        var returnedNode = (this as Node);
+        
+        var searchedIdx = nodeIdx-1;
+        if(nodeIdx == 0)
+        {// This is the first sibling -> return the last one.
+            searchedIdx = this.parent.children.length-1;
+        }
+        // else: searchedIdx already set.
+
+        // Search the sibling
+        var sibs = this.getSiblings();
+        sibs.forEach((sib) => {
+            if (sib.getIndex() == searchedIdx) {
+                returnedNode = sib;
+            }
+            // else: not the previous sibling
+        })
+        
+        return returnedNode;
+    }
+    
+    getNextSibling() {
+        var nodeIdx = this.getIndex();
+        var returnedNode = (this as Node);
+
+        var searchedIdx = nodeIdx+1;
+
+        if(nodeIdx >= this.parent.children.length-1)
+        {// This is the last sibling -> return the first one.
+            searchedIdx = 0;
+        }
+        // else: searchedIdx already set.
+
+        // Search the sibling
+        var sibs = this.getSiblings();
+        sibs.forEach((sib) => {
+            if (sib.getIndex() == searchedIdx) {
+                returnedNode = sib;
+            }
+            // else: not the next sibling
+        })
+
+        return returnedNode;
+    }
+
+    getFirstSibling() {
+        var returnedNode = (this as Node);
+        var searchedIdx = 0;
+
+        // Search the sibling
+        var sibs = this.getSiblings();
+        sibs.forEach((sib) => {
+            if (sib.getIndex() == searchedIdx) {
+                returnedNode = sib;
+            }
+            // else: not the next sibling
+        })
+
+        return returnedNode;
+    }
+
+    getLastSibling() {
+        var returnedNode = (this as Node);
+        var searchedIdx = this.parent.children.length-1;
+
+        // Search the sibling
+        var sibs = this.getSiblings();
+        sibs.forEach((sib) => {
+            if (sib.getIndex() == searchedIdx) {
+                returnedNode = sib;
+            }
+            // else: not the next sibling
+        })
+
+        return returnedNode;
+    }
+
 
     isLeaf() {
         return !this.children.length

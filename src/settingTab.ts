@@ -146,12 +146,14 @@ export class MindMapSettingsTab extends PluginSettingTab {
                             .setValue(this.plugin.settings.strokeArray?.toString() || '')
                             .setPlaceholder('Example: red,orange,blue ...')
                             .onChange((value: string) => {
+                                //this.plugin.settings.strokeArray = value
                                 this.plugin.settings.strokeArray = value.split(',');
                                 this.plugin.saveData(this.plugin.settings);
                                 const mindmapLeaves = this.app.workspace.getLeavesOfType(mindmapViewType);
                                 
                                 mindmapLeaves.forEach((leaf) => {
                                     var v = leaf.view as MindMapView;
+                                    //v.mindmap.setting.strokeArray = this.plugin.settings.strokeArray.split(',');
                                     v.mindmap.setting.strokeArray = this.plugin.settings.strokeArray;
                                     if( v.mindmap.mmLayout){
                                         v.mindmap.mmLayout.colors=v.mindmap.setting.strokeArray;
