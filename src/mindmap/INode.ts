@@ -1,4 +1,4 @@
-import MindMap from './mindmap' 
+import MindMap from './mindmap'
 import {MarkdownRenderer,normalizePath,TFile,parseLinktext,resolveSubpath} from 'obsidian'
 import {t} from '../lang/helpers'
 
@@ -7,11 +7,11 @@ export function keepLastIndex(dom:HTMLElement) {
     if ( window.getSelection ) { //ie11 10 9 ff safari
         dom.focus();  //ff
         var range = window.getSelection();
-        range.selectAllChildren(dom); 
-        range.collapseToEnd(); 
+        range.selectAllChildren(dom);
+        range.collapseToEnd();
     }
     // else if ( document.selection ) { //ie10 9 8 7 6 5
-    //     var range = document.selection.createRange(); 
+    //     var range = document.selection.createRange();
     //     range.moveToElementText(dom);
     //     range.collapse(false);
     //     range.select();
@@ -25,7 +25,8 @@ interface INode {
     mdText?:string;
     isRoot?:Boolean;
     children?:INode[];
-    
+    isEdit?:boolean;
+
 }
 
 interface BOX {
@@ -45,6 +46,7 @@ export class INodeData implements INode{
     isRoot?:Boolean;
     children?:INodeData[]
     expanded?:boolean;
+    isEdit?:boolean;
 }
 
 export default class Node {
@@ -61,13 +63,13 @@ export default class Node {
     isSelect:boolean = false;
     _oldText?:string;
     parent?:Node;
-    isRoot?:boolean;
+    //isRoot?:boolean;
     children:Node[]=[];
     boundingRect:any;
     direct?:string;
     isHide:boolean=false;
     stroke?:string;
-    isEdit:boolean=false;
+    //isEdit:boolean=false;
     _barDom:HTMLElement=null;
     data:any
     constructor( data:INode,mindMap?:MindMap){
@@ -96,9 +98,9 @@ export default class Node {
 
         if(this.data.isRoot){
             this.containEl.classList.add('mm-root');
-            this.isRoot = true;
+            this.data.isRoot = true;
         }else{
-            this.isRoot = false;
+            this.data.isRoot = false;
             this.containEl.classList.remove('mm-root');
         }
         this.parseText();
@@ -120,7 +122,7 @@ export default class Node {
             this.mindmap&&this.mindmap.emit('initNode',{});
             this._delay();
         });
-        
+
     }
 
     _delay(){
@@ -149,7 +151,7 @@ export default class Node {
                          markdownLink.classList.add('markdown-embed-link');
                          markdownLink.setAttribute('aria-label','Open link');
                          markdownLink.innerHTML = `<a data-href="${src}" href="${src}" class="internal-link" target="_blank" rel="noopener"><svg viewBox="0 0 100 100" class="link" width="20" height="20"><path fill="currentColor" stroke="currentColor" d="M74,8c-4.8,0-9.3,1.9-12.7,5.3l-10,10c-2.9,2.9-4.7,6.6-5.1,10.6C46,34.6,46,35.3,46,36c0,2.7,0.6,5.4,1.8,7.8l3.1-3.1 C50.3,39.2,50,37.6,50,36c0-3.7,1.5-7.3,4.1-9.9l10-10c2.6-2.6,6.2-4.1,9.9-4.1s7.3,1.5,9.9,4.1c2.6,2.6,4.1,6.2,4.1,9.9 s-1.5,7.3-4.1,9.9l-10,10C71.3,48.5,67.7,50,64,50c-1.6,0-3.2-0.3-4.7-0.8l-3.1,3.1c2.4,1.1,5,1.8,7.8,1.8c4.8,0,9.3-1.9,12.7-5.3 l10-10C90.1,35.3,92,30.8,92,26s-1.9-9.3-5.3-12.7C83.3,9.9,78.8,8,74,8L74,8z M62,36c-0.5,0-1,0.2-1.4,0.6l-24,24 c-0.5,0.5-0.7,1.2-0.6,1.9c0.2,0.7,0.7,1.2,1.4,1.4c0.7,0.2,1.4,0,1.9-0.6l24-24c0.6-0.6,0.8-1.5,0.4-2.2C63.5,36.4,62.8,36,62,36 z M36,46c-4.8,0-9.3,1.9-12.7,5.3l-10,10c-3.1,3.1-5,7.2-5.2,11.6c0,0.4,0,0.8,0,1.2c0,4.8,1.9,9.3,5.3,12.7 C16.7,90.1,21.2,92,26,92s9.3-1.9,12.7-5.3l10-10C52.1,73.3,54,68.8,54,64c0-2.7-0.6-5.4-1.8-7.8l-3.1,3.1 c0.5,1.5,0.8,3.1,0.8,4.7c0,3.7-1.5,7.3-4.1,9.9l-10,10C33.3,86.5,29.7,88,26,88s-7.3-1.5-9.9-4.1S12,77.7,12,74 c0-3.7,1.5-7.3,4.1-9.9l10-10c2.6-2.6,6.2-4.1,9.9-4.1c1.6,0,3.2,0.3,4.7,0.8l3.1-3.1C41.4,46.6,38.7,46,36,46L36,46z"></path></svg></a>`
-                       
+
                          el.appendChild(markdownEmbed);
                         //  markdownEmbed.appendChild(markdownHead);
                          markdownEmbed.appendChild(markdownContent);
@@ -206,8 +208,8 @@ export default class Node {
                   el.addClasses(["image-embed", "is-loaded"]);
                 }
               });
-              
-            //Possible causes of delay,code mathjax  
+
+            //Possible causes of delay,code mathjax
             var dom =this.contentEl.querySelector('code')|| this.contentEl.querySelector('.MathJax');
             if(dom){
                 setTimeout(()=>{
@@ -216,7 +218,7 @@ export default class Node {
                     this.mindmap&&this.mindmap.emit('renderEditNode',{});
                 },100);
             }
-            //image 
+            //image
             this.contentEl.querySelectorAll('img').forEach(element => {
                 element.onload = () => {
                         this.clearCacheData();
@@ -228,7 +230,7 @@ export default class Node {
                         this.refreshBox();
                         this.mindmap&&this.mindmap.emit('renderEditNode',{});
                 }
-    
+
                 element.setAttribute('draggble','false');
             });
 
@@ -238,7 +240,9 @@ export default class Node {
     select(){
         this.isSelect = true;
         this.containEl.setAttribute('draggable','true');
-        this.containEl.focus(); // set the dom to be focused
+        //if(this.mindmap.view.plugin.settings.focusOnMove) {
+            this.containEl.focus(); // set the dom to be focused
+        //}
         Object.assign(window,{
             myNode:this
         });
@@ -266,9 +270,9 @@ export default class Node {
         this.contentEl.setAttribute('contentEditable','true');
         this.contentEl.focus();
         this.mindmap.editNode = this;
-        this.isEdit = true;
+        this.data.isEdit = true;
         keepLastIndex(this.contentEl);
-     
+
         if (this.contentEl.innerText == t('Sub title')) {
             this.selectText();
         }
@@ -284,7 +288,7 @@ export default class Node {
         //     var range = document.body.createTextRange();
         //     range.moveToElementText(text);
         //     range.select();
-        // } 
+        // }
         if (window.getSelection) {
             var selection = window.getSelection();
             var range = document.createRange();
@@ -316,12 +320,12 @@ export default class Node {
 
         if(i_check)
         {// Check in case the pre-/suf-fix must be substracted
-            if( (l_selectedText.substring(0,2) == i_str_1)  || 
+            if( (l_selectedText.substring(0,2) == i_str_1)  ||
                 (l_selectedText.substring(0,2) == i_str_2)  )
             {// Prefix must be substracted
                 l_selectedText = l_selectedText.substring(i_str_1.length); // Remove leading prefix
 
-                if( (l_selectedText.substring(l_selectedText.length-2) == i_str_1)  || 
+                if( (l_selectedText.substring(l_selectedText.length-2) == i_str_1)  ||
                     (l_selectedText.substring(l_selectedText.length-2) == i_str_2)  )
                 {// Suffix must be substracted
                     l_selectedText = l_selectedText.substring(0,l_selectedText.length-i_str_1.length);
@@ -376,7 +380,7 @@ export default class Node {
 
         {// Check in case the pre-/suf-fix must be substracted
             if( (  ((l_selectedText.substring(0,1)=="*")    ||
-                    (l_selectedText.substring(0,1)=="_")    )   &&   
+                    (l_selectedText.substring(0,1)=="_")    )   &&
                 (l_selectedText.substring(0,2)!="**")           &&
                 (l_selectedText.substring(0,2)!="__")           )   ||
                 (l_selectedText.substring(0,3)=="***")              ||
@@ -384,7 +388,7 @@ export default class Node {
             {// Already italic
                 l_selectedText = l_selectedText.substring(1); // Remove leading prefix
 
-                if( (l_selectedText.substring(l_selectedText.length-1) == "*")  || 
+                if( (l_selectedText.substring(l_selectedText.length-1) == "*")  ||
                     (l_selectedText.substring(l_selectedText.length-1) == "_")  )
                 {// Suffix must be substracted
                     l_selectedText = l_selectedText.substring(0,l_selectedText.length-1);
@@ -423,7 +427,7 @@ export default class Node {
         }
         this.data.text = text;
         this.contentEl.innerText = '';
-        
+
         MarkdownRenderer.renderMarkdown(text,this.contentEl,this.mindmap.path||"",null).then(()=>{
             this.data.mdText = this.contentEl.innerHTML;
             this.refreshBox();
@@ -437,9 +441,9 @@ export default class Node {
                 oldText:this._oldText
             });
          }
-       
+
         this.contentEl.setAttribute('contentEditable','false');
-        this.isEdit = false;
+        this.data.isEdit = false;
 
         if(this.containEl.classList.contains('mm-edit-node')){
             this.containEl.classList.remove('mm-edit-node')
@@ -450,15 +454,12 @@ export default class Node {
     getLevel() {
         var level = 0, parent = this.parent;
 
-        if(this == this.mindmap.root){
-            return level;
-        }
-        
-        level++;
-        
-        while (parent && parent != this.mindmap.root) {
+        if(!this.data.isRoot){
             level++;
-            parent = parent.parent;
+            while (parent && parent != this.mindmap.root) {
+                level++;
+                parent = parent.parent;
+            }
         }
         return level;
     }
@@ -466,7 +467,7 @@ export default class Node {
 
     getIndex() {
         var l_index = 0;
-        if(!this.isRoot)
+        if(!this.data.isRoot)
         { l_index = this.parent.children.indexOf(this); }
         return l_index;
     }
@@ -560,7 +561,7 @@ export default class Node {
     getPreviousSibling() {
         var nodeIdx = this.getIndex();
         var returnedNode = (this as Node);
-        
+
         var searchedIdx = nodeIdx-1;
         if(nodeIdx == 0)
         {// This is the first sibling -> return the last one.
@@ -576,10 +577,10 @@ export default class Node {
             }
             // else: not the previous sibling
         })
-        
+
         return returnedNode;
     }
-    
+
     getNextSibling() {
         var nodeIdx = this.getIndex();
         var returnedNode = (this as Node);
@@ -709,7 +710,7 @@ export default class Node {
     }
 
     collapse(){
-        
+
         this.isExpand = false;
         function hide(node:Node) {
             node.hide();
@@ -729,6 +730,6 @@ export default class Node {
         }
     }
 
-   
+
 
 }

@@ -185,7 +185,7 @@ export default class MindMapPlugin extends Plugin {
         if(mindmapView){
           var mindmap = mindmapView.mindmap;
           var node = mindmap.selectNode;
-          if (node && !node.isEdit) {
+          if (node && !node.data.isEdit) {
             node.edit();
             mindmap._menuDom.style.display = 'none';
           }
@@ -209,7 +209,7 @@ export default class MindMapPlugin extends Plugin {
           var mindmap = mindmapView.mindmap;
           var node = mindmap.selectNode;
           if(node) {// A node is selected
-            if (!node.isEdit) {// Not editing a node => Add sibling node
+            if (!node.data.isEdit) {// Not editing a node => Add sibling node
               // if (!node.isExpand) {
               //   node.expand();
               // }
@@ -252,7 +252,7 @@ export default class MindMapPlugin extends Plugin {
           var mindmap = mindmapView.mindmap;
           var node = mindmap.selectNode;
           if(node) {
-            if (!node.isEdit) {// Not editing
+            if (!node.data.isEdit) {// Not editing
               if (!node.isExpand) {
                 node.expand();
               }
@@ -285,7 +285,7 @@ export default class MindMapPlugin extends Plugin {
         if(mindmapView){
           var mindmap = mindmapView.mindmap;
           var node = mindmap.selectNode;
-          if (node && !node.isRoot && !node.isEdit) {
+          if (node && !node.data.isRoot && !node.data.isEdit) {
             node.mindmap.execute("deleteNodeAndChild", { node });
             mindmap._menuDom.style.display='none';
           }
@@ -331,7 +331,7 @@ export default class MindMapPlugin extends Plugin {
             var l_prefix_2 = "__"; // Alternate prefix to look for
             var node = mindmap.selectNode;
 
-            if(node.isEdit)
+            if(node.data.isEdit)
             {// A node is edited: set in bold only the selected part
               var l_check_prefix = true;
               node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix);
@@ -367,7 +367,7 @@ export default class MindMapPlugin extends Plugin {
           if(mindmap.selectNode) {
             var node = mindmap.selectNode;
 
-            if(node.isEdit)
+            if(node.data.isEdit)
             {// A node is edited: set in italics only the selected part
               node.setSelectedText_italic();
             }
@@ -428,7 +428,7 @@ export default class MindMapPlugin extends Plugin {
             var l_prefix_2 = l_prefix_1;
             var node = mindmap.selectNode;
 
-            if(node.isEdit)
+            if(node.data.isEdit)
             {// A node is edited: set in bold only the selected part
               var l_check_prefix = true;
               node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix);
@@ -457,7 +457,7 @@ export default class MindMapPlugin extends Plugin {
             var l_prefix_2 = l_prefix_1;
             var node = mindmap.selectNode;
 
-            if(node.isEdit)
+            if(node.data.isEdit)
             {// A node is edited: set in bold only the selected part
               var l_check_prefix = true;
               node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix);
@@ -482,7 +482,7 @@ export default class MindMapPlugin extends Plugin {
         if(mindmapView){
           var mindmap = mindmapView.mindmap;
           var node = mindmap.selectNode;
-          if (node && node.isEdit) {
+          if (node && node.data.isEdit) {
             node.select();
             node.mindmap.editNode = null;
             node.cancelEdit();
@@ -633,8 +633,8 @@ export default class MindMapPlugin extends Plugin {
             mindmap.root.select();
             node = mindmap.selectNode;
           }
-          else if((!node.isEdit)  &&
-                  (!node.isRoot)  )
+          else if((!node.data.isEdit)  &&
+                  (!node.data.isRoot)  )
           {// The node can be moved
             var type='top';
             if(node.getIndex() == 0)
@@ -644,7 +644,10 @@ export default class MindMapPlugin extends Plugin {
             //else: no special treatment
             mindmap.moveNode(node, node.getPreviousSibling(), type);
           }
-          mindmap.centerOnNode(mindmap.selectNode);
+          if ((this.settings.focusOnMove == true))
+          {
+            mindmap.centerOnNode(mindmap.selectNode);
+          }
         }
       }
     });
@@ -669,8 +672,8 @@ export default class MindMapPlugin extends Plugin {
             mindmap.root.select();
             node = mindmap.selectNode;
           }
-          else if((!node.isEdit)  &&
-                  (!node.isRoot)  )
+          else if((!node.data.isEdit)  &&
+                  (!node.data.isRoot)  )
           {// The node can be moved
             var type='down';
             if(node.getIndex() == node.parent.children.length-1)
@@ -680,7 +683,10 @@ export default class MindMapPlugin extends Plugin {
             //else: no special treatment
             mindmap.moveNode(node, node.getNextSibling(), type);
           }
-          mindmap.centerOnNode(mindmap.selectNode);
+          if((this.settings.focusOnMove == true))
+            {
+            mindmap.centerOnNode(mindmap.selectNode);
+          }
         }
       }
     });
@@ -717,7 +723,10 @@ export default class MindMapPlugin extends Plugin {
               mindmap._moveAsChild(node, node.getPreviousSibling());
             }
           }
-          mindmap.centerOnNode(mindmap.selectNode);
+          if((this.settings.focusOnMove == true))
+            {
+            mindmap.centerOnNode(mindmap.selectNode);
+          }
         }
       }
     });
@@ -757,7 +766,10 @@ export default class MindMapPlugin extends Plugin {
               mindmap._moveAsParent(node);
             }
           }
-          mindmap.centerOnNode(mindmap.selectNode);
+          if((this.settings.focusOnMove == true))
+            {
+            mindmap.centerOnNode(mindmap.selectNode);
+          }
         }
       }
     });

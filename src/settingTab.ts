@@ -138,33 +138,51 @@ export class MindMapSettingsTab extends PluginSettingTab {
                         });
                     }));
 
-             new Setting(containerEl)
-                    .setName(`${t('Stroke Array')}`)
-                    .setDesc(`${t('Stroke Array Desc')}`)
-                    .addText(text =>
-                        text
-                            .setValue(this.plugin.settings.strokeArray?.toString() || '')
-                            .setPlaceholder('Example: red,orange,blue ...')
-                            .onChange((value: string) => {
-                                //this.plugin.settings.strokeArray = value
-                                this.plugin.settings.strokeArray = value.split(',');
-                                this.plugin.saveData(this.plugin.settings);
-                                const mindmapLeaves = this.app.workspace.getLeavesOfType(mindmapViewType);
-                                
-                                mindmapLeaves.forEach((leaf) => {
-                                    var v = leaf.view as MindMapView;
-                                    //v.mindmap.setting.strokeArray = this.plugin.settings.strokeArray.split(',');
-                                    v.mindmap.setting.strokeArray = this.plugin.settings.strokeArray;
-                                    if( v.mindmap.mmLayout){
-                                        v.mindmap.mmLayout.colors=v.mindmap.setting.strokeArray;
-                                    }
-                                
-                                    v.mindmap.traverseBF((n: MyNode) => {
-                                        n.boundingRect = null;
-                                        n.refreshBox();
-                                    })
-                                    v.mindmap.refresh();
-                                });
-                            }));
+        new Setting(containerEl)
+            .setName(`${t('Stroke Array')}`)
+            .setDesc(`${t('Stroke Array Desc')}`)
+            .addText(text =>
+                text
+                    .setValue(this.plugin.settings.strokeArray?.toString() || '')
+                    .setPlaceholder('Example: red,orange,blue ...')
+                    .onChange((value: string) => {
+                        //this.plugin.settings.strokeArray = value
+                        this.plugin.settings.strokeArray = value.split(',');
+                        this.plugin.saveData(this.plugin.settings);
+                        const mindmapLeaves = this.app.workspace.getLeavesOfType(mindmapViewType);
+
+                        mindmapLeaves.forEach((leaf) => {
+                            var v = leaf.view as MindMapView;
+                            //v.mindmap.setting.strokeArray = this.plugin.settings.strokeArray.split(',');
+                            v.mindmap.setting.strokeArray = this.plugin.settings.strokeArray;
+                            if( v.mindmap.mmLayout){
+                                v.mindmap.mmLayout.colors=v.mindmap.setting.strokeArray;
+                            }
+
+                            v.mindmap.traverseBF((n: MyNode) => {
+                                n.boundingRect = null;
+                                n.refreshBox();
+                            })
+                            v.mindmap.refresh();
+                        });
+                    }));
+
+        new Setting(containerEl)
+            .setName('Display moved on current node')
+            .setDesc(
+                'If enabled, the mindmap view is centered on the current node when moving it',
+            )
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(this.plugin.settings.focusOnMove).onChange((value) => {
+                        this.plugin.settings.focusOnMove = value;
+                        this.plugin.saveData(this.plugin.settings);
+
+                }),
+            );
+
+
+
+
     }
 }
