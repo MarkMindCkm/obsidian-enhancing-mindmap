@@ -72,7 +72,7 @@ export class RemoveNode extends Command {
         this.mind = mind||this.node.mindmap;
     }
     execute():boolean {
-        if(this.node.isRoot == true){
+        if(this.node.data.isRoot == true){
             return false;
         }
         this.node.clearCacheData();
@@ -253,7 +253,7 @@ export class CollapseNode extends Command{
        super('collapseNOde')
        this.node = node;
        this.node.mindmap.clearSelectNode();
-    
+
        this.node.refreshBox();
    }
    execute(){
@@ -324,9 +324,9 @@ export class ExpandNode extends Command{
 
     paste() {
         this.data.forEach((d:any, i:number) => {
-          
+
             var n = new INode(d, this.mind);
-          
+
             n.mindmap = this.mind;
             if (!d.isExpand) {
                 this.waitCollapse.push(n);
@@ -337,7 +337,7 @@ export class ExpandNode extends Command{
                 this.firstNode = n;
                 n.setPosition(0,0);
                 n.refreshBox();
-              
+
             }
             else {
                 var parent = this.mind.getNodeById(d.pid);
@@ -348,7 +348,7 @@ export class ExpandNode extends Command{
 
                 }
             }
-            
+
             if (i == this.data.length - 1) {
                 n.clearCacheData();
                 this.refresh(this.mind);
@@ -356,9 +356,3 @@ export class ExpandNode extends Command{
         });
     }
 }
-
-
-
-
-
-

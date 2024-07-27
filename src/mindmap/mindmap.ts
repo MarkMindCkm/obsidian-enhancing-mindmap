@@ -24,7 +24,8 @@ interface Setting {
     exportMdModel?: string,
     headLevel: number,
     layoutDirect: string,
-    strokeArray?:any[]
+    strokeArray?:any[],
+    focusOnMove?: boolean
 }
 
 export default class MindMap {
@@ -194,7 +195,7 @@ export default class MindMap {
             if (isRoot) {
                 n.setPosition(x, y);
                 that.root = n;
-                n.isRoot = true;
+                n.data.isRoot = true;
             } else {
                 n.setPosition(0, 0);
                 p.children.push(n);
@@ -273,7 +274,7 @@ export default class MindMap {
             this.selectNode = null
         }
         if (this.editNode) {
-            if(this.editNode.isEdit){
+            if(this.editNode.data.isEdit){
                 this.editNode.cancelEdit();
             }
             this.editNode = null;
@@ -293,7 +294,7 @@ export default class MindMap {
         //     this.selectNode = null
         // }
         // if (this.editNode) {
-        //     if(this.editNode.isEdit){
+        //     if(this.editNode.data.isEdit){
         //         this.editNode.cancelEdit();
         //     }
         //     this.editNode = null;
@@ -367,7 +368,7 @@ export default class MindMap {
 
         if (this._tempNum == this._nodeNum) {
             this.refresh();
-            this.center();
+            //this.center();
         }
     }
 
@@ -416,7 +417,7 @@ export default class MindMap {
             // // Space
             // if (keyCode == 32) {
             //     var node = this.selectNode;
-            //     if (node && !node.isEdit) {
+            //     if (node && !node.data.isEdit) {
             //         e.preventDefault();
             //         e.stopPropagation();
             //         node.edit();
@@ -449,7 +450,7 @@ export default class MindMap {
         //     if (keyCode == 113) {
         //     // if (keyCode == 45) {
         //         var node = this.selectNode;
-        //         if (node && !node.isEdit) {
+        //         if (node && !node.data.isEdit) {
         //             e.preventDefault();
         //             e.stopPropagation();
         //             if (!node.isExpand) {
@@ -495,7 +496,7 @@ export default class MindMap {
             //     e.preventDefault();
             //     e.stopPropagation();
             //     if(node) {// A node is selected
-            //         if (!node.isEdit) {// Not editing a node => Add sibling node
+            //         if (!node.data.isEdit) {// Not editing a node => Add sibling node
             //             if (!node.isExpand) {
             //                 node.expand();
             //             }
@@ -520,7 +521,7 @@ export default class MindMap {
             //delete
             // if (keyCode == 46 || e.key == 'Delete' || e.key == 'Backspace') {
             //     var node = this.selectNode;
-            //     if (node && !node.isRoot && !node.isEdit) {
+            //     if (node && !node.data.isRoot && !node.data.isEdit) {
             //         e.preventDefault();
             //         e.stopPropagation();
             //         node.mindmap.execute("deleteNodeAndChild", { node });
@@ -536,7 +537,7 @@ export default class MindMap {
             //     e.stopPropagation();
             //     var node = this.selectNode;
             //     if(node) {
-            //         if (!node.isEdit) {// Not editing
+            //         if (!node.data.isEdit) {// Not editing
             //             if (!node.isExpand) {
             //                 node.expand();
             //             }
@@ -558,7 +559,7 @@ export default class MindMap {
                 e.stopPropagation();
 
                 var node = this.selectNode;
-                if (node && node.isEdit) {
+                if (node && node.data.isEdit) {
                     node.select();
                     node.mindmap.editNode = null;
                     node.cancelEdit();
@@ -573,7 +574,7 @@ export default class MindMap {
                 e.stopPropagation();
 
                 var node = this.selectNode;
-                if( node && !node.isEdit )
+                if( node && !node.data.isEdit )
                 {
                     var l_selectedNode = node;
                     while(  (this.selectNode == node)       &&
@@ -590,7 +591,7 @@ export default class MindMap {
                 e.stopPropagation();
 
                 var node = this.selectNode;
-                if( node && !node.isEdit )
+                if( node && !node.data.isEdit )
                 {
                     var l_selectedNode = node;
                     while(  (this.selectNode == node)       &&
@@ -607,7 +608,7 @@ export default class MindMap {
                 e.stopPropagation();
 
                 var node = this.selectNode;
-                if (node && !node.isEdit) {
+                if (node && !node.data.isEdit) {
                     var rootPos = this.root.getPosition();
                     var nodePos = node.getPosition();
                     if(rootPos.x > nodePos.x)
@@ -631,7 +632,7 @@ export default class MindMap {
                 e.stopPropagation();
 
                 var node = this.selectNode;
-                if (node && !node.isEdit) {
+                if (node && !node.data.isEdit) {
                     var rootPos = this.root.getPosition();
                     var nodePos = node.getPosition();
                     if(rootPos.x < nodePos.x)
@@ -656,7 +657,7 @@ export default class MindMap {
                 e.stopPropagation();
 
                 if( (!this.selectNode)          ||
-                    (!this.selectNode.isEdit)   )
+                    (!this.selectNode.data.isEdit)   )
                 {// No edition: select root node
                     if(this.selectNode)
                     { this.selectNode.unSelect(); }
@@ -675,7 +676,7 @@ export default class MindMap {
             // }
             if ((keyCode == 191) || (keyCode == 111)) {
                 var node = this.selectNode;
-                if (node && !node.isEdit) {
+                if (node && !node.data.isEdit) {
                     if (node.isExpand) {
                         node.mindmap.execute('collapseNode', {
                             node
@@ -698,7 +699,7 @@ export default class MindMap {
             //         var l_prefix_2 = "__";
             //         var node = this.selectNode;
 
-            //         if(node.isEdit)
+            //         if(node.data.isEdit)
             //         {// A node is edited: set in bold only the selected part
             //             var l_check_prefix = true;
             //             node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix);
@@ -726,7 +727,7 @@ export default class MindMap {
             //     if(this.selectNode) {
             //         var node = this.selectNode;
 
-            //         if(node.isEdit)
+            //         if(node.data.isEdit)
             //         {// A node is edited: set in italics only the selected part
             //             node.setSelectedText_italic();
             //         }
@@ -789,8 +790,8 @@ export default class MindMap {
             //         this.root.select();
             //         node = this.selectNode;
             //     }
-            //     else if((!node.isEdit)  &&
-            //             (!node.isRoot)  )
+            //     else if((!node.data.isEdit)  &&
+            //             (!node.data.isRoot)  )
             //     {// The node can be moved
             //         var type='top';
             //         if(node.getIndex() == 0)
@@ -815,8 +816,8 @@ export default class MindMap {
             //         this.root.select();
             //         node = this.selectNode;
             //     }
-            //     else if((!node.isEdit)  &&
-            //             (!node.isRoot)  )
+            //     else if((!node.data.isEdit)  &&
+            //             (!node.data.isRoot)  )
             //     {// The node can be moved
             //         var type='down';
             //         if(node.getIndex() == node.parent.children.length-1)
@@ -905,10 +906,10 @@ export default class MindMap {
                 e.preventDefault();
                 e.stopPropagation();
 
-                if( (!this.selectNode)          ||
-                    (!this.selectNode.isEdit)   )
+                if( (!this.selectNode)              ||
+                    (!this.selectNode.data.isEdit)  )
                 {// No edition: select root node
-                    if(this.selectNode && !this.selectNode.isRoot)
+                    if(this.selectNode && !this.selectNode.data.isRoot)
                     {
                         this.selectNode.unSelect();
                         this.root.select();
@@ -971,7 +972,7 @@ export default class MindMap {
             //         var l_prefix_2 = l_prefix_1;
             //         var node = this.selectNode;
 
-            //         if(node.isEdit)
+            //         if(node.data.isEdit)
             //         {// A node is edited: set in bold only the selected part
             //             var l_check_prefix = true;
             //             node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix);
@@ -998,7 +999,7 @@ export default class MindMap {
             //         var l_prefix_2 = l_prefix_1;
             //         var node = this.selectNode;
 
-            //         if(node.isEdit)
+            //         if(node.data.isEdit)
             //         {// A node is edited: set in bold only the selected part
             //             var l_check_prefix = true;
             //             node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix);
@@ -1302,8 +1303,8 @@ export default class MindMap {
 
 
     _moveAsParent(node: INode) {
-        if( (!node.isEdit)          &&
-            (!node.isRoot)          &&
+        if( (!node.data.isEdit)     &&
+            (!node.data.isRoot)     &&
             (node.getLevel() > 1)   )
         {// The node can be moved
             this.moveNode(node, node.parent, 'down');
@@ -1314,8 +1315,8 @@ export default class MindMap {
 
 
     _moveAsChild(movedNode: INode, newParentNode: INode) {
-        if( (!movedNode.isEdit)  &&
-            (!movedNode.isRoot)  )
+        if( (!movedNode.data.isEdit)  &&
+            (!movedNode.data.isRoot)  )
         {// The node can be moved
             this.moveNode(movedNode, newParentNode, 'child-right');
         }
@@ -1326,7 +1327,7 @@ export default class MindMap {
 
 
     _toggleExpandNode(node: INode) {
-        if (node && !node.isEdit) {
+        if (node && !node.data.isEdit) {
             if (node.isExpand) {
                 node.mindmap.execute('collapseNode', {
                     node
@@ -1513,7 +1514,7 @@ export default class MindMap {
 
                  if(targetEl.closest('.mm-icon-delete-node')){
                     var selectNode = this.selectNode;
-                    if(!node.isRoot && selectNode){
+                    if(!node.data.isRoot && selectNode){
                        selectNode.mindmap.execute("deleteNodeAndChild", { node: selectNode });
                        this._menuDom.style.display='none';
                     }
@@ -1665,7 +1666,7 @@ export default class MindMap {
                 evt.preventDefault();
                 var dropNodeId = evt.target.closest('.mm-node').getAttribute('data-id');
                 var dropNode = this.getNodeById(dropNodeId);
-                if (this._dragNode.isRoot) {
+                if (this._dragNode.data.isRoot) {
 
                 } else {
                     this.moveNode(this._dragNode, dropNode,this._dragType);
@@ -1873,7 +1874,7 @@ export default class MindMap {
 
     moveNode(dragNode: INode, dropNode: INode, type:string, setInHistory: boolean = true) {
 
-        if (dragNode == dropNode || dragNode.isRoot) {
+        if (dragNode == dropNode || dragNode.data.isRoot) {
             return
         }
 
@@ -2001,10 +2002,14 @@ export default class MindMap {
     layout() {
         if (!this.mmLayout) {
             this.mmLayout = new Layout(this.root, this.setting.layoutDirect||'mind map', this.colors);
+            // Select and center on the mindmap's root when opening it
+            this.root.select();
+            this.centerOnNode(this.root);
             return;
         }
 
         this.mmLayout.layout(this.root, this.setting.layoutDirect || this.mmLayout.direct || 'mind map');
+
     }
 
     refresh() {
@@ -2062,7 +2067,8 @@ export default class MindMap {
             //this.containerEL.scrollTop = this.setting.canvasSize / 2 - h / 2 - 60 ;
             //this.containerEL.scrollLeft = this.setting.canvasSize / 2 - w / 2 + 30 ;
             this.containerEL.scrollTop  = pos_y - (h/2 - dim_y/2) + 90;
-            this.containerEL.scrollLeft = pos_x - (w/2 - dim_x/2) + 40;
+            //this.containerEL.scrollLeft = pos_x - (w/2 - dim_x/2) + 40;
+            this.containerEL.scrollLeft = pos_x - (w/2 - dim_x/2) + 200;
 
             this.scale(oldScale);
         }

@@ -10,4 +10,5 @@ export class MindMapSettings {
     exportMdModel?:string;
     //strokeArray?:string=''
     strokeArray?:any[];
+    focusOnMove:boolean;
 }
