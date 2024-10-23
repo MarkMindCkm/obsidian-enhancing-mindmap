@@ -7,7 +7,7 @@ export default {
     "New mindmap board": "New mindmap board",
     "Untitled mindmap": "Untitled mindmap",
     "Open as markdown": "Open as markdown",
-  
+
     //Execute.ts
     "Sub title":"Sub title",
 
@@ -62,6 +62,7 @@ export default {
     'Move the current node left':'Move the current node left',
     'Move the current node right':'Move the current node right',
     'Join with the node below':'Join with the node below',
+    'Join as citation with the node below':'Join as citation with the node below',
     'Center mindmap view on the current node':'Center mindmap view on the current node',
     'Center mindmap view':'Center mindmap view',
     'Display the node\'s info in console':'Display the node\'s info in console',

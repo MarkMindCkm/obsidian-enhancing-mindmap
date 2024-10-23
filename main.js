@@ -168,6 +168,7 @@ var en = {
     'Move the current node left': 'Move the current node left',
     'Move the current node right': 'Move the current node right',
     'Join with the node below': 'Join with the node below',
+    'Join as citation with the node below': 'Join as citation with the node below',
     'Center mindmap view on the current node': 'Center mindmap view on the current node',
     'Center mindmap view': 'Center mindmap view',
     'Display the node\'s info in console': 'Display the node\'s info in console',
@@ -239,6 +240,7 @@ var fr = {
     'Move the current node left': 'Déplacer le nœud courant vers la gauche',
     'Move the current node right': 'Déplacer le nœud courant vers la droite',
     'Join with the node below': 'Joindre avec le nœud en dessous',
+    'Join as citation with the node below': 'Joindre avec le nœud en dessous comme citation',
     'Center mindmap view on the current node': 'Centrer la vue de la carte mentale sur le nœud courant',
     'Center mindmap view': 'Centrer la vue de la carte mentale',
     'Display the node\'s info in console': 'Afficher les informations du nœud dans la console',
@@ -9755,6 +9757,27 @@ class MindMap {
         this.scale(this.mindScale);
         node.select();
     }
+    // Join the current node with the following node, adding "(…)"
+    joinAsCitationWithFollowingNode(node) {
+        let joinedNode = node.getNextSibling();
+        // Set node's text
+        node.setText(node.data.text + "(…)" + joinedNode.data.text);
+        if (!joinedNode.isLeaf()) { // The joined node has children: copy them to the current node
+            joinedNode.children.forEach((n) => {
+                //this._moveAsChild(n, node);
+                let copiedNode = this.copyNode(n);
+                this.selectNode.unSelect();
+                node.select();
+                this.pasteNode(copiedNode);
+            });
+        }
+        // Delete joined node
+        this.removeNode(joinedNode);
+        this.clearSelectNode();
+        this.refresh();
+        this.scale(this.mindScale);
+        node.select();
+    }
     //execute cmd , store history
     execute(name, data) {
         return this.exec.execute(name, data);
@@ -9972,7 +9995,7 @@ class MindMap {
             }
             else {
                 for (var i = 0; i < n.getLevel() - level; i++) {
-                    space += '   ';
+                    space += '\t';
                 }
                 var text = n.getData().text.trim();
                 if (text) {
@@ -38619,6 +38642,8 @@ class MindMapPlugin extends obsidian.Plugin {
                         var mindmap = mindmapView.mindmap;
                         navigator.clipboard.readText().then(text => {
                             mindmap.pasteNode(text);
+                            // Copy once more so that the node can be copied once more
+                            navigator.clipboard.writeText(text);
                         });
                     }
                 }
@@ -39227,6 +39252,12 @@ class MindMapPlugin extends obsidian.Plugin {
             this.addCommand({
                 id: 'Join with the node below',
                 name: `${t('Join with the node below')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt', 'Shift'],
+                        key: 'J',
+                    },
+                ],
                 callback: () => {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView) {
@@ -39234,6 +39265,28 @@ class MindMapPlugin extends obsidian.Plugin {
                         var node = mindmap.selectNode;
                         if (node) {
                             mindmap.joinWithFollowingNode(node);
+                        }
+                        // else: No node selected: nothing to do
+                    }
+                }
+            });
+            // Alt + Shift + Ctrl + J
+            this.addCommand({
+                id: 'Join as citation with the node below',
+                name: `${t('Join as citation with the node below')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt', 'Shift', 'Ctrl'],
+                        key: 'J',
+                    },
+                ],
+                callback: () => {
+                    const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+                    if (mindmapView) {
+                        var mindmap = mindmapView.mindmap;
+                        var node = mindmap.selectNode;
+                        if (node) {
+                            mindmap.joinAsCitationWithFollowingNode(node);
                         }
                         // else: No node selected: nothing to do
                     }

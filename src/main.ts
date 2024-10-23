@@ -104,6 +104,8 @@ export default class MindMapPlugin extends Plugin {
           var mindmap = mindmapView.mindmap;
           navigator.clipboard.readText().then(text=>{
               mindmap.pasteNode(text);
+              // Copy once more so that the node can be copied once more
+              navigator.clipboard.writeText(text);
           });
         }
       }
@@ -778,6 +780,12 @@ export default class MindMapPlugin extends Plugin {
     this.addCommand({
       id: 'Join with the node below',
       name: `${t('Join with the node below')}`,
+      hotkeys: [
+        {
+          modifiers: ['Alt', 'Shift'],
+          key: 'J',
+        },
+      ],
       callback: () => {
         const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
         if(mindmapView){
@@ -786,7 +794,29 @@ export default class MindMapPlugin extends Plugin {
           if(node)
           {  mindmap.joinWithFollowingNode(node); }
           // else: No node selected: nothing to do
-  }
+        }
+      }
+    });
+
+    // Alt + Shift + Ctrl + J
+    this.addCommand({
+      id: 'Join as citation with the node below',
+      name: `${t('Join as citation with the node below')}`,
+      hotkeys: [
+        {
+          modifiers: ['Alt', 'Shift', 'Ctrl'],
+          key: 'J',
+        },
+      ],
+      callback: () => {
+        const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+        if(mindmapView){
+          var mindmap = mindmapView.mindmap;
+          var node = mindmap.selectNode;
+          if(node)
+          {  mindmap.joinAsCitationWithFollowingNode(node); }
+          // else: No node selected: nothing to do
+        }
       }
     });
 

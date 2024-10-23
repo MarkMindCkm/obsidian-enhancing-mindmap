@@ -61,6 +61,7 @@ export default {
     'Move the current node left':'Déplacer le nœud courant vers la gauche',
     'Move the current node right':'Déplacer le nœud courant vers la droite',
     'Join with the node below':'Joindre avec le nœud en dessous',
+    'Join as citation with the node below':'Joindre avec le nœud en dessous comme citation',
     'Center mindmap view on the current node':'Centrer la vue de la carte mentale sur le nœud courant',
     'Center mindmap view':'Centrer la vue de la carte mentale',
     'Display the node\'s info in console':'Afficher les informations du nœud dans la console',

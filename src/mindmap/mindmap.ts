@@ -1943,6 +1943,33 @@ export default class MindMap {
         node.select();
     }
 
+    // Join the current node with the following node, adding "(…)"
+    joinAsCitationWithFollowingNode(node: INode) {
+        let joinedNode = node.getNextSibling();
+
+        // Set node's text
+        node.setText(node.data.text + "(…)" + joinedNode.data.text);
+
+        if(!joinedNode.isLeaf())
+        {// The joined node has children: copy them to the current node
+            joinedNode.children.forEach((n) => {
+                //this._moveAsChild(n, node);
+                let copiedNode = this.copyNode(n);
+                this.selectNode.unSelect();
+                node.select();
+                this.pasteNode(copiedNode);
+            });
+        }
+
+        // Delete joined node
+        this.removeNode(joinedNode);
+
+        this.clearSelectNode();
+        this.refresh();
+        this.scale(this.mindScale);
+        node.select();
+    }
+
     //execute cmd , store history
     execute(name: string, data?: any) {
         return this.exec.execute(name, data);
@@ -2227,7 +2254,7 @@ export default class MindMap {
 
             } else {
                 for (var i = 0; i < n.getLevel() - level; i++) {
-                    space += '   ';
+                    space += '\t';
                 }
                 var text = n.getData().text.trim();
                 if (text) {
