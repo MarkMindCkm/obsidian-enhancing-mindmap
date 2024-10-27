@@ -1669,7 +1669,15 @@ export default class MindMap {
                 if (this._dragNode.data.isRoot) {
 
                 } else {
-                    this.moveNode(this._dragNode, dropNode,this._dragType);
+                    if (evt.ctrlKey) {// Ctrl key pressed: copy the node
+                        let copiedNode = this.copyNode(this._dragNode);
+                        dropNode.select();
+                        this.pasteNode(copiedNode);
+
+                    }
+                    else {// Move the node
+                        this.moveNode(this._dragNode, dropNode,this._dragType);
+                    }
                 }
             }
         }
@@ -1916,6 +1924,29 @@ export default class MindMap {
        // this.execute('moveNode', { type: 'child', node: dragNode, oldParent: dragNode.parent, parent: dropNode })
     }
 
+
+    // Move all the current node's siblings as this node's children
+    moveAllSiblingsAsChildren(node: INode) {
+        var sibs = node.getSiblings();
+        sibs.forEach((sib) => {
+            this._moveAsChild(sib, node);
+        })
+
+        return;
+    }
+
+
+    // Move the current node's next siblings as this node's children
+    moveNextSiblingsAsChildren(node: INode) {
+        var sibs = node.getAllNextSiblings();
+        sibs.forEach((sib) => {
+            this._moveAsChild(sib, node);
+        })
+
+        return;
+    }
+
+
     // Join the current node with the following node
     joinWithFollowingNode(node: INode) {
         let joinedNode = node.getNextSibling();
@@ -1943,12 +1974,15 @@ export default class MindMap {
         node.select();
     }
 
-    // Join the current node with the following node, adding "(…)"
+    // Join the current node with the following node, adding " (…) "
     joinAsCitationWithFollowingNode(node: INode) {
         let joinedNode = node.getNextSibling();
 
-        // Set node's text
-        node.setText(node.data.text + "(…)" + joinedNode.data.text);
+        // Set node's text, except for the starting emoticon (if any)
+        const emoticonRegex = /^[\u263a-\u27bf\u{1f300}-\u{1f9ff}]/u;
+        let joinedText = joinedNode.data.text.replace(emoticonRegex, "").trimStart();
+        node.setText(node.data.text + " (…) " + joinedText);
+        // node.setText(node.data.text + " (…) " + joinedNode.data.text);
 
         if(!joinedNode.isLeaf())
         {// The joined node has children: copy them to the current node

@@ -60,6 +60,8 @@ export default {
     'Move the current node below':'Déplacer le nœud courant vers le bas',
     'Move the current node left':'Déplacer le nœud courant vers la gauche',
     'Move the current node right':'Déplacer le nœud courant vers la droite',
+    'Move next siblings as children':'Déplacer les nœuds frères suivants en nœuds enfants',
+    'Move all siblings as children':'Déplacer tous les nœuds frères en nœuds enfants',
     'Join with the node below':'Joindre avec le nœud en dessous',
     'Join as citation with the node below':'Joindre avec le nœud en dessous comme citation',
     'Center mindmap view on the current node':'Centrer la vue de la carte mentale sur le nœud courant',

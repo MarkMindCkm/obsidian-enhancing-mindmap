@@ -61,6 +61,8 @@ export default {
     'Move the current node below':'Move the current node below',
     'Move the current node left':'Move the current node left',
     'Move the current node right':'Move the current node right',
+    'Move next siblings as children':"Move next siblings as children",
+    'Move all siblings as children':"Move all siblings as children",
     'Join with the node below':'Join with the node below',
     'Join as citation with the node below':'Join as citation with the node below',
     'Center mindmap view on the current node':'Center mindmap view on the current node',

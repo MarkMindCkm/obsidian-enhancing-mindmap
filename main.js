@@ -167,6 +167,8 @@ var en = {
     'Move the current node below': 'Move the current node below',
     'Move the current node left': 'Move the current node left',
     'Move the current node right': 'Move the current node right',
+    'Move next siblings as children': "Move next siblings as children",
+    'Move all siblings as children': "Move all siblings as children",
     'Join with the node below': 'Join with the node below',
     'Join as citation with the node below': 'Join as citation with the node below',
     'Center mindmap view on the current node': 'Center mindmap view on the current node',
@@ -239,6 +241,8 @@ var fr = {
     'Move the current node below': 'Déplacer le nœud courant vers le bas',
     'Move the current node left': 'Déplacer le nœud courant vers la gauche',
     'Move the current node right': 'Déplacer le nœud courant vers la droite',
+    'Move next siblings as children': 'Déplacer les nœuds frères suivants en nœuds enfants',
+    'Move all siblings as children': 'Déplacer tous les nœuds frères en nœuds enfants',
     'Join with the node below': 'Joindre avec le nœud en dessous',
     'Join as citation with the node below': 'Joindre avec le nœud en dessous comme citation',
     'Center mindmap view on the current node': 'Centrer la vue de la carte mentale sur le nœud courant',
@@ -829,40 +833,53 @@ class Node {
         }
     }
     getPreviousSibling() {
-        var nodeIdx = this.getIndex();
         var returnedNode = this;
-        var searchedIdx = nodeIdx - 1;
-        if (nodeIdx == 0) { // This is the first sibling -> return the last one.
-            searchedIdx = this.parent.children.length - 1;
-        }
-        // else: searchedIdx already set.
-        // Search the sibling
-        var sibs = this.getSiblings();
-        sibs.forEach((sib) => {
-            if (sib.getIndex() == searchedIdx) {
-                returnedNode = sib;
+        if (this.parent) {
+            var searchedIdx = this.getIndex() - 1;
+            if (searchedIdx < 0) { // This is the first sibling -> return the last one.
+                searchedIdx = this.parent.children.length - 1;
             }
-            // else: not the previous sibling
-        });
+            // else: searchedIdx already set.
+            // Search the sibling
+            var sibs = this.getSiblings();
+            sibs.forEach((sib) => {
+                if (sib.getIndex() == searchedIdx) {
+                    returnedNode = sib;
+                }
+                // else: not the previous sibling
+            });
+        }
+        // else: no node to search
         return returnedNode;
     }
     getNextSibling() {
-        var nodeIdx = this.getIndex();
         var returnedNode = this;
-        var searchedIdx = nodeIdx + 1;
-        if (nodeIdx >= this.parent.children.length - 1) { // This is the last sibling -> return the first one.
-            searchedIdx = 0;
-        }
-        // else: searchedIdx already set.
-        // Search the sibling
-        var sibs = this.getSiblings();
-        sibs.forEach((sib) => {
-            if (sib.getIndex() == searchedIdx) {
-                returnedNode = sib;
+        if (this.parent) {
+            var searchedIdx = this.getIndex() + 1;
+            if (searchedIdx >= this.parent.children.length) { // This is the last sibling -> return the first one.
+                searchedIdx = 0;
             }
-            // else: not the next sibling
-        });
+            // else: searchedIdx already set.
+            // Search the sibling
+            var sibs = this.getSiblings();
+            sibs.forEach((sib) => {
+                if (sib.getIndex() == searchedIdx) {
+                    returnedNode = sib;
+                }
+                // else: not the next sibling
+            });
+        }
+        // else: no node to search
         return returnedNode;
+    }
+    getAllNextSiblings() {
+        if (this.parent) {
+            // Return all the next siblings
+            return this.parent.children.filter(item => item.getIndex() > this.getIndex());
+        }
+        else {
+            return [];
+        }
     }
     getFirstSibling() {
         var returnedNode = this;
@@ -9511,7 +9528,14 @@ class MindMap {
                 var dropNode = this.getNodeById(dropNodeId);
                 if (this._dragNode.data.isRoot) ;
                 else {
-                    this.moveNode(this._dragNode, dropNode, this._dragType);
+                    if (evt.ctrlKey) { // Ctrl key pressed: copy the node
+                        let copiedNode = this.copyNode(this._dragNode);
+                        dropNode.select();
+                        this.pasteNode(copiedNode);
+                    }
+                    else { // Move the node
+                        this.moveNode(this._dragNode, dropNode, this._dragType);
+                    }
                 }
             }
         }
@@ -9736,6 +9760,22 @@ class MindMap {
         }
         // this.execute('moveNode', { type: 'child', node: dragNode, oldParent: dragNode.parent, parent: dropNode })
     }
+    // Move all the current node's siblings as this node's children
+    moveAllSiblingsAsChildren(node) {
+        var sibs = node.getSiblings();
+        sibs.forEach((sib) => {
+            this._moveAsChild(sib, node);
+        });
+        return;
+    }
+    // Move the current node's next siblings as this node's children
+    moveNextSiblingsAsChildren(node) {
+        var sibs = node.getAllNextSiblings();
+        sibs.forEach((sib) => {
+            this._moveAsChild(sib, node);
+        });
+        return;
+    }
     // Join the current node with the following node
     joinWithFollowingNode(node) {
         let joinedNode = node.getNextSibling();
@@ -9757,11 +9797,14 @@ class MindMap {
         this.scale(this.mindScale);
         node.select();
     }
-    // Join the current node with the following node, adding "(…)"
+    // Join the current node with the following node, adding " (…) "
     joinAsCitationWithFollowingNode(node) {
         let joinedNode = node.getNextSibling();
-        // Set node's text
-        node.setText(node.data.text + "(…)" + joinedNode.data.text);
+        // Set node's text, except for the starting emoticon (if any)
+        const emoticonRegex = /^[\u263a-\u27bf\u{1f300}-\u{1f9ff}]/u;
+        let joinedText = joinedNode.data.text.replace(emoticonRegex, "").trimStart();
+        node.setText(node.data.text + " (…) " + joinedText);
+        // node.setText(node.data.text + " (…) " + joinedNode.data.text);
         if (!joinedNode.isLeaf()) { // The joined node has children: copy them to the current node
             joinedNode.children.forEach((n) => {
                 //this._moveAsChild(n, node);
@@ -39245,6 +39288,43 @@ class MindMapPlugin extends obsidian.Plugin {
                         if ((this.settings.focusOnMove == true)) {
                             mindmap.centerOnNode(mindmap.selectNode);
                         }
+                    }
+                }
+            });
+            // Alt + Shift + D
+            this.addCommand({
+                id: 'Move next siblings as children',
+                name: `${t('Move next siblings as children')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt', 'Shift'],
+                        key: 'D',
+                    },
+                ],
+                callback: () => {
+                    const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+                    if (mindmapView) {
+                        var mindmap = mindmapView.mindmap;
+                        var node = mindmap.selectNode;
+                        if (node) {
+                            mindmap.moveNextSiblingsAsChildren(node);
+                        }
+                        // else: No node selected: nothing to do
+                    }
+                }
+            });
+            this.addCommand({
+                id: 'Move all siblings as children',
+                name: `${t('Move all siblings as children')}`,
+                callback: () => {
+                    const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+                    if (mindmapView) {
+                        var mindmap = mindmapView.mindmap;
+                        var node = mindmap.selectNode;
+                        if (node) {
+                            mindmap.moveAllSiblingsAsChildren(node);
+                        }
+                        // else: No node selected: nothing to do
                     }
                 }
             });

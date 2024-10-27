@@ -776,6 +776,46 @@ export default class MindMapPlugin extends Plugin {
       }
     });
 
+
+    // Alt + Shift + D
+    this.addCommand({
+      id: 'Move next siblings as children',
+      name: `${t('Move next siblings as children')}`,
+      hotkeys: [
+        {
+          modifiers: ['Alt', 'Shift'],
+          key: 'D',
+        },
+      ],
+      callback: () => {
+        const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+        if(mindmapView){
+          var mindmap = mindmapView.mindmap;
+          var node = mindmap.selectNode;
+          if(node)
+          {  mindmap.moveNextSiblingsAsChildren(node); }
+          // else: No node selected: nothing to do
+        }
+      }
+    });
+
+
+    this.addCommand({
+      id: 'Move all siblings as children',
+      name: `${t('Move all siblings as children')}`,
+      callback: () => {
+        const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+        if(mindmapView){
+          var mindmap = mindmapView.mindmap;
+          var node = mindmap.selectNode;
+          if(node)
+          {  mindmap.moveAllSiblingsAsChildren(node); }
+          // else: No node selected: nothing to do
+        }
+      }
+    });
+
+
     // Alt + Shift + J
     this.addCommand({
       id: 'Join with the node below',

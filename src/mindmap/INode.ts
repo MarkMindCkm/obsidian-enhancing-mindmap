@@ -559,51 +559,65 @@ export default class Node {
 
 
     getPreviousSibling() {
-        var nodeIdx = this.getIndex();
         var returnedNode = (this as Node);
 
-        var searchedIdx = nodeIdx-1;
-        if(nodeIdx == 0)
-        {// This is the first sibling -> return the last one.
-            searchedIdx = this.parent.children.length-1;
-        }
-        // else: searchedIdx already set.
-
-        // Search the sibling
-        var sibs = this.getSiblings();
-        sibs.forEach((sib) => {
-            if (sib.getIndex() == searchedIdx) {
-                returnedNode = sib;
+        if (this.parent) {
+            var searchedIdx = this.getIndex()-1;
+            if(searchedIdx < 0)
+            {// This is the first sibling -> return the last one.
+                searchedIdx = this.parent.children.length-1;
             }
-            // else: not the previous sibling
-        })
+            // else: searchedIdx already set.
+
+            // Search the sibling
+            var sibs = this.getSiblings();
+            sibs.forEach((sib) => {
+                if (sib.getIndex() == searchedIdx) {
+                    returnedNode = sib;
+                }
+                // else: not the previous sibling
+            })
+        }
+        // else: no node to search
 
         return returnedNode;
     }
 
     getNextSibling() {
-        var nodeIdx = this.getIndex();
         var returnedNode = (this as Node);
 
-        var searchedIdx = nodeIdx+1;
+        if (this.parent) {
+            var searchedIdx = this.getIndex()+1;
 
-        if(nodeIdx >= this.parent.children.length-1)
-        {// This is the last sibling -> return the first one.
-            searchedIdx = 0;
-        }
-        // else: searchedIdx already set.
-
-        // Search the sibling
-        var sibs = this.getSiblings();
-        sibs.forEach((sib) => {
-            if (sib.getIndex() == searchedIdx) {
-                returnedNode = sib;
+            if(searchedIdx >= this.parent.children.length)
+            {// This is the last sibling -> return the first one.
+                searchedIdx = 0;
             }
-            // else: not the next sibling
-        })
+            // else: searchedIdx already set.
+
+            // Search the sibling
+            var sibs = this.getSiblings();
+            sibs.forEach((sib) => {
+                if (sib.getIndex() == searchedIdx) {
+                    returnedNode = sib;
+                }
+                // else: not the next sibling
+            })
+        }
+        // else: no node to search
 
         return returnedNode;
     }
+
+    getAllNextSiblings() {
+        if (this.parent) {
+            // Return all the next siblings
+            return this.parent.children.filter(item => item.getIndex() > this.getIndex());
+        } else {
+            return [];
+        }
+    }
+
 
     getFirstSibling() {
         var returnedNode = (this as Node);
