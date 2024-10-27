@@ -1279,19 +1279,49 @@ export default class MindMap {
 
     _formatNode(node: INode, i_prefix_1: string, i_prefix_2: string) {
         var text = node.data.text;
-        if( (text.substring(0,2) == i_prefix_1) ||
-            (text.substring(0,2) == i_prefix_2) )
-        {// Already formatted
-            text = text.substring(i_prefix_1.length); // Remove leading prefix
 
-            if( (text.substring(text.length-2) == i_prefix_1)   ||
-                (text.substring(text.length-2) == i_prefix_2)   )
-            {// Remove trailing prefix
-                text = text.substring(0,text.length-i_prefix_1.length);
+        if( (text.substring(0,2) == i_prefix_1)  ||
+            (text.substring(0,2) == i_prefix_2)  )
+        {// Prefix must be substracted, bold first
+            text = text.substring(2); // Remove leading prefix
+
+            if( (text.substring(text.length-2) == i_prefix_1)  ||
+                (text.substring(text.length-2) == i_prefix_2)  )
+            {// Suffix must be substracted
+                text = text.substring(0,text.length-2);
             }
             // else: no trailing prefix
         }
-        else {// Not formatted
+
+        else if(    (text.substring(1,3) == i_prefix_1)  ||
+                    (text.substring(1,3) == i_prefix_2)  )
+        {// Prefix must be substracted, italic (?) first
+            text = text[0] + text.substring(3); // Remove prefix
+
+            if( (text.slice(-3, -1) == i_prefix_1)   ||
+                (text.slice(-3, -1) == i_prefix_2)   )
+            {// Suffix must be substracted
+                text = text.substring(0,text.length-3) +
+                text.slice(-1);
+            }
+            // else: no trailing prefix
+        }
+
+        else if(    (text.substring(2,4) == i_prefix_1)  ||
+                    (text.substring(2,4) == i_prefix_2)  )
+        {// Prefix must be substracted, highlight (?) first
+            text = text.substring(0,2) + text.substring(4); // Remove prefix
+
+            if( (text.slice(-4, -2) == i_prefix_1)   ||
+                (text.slice(-4, -2) == i_prefix_2)   )
+            {// Suffix must be substracted
+                text = text.substring(0,text.length-4) +
+                text.slice(-2);
+            }
+            // else: no trailing prefix
+        }
+
+        else {// No pre-/suf-fix: add it
             text = i_prefix_1+text+i_prefix_1;
         }
 

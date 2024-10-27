@@ -638,11 +638,31 @@ class Node {
         }
         if (i_check) { // Check in case the pre-/suf-fix must be substracted
             if ((l_selectedText.substring(0, 2) == i_str_1) ||
-                (l_selectedText.substring(0, 2) == i_str_2)) { // Prefix must be substracted
-                l_selectedText = l_selectedText.substring(i_str_1.length); // Remove leading prefix
+                (l_selectedText.substring(0, 2) == i_str_2)) { // Prefix must be substracted, bold first
+                l_selectedText = l_selectedText.substring(2); // Remove leading prefix
                 if ((l_selectedText.substring(l_selectedText.length - 2) == i_str_1) ||
                     (l_selectedText.substring(l_selectedText.length - 2) == i_str_2)) { // Suffix must be substracted
-                    l_selectedText = l_selectedText.substring(0, l_selectedText.length - i_str_1.length);
+                    l_selectedText = l_selectedText.substring(0, l_selectedText.length - 2);
+                }
+                // else: no trailing prefix
+            }
+            else if ((l_selectedText.substring(1, 3) == i_str_1) ||
+                (l_selectedText.substring(1, 3) == i_str_2)) { // Prefix must be substracted, italic (?) first
+                l_selectedText = l_selectedText[0] + l_selectedText.substring(3); // Remove prefix
+                if ((l_selectedText.slice(-3, -1) == i_str_1) ||
+                    (l_selectedText.slice(-3, -1) == i_str_2)) { // Suffix must be substracted
+                    l_selectedText = l_selectedText.substring(0, l_selectedText.length - 3) +
+                        l_selectedText.slice(-1);
+                }
+                // else: no trailing prefix
+            }
+            else if ((l_selectedText.substring(2, 4) == i_str_1) ||
+                (l_selectedText.substring(2, 4) == i_str_2)) { // Prefix must be substracted, highlight (?) first
+                l_selectedText = l_selectedText.substring(0, 2) + l_selectedText.substring(4); // Remove prefix
+                if ((l_selectedText.slice(-4, -2) == i_str_1) ||
+                    (l_selectedText.slice(-4, -2) == i_str_2)) { // Suffix must be substracted
+                    l_selectedText = l_selectedText.substring(0, l_selectedText.length - 4) +
+                        l_selectedText.slice(-2);
                 }
                 // else: no trailing prefix
             }
@@ -690,16 +710,26 @@ class Node {
                 (l_selectedText.substring(0, 2) != "**") &&
                 (l_selectedText.substring(0, 2) != "__")) ||
                 (l_selectedText.substring(0, 3) == "***") ||
-                (l_selectedText.substring(0, 3) == "___")) { // Already italic
-                l_selectedText = l_selectedText.substring(1); // Remove leading prefix
-                if ((l_selectedText.substring(l_selectedText.length - 1) == "*") ||
-                    (l_selectedText.substring(l_selectedText.length - 1) == "_")) { // Suffix must be substracted
-                    l_selectedText = l_selectedText.substring(0, l_selectedText.length - 1);
+                (l_selectedText.substring(0, 3) == "_**") ||
+                (l_selectedText.substring(0, 3) == "__*") ||
+                (l_selectedText.substring(0, 3) == "___") ||
+                (l_selectedText.substring(0, 3) == "**_") ||
+                (l_selectedText.substring(0, 3) == "*__")) { // Already italic
+                if (l_selectedText.slice(0, 3).includes("_")) {
+                    // Replace only the first "_" in the first 3 chars (that make the italic)
+                    l_selectedText = l_selectedText.slice(0, 3).replace('_', '') + l_selectedText.slice(3);
+                    // Replace only the first "_" in the LAST 3 chars (that make the italic)
+                    l_selectedText = l_selectedText.slice(0, -3) + l_selectedText.slice(-3).replace('_', '');
                 }
-                // else: no trailing prefix
+                else { // A "*" is making the italic
+                    l_selectedText = l_selectedText.slice(0, 3).replace('*', '') + l_selectedText.slice(3);
+                    l_selectedText = l_selectedText.slice(0, -3) + l_selectedText.slice(-3).replace('*', '');
+                }
             }
             else { // No pre-/suf-fix: add it
-                l_selectedText = "*" + l_selectedText + "*"; // Use "*" so that bold/italic can be changed in whetever order
+                l_selectedText = "_" + l_selectedText + "_";
+                // Used to use "*" to allow bold/italic change in whatever order
+                // However "***" is not displayed as bold + italic, so use _ for italic and * for bold
             }
         }
         // Add a leading/trailing space if needed
@@ -9185,15 +9215,35 @@ class MindMap {
     _formatNode(node, i_prefix_1, i_prefix_2) {
         var text = node.data.text;
         if ((text.substring(0, 2) == i_prefix_1) ||
-            (text.substring(0, 2) == i_prefix_2)) { // Already formatted
-            text = text.substring(i_prefix_1.length); // Remove leading prefix
+            (text.substring(0, 2) == i_prefix_2)) { // Prefix must be substracted, bold first
+            text = text.substring(2); // Remove leading prefix
             if ((text.substring(text.length - 2) == i_prefix_1) ||
-                (text.substring(text.length - 2) == i_prefix_2)) { // Remove trailing prefix
-                text = text.substring(0, text.length - i_prefix_1.length);
+                (text.substring(text.length - 2) == i_prefix_2)) { // Suffix must be substracted
+                text = text.substring(0, text.length - 2);
             }
             // else: no trailing prefix
         }
-        else { // Not formatted
+        else if ((text.substring(1, 3) == i_prefix_1) ||
+            (text.substring(1, 3) == i_prefix_2)) { // Prefix must be substracted, italic (?) first
+            text = text[0] + text.substring(3); // Remove prefix
+            if ((text.slice(-3, -1) == i_prefix_1) ||
+                (text.slice(-3, -1) == i_prefix_2)) { // Suffix must be substracted
+                text = text.substring(0, text.length - 3) +
+                    text.slice(-1);
+            }
+            // else: no trailing prefix
+        }
+        else if ((text.substring(2, 4) == i_prefix_1) ||
+            (text.substring(2, 4) == i_prefix_2)) { // Prefix must be substracted, highlight (?) first
+            text = text.substring(0, 2) + text.substring(4); // Remove prefix
+            if ((text.slice(-4, -2) == i_prefix_1) ||
+                (text.slice(-4, -2) == i_prefix_2)) { // Suffix must be substracted
+                text = text.substring(0, text.length - 4) +
+                    text.slice(-2);
+            }
+            // else: no trailing prefix
+        }
+        else { // No pre-/suf-fix: add it
             text = i_prefix_1 + text + i_prefix_1;
         }
         // Set the text in the node
@@ -38940,17 +38990,26 @@ class MindMapPlugin extends obsidian.Plugin {
                                     (text.substring(0, 2) != "**") &&
                                     (text.substring(0, 2) != "__")) ||
                                     (text.substring(0, 3) == "***") ||
-                                    (text.substring(0, 3) == "___")) { // Already italic
-                                    text = text.substring(1); // Remove leading * / _
-                                    if ((text.substring(text.length - 1) == "*") ||
-                                        (text.substring(text.length - 1) == "_")) {
-                                        // Remove trailing * / _
-                                        text = text.substring(0, text.length - 1);
+                                    (text.substring(0, 3) == "_**") ||
+                                    (text.substring(0, 3) == "__*") ||
+                                    (text.substring(0, 3) == "___") ||
+                                    (text.substring(0, 3) == "**_") ||
+                                    (text.substring(0, 3) == "*__")) { // Already italic
+                                    if (text.slice(0, 3).includes("_")) {
+                                        // Replace only the first "_" in the first 3 chars (that make the italic)
+                                        text = text.slice(0, 3).replace('_', '') + text.slice(3);
+                                        // Replace only the first "_" in the LAST 3 chars (that make the italic)
+                                        text = text.slice(0, -3) + text.slice(-3).replace('_', '');
                                     }
-                                    // else: no trailing *
+                                    else { // A "*" is making the italic
+                                        text = text.slice(0, 3).replace('*', '') + text.slice(3);
+                                        text = text.slice(0, -3) + text.slice(-3).replace('*', '');
+                                    }
                                 }
                                 else { // Not in italic
-                                    text = "*" + text + "*"; // Use "*" to allow bold/italic change in whatever order
+                                    text = "_" + text + "_";
+                                    // Used to use "*" to allow bold/italic change in whatever order
+                                    // However "***" is not displayed as bold + italic, so use _ for italic and * for bold
                                 }
                                 // Set in node text
                                 node.data.oldText = node.data.text;

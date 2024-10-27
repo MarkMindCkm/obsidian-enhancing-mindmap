@@ -377,24 +377,32 @@ export default class MindMapPlugin extends Plugin {
             else
             {// Set in italics the whole node
               var text = node.data.text;
-              if( (  ((text.substring(0,1)=="*") ||
-                      (text.substring(0,1)=="_") )        &&
-                  (text.substring(0,2)!="**")             &&
-                  (text.substring(0,2)!="__")             )   ||
-                  (text.substring(0,3)=="***")                ||
-                  (text.substring(0,3)=="___")                )
+              if( (   ( (text.substring(0,1)=="*")  ||
+                        (text.substring(0,1)=="_")  )   &&
+                    (text.substring(0,2)!="**")         &&
+                    (text.substring(0,2)!="__")         )   ||
+                  (text.substring(0,3)=="***")              ||
+                  (text.substring(0,3)=="_**")              ||
+                  (text.substring(0,3)=="__*")              ||
+                  (text.substring(0,3)=="___")              ||
+                  (text.substring(0,3)=="**_")              ||
+                  (text.substring(0,3)=="*__")              )
               {// Already italic
-                text = text.substring(1); // Remove leading * / _
-
-                if( (text.substring(text.length-1)=="*") ||
-                    (text.substring(text.length-1)=="_") )   {
-                  // Remove trailing * / _
-                  text = text.substring(0,text.length-1);
+                if(text.slice(0, 3).includes("_")) {
+                  // Replace only the first "_" in the first 3 chars (that make the italic)
+                  text = text.slice(0, 3).replace('_', '') + text.slice(3);
+                  // Replace only the first "_" in the LAST 3 chars (that make the italic)
+                  text = text.slice(0, -3) + text.slice(-3).replace('_', '');
                 }
-                // else: no trailing *
+                else{// A "*" is making the italic
+                  text = text.slice(0, 3).replace('*', '') + text.slice(3);
+                  text = text.slice(0, -3) + text.slice(-3).replace('*', '');
+                }
               }
               else {// Not in italic
-                text = "*"+text+"*"; // Use "*" to allow bold/italic change in whatever order
+                text = "_"+text+"_";
+                // Used to use "*" to allow bold/italic change in whatever order
+                // However "***" is not displayed as bold + italic, so use _ for italic and * for bold
               }
 
               // Set in node text
