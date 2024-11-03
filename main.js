@@ -157,6 +157,7 @@ var en = {
     'Italicize the node\'s text': 'Italicize the node text',
     'Highlight the node\'s text': 'Highlight the node\'s text',
     'Strike through the node\'s text': 'Strike through the node\'s text',
+    'Remove line breaks (<br>)': 'Remove line breaks (<br>)',
     'Cancel edit': 'Cancel edit',
     'Expand one level': 'Expand one level',
     'Expand one level from the max. displayed level': 'Expand one level from the max. displayed level',
@@ -231,6 +232,7 @@ var fr = {
     'Italicize the node\'s text': 'Mettre en italique le texte du nœud',
     'Highlight the node\'s text': 'Mettre en surbrillance le texte du nœud',
     'Strike through the node\'s text': 'Barrer le texte du nœud',
+    'Remove line breaks (<br>)': "Supprimer les retours à la ligne (<br>)",
     'Cancel edit': 'Annuler la modification',
     'Expand one level': 'Étendre d\'un niveau',
     'Expand one level from the max. displayed level': 'Étendre d\'un niveau à partir du niveau maximal affiché',
@@ -982,6 +984,14 @@ class Node {
         this.data.text = text;
         this.contentEl.innerHTML = '';
         this.parseText();
+    }
+    removeLineBreak() {
+        var l_newText = this.data.text.replace('<br>', ' ');
+        this.mindmap.execute('changeNodeText', {
+            node: this,
+            text: l_newText,
+            oldText: this.data.text
+        });
     }
     expand() {
         this.isExpand = true;
@@ -7825,9 +7835,9 @@ class ChangeNodeText extends Command {
         this.isFirst = true;
     }
     execute() {
-        if (!this.isFirst) {
-            this.node.setText(this.text);
-        }
+        //if(!this.isFirst){
+        this.node.setText(this.text);
+        //}
         this.node.refreshBox();
         this.node.clearCacheData();
         this.refresh(this.node.mindmap);
@@ -9247,8 +9257,13 @@ class MindMap {
             text = i_prefix_1 + text + i_prefix_1;
         }
         // Set the text in the node
-        node.data.oldText = node.data.text;
-        node.setText(text);
+        node.mindmap.execute('changeNodeText', {
+            node: node,
+            text: text,
+            oldText: node.data.text
+        });
+        // node.data.oldText = node.data.text;
+        // node.setText(text);
         node.select();
     }
     _moveAsParent(node) {
@@ -39011,9 +39026,14 @@ class MindMapPlugin extends obsidian.Plugin {
                                     // Used to use "*" to allow bold/italic change in whatever order
                                     // However "***" is not displayed as bold + italic, so use _ for italic and * for bold
                                 }
-                                // Set in node text
-                                node.data.oldText = node.data.text;
-                                node.setText(text);
+                                // Set node text
+                                node.mindmap.execute('changeNodeText', {
+                                    node: node,
+                                    text: text,
+                                    oldText: node.data.text
+                                });
+                                // node.data.oldText = node.data.text;
+                                // node.setText(text);
                             }
                             mindmap.refresh();
                             mindmap.scale(mindmap.mindScale);
@@ -39073,6 +39093,28 @@ class MindMapPlugin extends obsidian.Plugin {
                             }
                         }
                         //else: no node selected: nothing to do
+                    }
+                }
+            });
+            // Alt + Shift + L
+            this.addCommand({
+                id: 'Remove line breaks (<br>)',
+                name: `${t('Remove line breaks (<br>)')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt', 'Shift'],
+                        key: 'l',
+                    },
+                ],
+                callback: () => {
+                    const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+                    if (mindmapView) {
+                        var mindmap = mindmapView.mindmap;
+                        let node = mindmap.selectNode;
+                        if (node) {
+                            node.removeLineBreak();
+                        }
+                        //else: no node selected
                     }
                 }
             });
@@ -39375,6 +39417,12 @@ class MindMapPlugin extends obsidian.Plugin {
             this.addCommand({
                 id: 'Move all siblings as children',
                 name: `${t('Move all siblings as children')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt', 'Ctrl', 'Shift'],
+                        key: 'D',
+                    },
+                ],
                 callback: () => {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView) {

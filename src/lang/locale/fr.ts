@@ -50,6 +50,7 @@ export default {
     'Italicize the node\'s text':'Mettre en italique le texte du nœud',
     'Highlight the node\'s text':'Mettre en surbrillance le texte du nœud',
     'Strike through the node\'s text':'Barrer le texte du nœud',
+    'Remove line breaks (<br>)':"Supprimer les retours à la ligne (<br>)",
     'Cancel edit':'Annuler la modification',
     'Expand one level':'Étendre d\'un niveau',
     'Expand one level from the max. displayed level':'Étendre d\'un niveau à partir du niveau maximal affiché',

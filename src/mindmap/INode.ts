@@ -739,6 +739,15 @@ export default class Node {
         this.parseText();
     }
 
+    removeLineBreak() {
+        var l_newText = this.data.text.replace('<br>', ' ');
+        this.mindmap.execute('changeNodeText',{
+            node:this,
+            text:l_newText,
+            oldText:this.data.text
+        });
+    }
+
     expand(){
         this.isExpand =true;
         function show(node:Node) {

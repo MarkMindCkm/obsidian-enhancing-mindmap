@@ -1326,8 +1326,13 @@ export default class MindMap {
         }
 
         // Set the text in the node
-        node.data.oldText = node.data.text;
-        node.setText(text);
+        node.mindmap.execute('changeNodeText',{
+            node:node,
+            text:text,
+            oldText:node.data.text
+        });
+        // node.data.oldText = node.data.text;
+        // node.setText(text);
         node.select();
     }
 

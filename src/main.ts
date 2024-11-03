@@ -405,9 +405,14 @@ export default class MindMapPlugin extends Plugin {
                 // However "***" is not displayed as bold + italic, so use _ for italic and * for bold
               }
 
-              // Set in node text
-              node.data.oldText = node.data.text;
-              node.setText(text);
+              // Set node text
+              node.mindmap.execute('changeNodeText',{
+                  node:node,
+                  text:text,
+                  oldText:node.data.text
+              });
+              // node.data.oldText = node.data.text;
+              // node.setText(text);
             }
 
             mindmap.refresh();
@@ -482,6 +487,30 @@ export default class MindMapPlugin extends Plugin {
 }
       }
     });
+
+    // Alt + Shift + L
+    this.addCommand({
+      id: 'Remove line breaks (<br>)',
+      name: `${t('Remove line breaks (<br>)')}`,
+      hotkeys: [
+        {
+          modifiers: ['Alt','Shift'],
+          key: 'l',
+        },
+      ],
+      callback: () => {
+        const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+        if(mindmapView){
+          var mindmap = mindmapView.mindmap;
+          let node = mindmap.selectNode;
+          if(node) {
+            node.removeLineBreak();
+          }
+          //else: no node selected
+        }
+      }
+    });
+
 
     // (Shift +) Escape
     this.addCommand({
@@ -811,6 +840,12 @@ export default class MindMapPlugin extends Plugin {
     this.addCommand({
       id: 'Move all siblings as children',
       name: `${t('Move all siblings as children')}`,
+      hotkeys: [
+        {
+          modifiers: ['Alt', 'Ctrl', 'Shift'],
+          key: 'D',
+        },
+      ],
       callback: () => {
         const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
         if(mindmapView){

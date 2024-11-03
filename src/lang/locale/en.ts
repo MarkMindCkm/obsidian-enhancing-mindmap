@@ -51,6 +51,7 @@ export default {
     'Italicize the node\'s text':'Italicize the node text',
     'Highlight the node\'s text':'Highlight the node\'s text',
     'Strike through the node\'s text':'Strike through the node\'s text',
+    'Remove line breaks (<br>)':'Remove line breaks (<br>)',
     'Cancel edit':'Cancel edit',
     'Expand one level':'Expand one level',
     'Expand one level from the max. displayed level':'Expand one level from the max. displayed level',
