@@ -57,7 +57,7 @@ export default class Exec{
                 break;
             case 'changeNodeText':
                 if(data){
-                    this.history.execute(new cmd.ChangeNodeText(data.node, data.oldText,data.text));
+                    this.history.execute(new cmd.ChangeNodeText(data.node, data.oldText, data.text));
                 }
                 break;
             case 'moveNode':

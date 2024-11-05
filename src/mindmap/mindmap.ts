@@ -1279,25 +1279,60 @@ export default class MindMap {
 
     _formatNode(node: INode, i_prefix_1: string, i_prefix_2: string) {
         var text = node.data.text;
-        if( (text.substring(0,2) == i_prefix_1) ||
-            (text.substring(0,2) == i_prefix_2) )
-        {// Already formatted
-            text = text.substring(i_prefix_1.length); // Remove leading prefix
 
-            if( (text.substring(text.length-2) == i_prefix_1)   ||
-                (text.substring(text.length-2) == i_prefix_2)   )
-            {// Remove trailing prefix
-                text = text.substring(0,text.length-i_prefix_1.length);
+        if( (text.substring(0,2) == i_prefix_1)  ||
+            (text.substring(0,2) == i_prefix_2)  )
+        {// Prefix must be substracted, bold first
+            text = text.substring(2); // Remove leading prefix
+
+            if( (text.substring(text.length-2) == i_prefix_1)  ||
+                (text.substring(text.length-2) == i_prefix_2)  )
+            {// Suffix must be substracted
+                text = text.substring(0,text.length-2);
             }
             // else: no trailing prefix
         }
-        else {// Not formatted
+
+        else if(    (text.substring(1,3) == i_prefix_1)  ||
+                    (text.substring(1,3) == i_prefix_2)  )
+        {// Prefix must be substracted, italic (?) first
+            text = text[0] + text.substring(3); // Remove prefix
+
+            if( (text.slice(-3, -1) == i_prefix_1)   ||
+                (text.slice(-3, -1) == i_prefix_2)   )
+            {// Suffix must be substracted
+                text = text.substring(0,text.length-3) +
+                text.slice(-1);
+            }
+            // else: no trailing prefix
+        }
+
+        else if(    (text.substring(2,4) == i_prefix_1)  ||
+                    (text.substring(2,4) == i_prefix_2)  )
+        {// Prefix must be substracted, highlight (?) first
+            text = text.substring(0,2) + text.substring(4); // Remove prefix
+
+            if( (text.slice(-4, -2) == i_prefix_1)   ||
+                (text.slice(-4, -2) == i_prefix_2)   )
+            {// Suffix must be substracted
+                text = text.substring(0,text.length-4) +
+                text.slice(-2);
+            }
+            // else: no trailing prefix
+        }
+
+        else {// No pre-/suf-fix: add it
             text = i_prefix_1+text+i_prefix_1;
         }
 
         // Set the text in the node
-        node.data.oldText = node.data.text;
-        node.setText(text);
+        node.mindmap.execute('changeNodeText',{
+            node:node,
+            text:text,
+            oldText:node.data.text
+        });
+        // node.data.oldText = node.data.text;
+        // node.setText(text);
         node.select();
     }
 
@@ -1669,7 +1704,15 @@ export default class MindMap {
                 if (this._dragNode.data.isRoot) {
 
                 } else {
-                    this.moveNode(this._dragNode, dropNode,this._dragType);
+                    if (evt.ctrlKey) {// Ctrl key pressed: copy the node
+                        let copiedNode = this.copyNode(this._dragNode);
+                        dropNode.select();
+                        this.pasteNode(copiedNode);
+
+                    }
+                    else {// Move the node
+                        this.moveNode(this._dragNode, dropNode,this._dragType);
+                    }
                 }
             }
         }
@@ -1916,12 +1959,65 @@ export default class MindMap {
        // this.execute('moveNode', { type: 'child', node: dragNode, oldParent: dragNode.parent, parent: dropNode })
     }
 
+
+    // Move all the current node's siblings as this node's children
+    moveAllSiblingsAsChildren(node: INode) {
+        var sibs = node.getSiblings();
+        sibs.forEach((sib) => {
+            this._moveAsChild(sib, node);
+        })
+
+        return;
+    }
+
+
+    // Move the current node's next siblings as this node's children
+    moveNextSiblingsAsChildren(node: INode) {
+        var sibs = node.getAllNextSiblings();
+        sibs.forEach((sib) => {
+            this._moveAsChild(sib, node);
+        })
+
+        return;
+    }
+
+
     // Join the current node with the following node
     joinWithFollowingNode(node: INode) {
         let joinedNode = node.getNextSibling();
 
         // Set node's text
         node.setText(node.data.text + joinedNode.data.text);
+
+        if(!joinedNode.isLeaf())
+        {// The joined node has children: copy them to the current node
+            joinedNode.children.forEach((n) => {
+                //this._moveAsChild(n, node);
+                let copiedNode = this.copyNode(n);
+                this.selectNode.unSelect();
+                node.select();
+                this.pasteNode(copiedNode);
+            });
+        }
+
+        // Delete joined node
+        this.removeNode(joinedNode);
+
+        this.clearSelectNode();
+        this.refresh();
+        this.scale(this.mindScale);
+        node.select();
+    }
+
+    // Join the current node with the following node, adding " (…) "
+    joinAsCitationWithFollowingNode(node: INode) {
+        let joinedNode = node.getNextSibling();
+
+        // Set node's text, except for the starting emoticon (if any)
+        const emoticonRegex = /^[\u263a-\u27bf\u{1f300}-\u{1f9ff}]/u;
+        let joinedText = joinedNode.data.text.replace(emoticonRegex, "").trimStart();
+        node.setText(node.data.text + " (…) " + joinedText);
+        // node.setText(node.data.text + " (…) " + joinedNode.data.text);
 
         if(!joinedNode.isLeaf())
         {// The joined node has children: copy them to the current node
@@ -2227,7 +2323,7 @@ export default class MindMap {
 
             } else {
                 for (var i = 0; i < n.getLevel() - level; i++) {
-                    space += '   ';
+                    space += '\t';
                 }
                 var text = n.getData().text.trim();
                 if (text) {

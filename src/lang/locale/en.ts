@@ -7,7 +7,7 @@ export default {
     "New mindmap board": "New mindmap board",
     "Untitled mindmap": "Untitled mindmap",
     "Open as markdown": "Open as markdown",
-  
+
     //Execute.ts
     "Sub title":"Sub title",
 
@@ -51,6 +51,7 @@ export default {
     'Italicize the node\'s text':'Italicize the node text',
     'Highlight the node\'s text':'Highlight the node\'s text',
     'Strike through the node\'s text':'Strike through the node\'s text',
+    'Remove line breaks (<br>)':'Remove line breaks (<br>)',
     'Cancel edit':'Cancel edit',
     'Expand one level':'Expand one level',
     'Expand one level from the max. displayed level':'Expand one level from the max. displayed level',
@@ -61,7 +62,10 @@ export default {
     'Move the current node below':'Move the current node below',
     'Move the current node left':'Move the current node left',
     'Move the current node right':'Move the current node right',
+    'Move next siblings as children':"Move next siblings as children",
+    'Move all siblings as children':"Move all siblings as children",
     'Join with the node below':'Join with the node below',
+    'Join as citation with the node below':'Join as citation with the node below',
     'Center mindmap view on the current node':'Center mindmap view on the current node',
     'Center mindmap view':'Center mindmap view',
     'Display the node\'s info in console':'Display the node\'s info in console',

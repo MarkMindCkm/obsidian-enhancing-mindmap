@@ -104,6 +104,8 @@ export default class MindMapPlugin extends Plugin {
           var mindmap = mindmapView.mindmap;
           navigator.clipboard.readText().then(text=>{
               mindmap.pasteNode(text);
+              // Copy once more so that the node can be copied once more
+              navigator.clipboard.writeText(text);
           });
         }
       }
@@ -375,29 +377,42 @@ export default class MindMapPlugin extends Plugin {
             else
             {// Set in italics the whole node
               var text = node.data.text;
-              if( (  ((text.substring(0,1)=="*") ||
-                      (text.substring(0,1)=="_") )        &&
-                  (text.substring(0,2)!="**")             &&
-                  (text.substring(0,2)!="__")             )   ||
-                  (text.substring(0,3)=="***")                ||
-                  (text.substring(0,3)=="___")                )
+              if( (   ( (text.substring(0,1)=="*")  ||
+                        (text.substring(0,1)=="_")  )   &&
+                    (text.substring(0,2)!="**")         &&
+                    (text.substring(0,2)!="__")         )   ||
+                  (text.substring(0,3)=="***")              ||
+                  (text.substring(0,3)=="_**")              ||
+                  (text.substring(0,3)=="__*")              ||
+                  (text.substring(0,3)=="___")              ||
+                  (text.substring(0,3)=="**_")              ||
+                  (text.substring(0,3)=="*__")              )
               {// Already italic
-                text = text.substring(1); // Remove leading * / _
-
-                if( (text.substring(text.length-1)=="*") ||
-                    (text.substring(text.length-1)=="_") )   {
-                  // Remove trailing * / _
-                  text = text.substring(0,text.length-1);
+                if(text.slice(0, 3).includes("_")) {
+                  // Replace only the first "_" in the first 3 chars (that make the italic)
+                  text = text.slice(0, 3).replace('_', '') + text.slice(3);
+                  // Replace only the first "_" in the LAST 3 chars (that make the italic)
+                  text = text.slice(0, -3) + text.slice(-3).replace('_', '');
                 }
-                // else: no trailing *
+                else{// A "*" is making the italic
+                  text = text.slice(0, 3).replace('*', '') + text.slice(3);
+                  text = text.slice(0, -3) + text.slice(-3).replace('*', '');
+                }
               }
               else {// Not in italic
-                text = "*"+text+"*"; // Use "*" to allow bold/italic change in whatever order
+                text = "_"+text+"_";
+                // Used to use "*" to allow bold/italic change in whatever order
+                // However "***" is not displayed as bold + italic, so use _ for italic and * for bold
               }
 
-              // Set in node text
-              node.data.oldText = node.data.text;
-              node.setText(text);
+              // Set node text
+              node.mindmap.execute('changeNodeText',{
+                  node:node,
+                  text:text,
+                  oldText:node.data.text
+              });
+              // node.data.oldText = node.data.text;
+              // node.setText(text);
             }
 
             mindmap.refresh();
@@ -472,6 +487,30 @@ export default class MindMapPlugin extends Plugin {
 }
       }
     });
+
+    // Alt + Shift + L
+    this.addCommand({
+      id: 'Remove line breaks (<br>)',
+      name: `${t('Remove line breaks (<br>)')}`,
+      hotkeys: [
+        {
+          modifiers: ['Alt','Shift'],
+          key: 'l',
+        },
+      ],
+      callback: () => {
+        const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+        if(mindmapView){
+          var mindmap = mindmapView.mindmap;
+          let node = mindmap.selectNode;
+          if(node) {
+            node.removeLineBreak();
+          }
+          //else: no node selected
+        }
+      }
+    });
+
 
     // (Shift +) Escape
     this.addCommand({
@@ -774,10 +813,62 @@ export default class MindMapPlugin extends Plugin {
       }
     });
 
+
+    // Alt + Shift + D
+    this.addCommand({
+      id: 'Move next siblings as children',
+      name: `${t('Move next siblings as children')}`,
+      hotkeys: [
+        {
+          modifiers: ['Alt', 'Shift'],
+          key: 'D',
+        },
+      ],
+      callback: () => {
+        const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+        if(mindmapView){
+          var mindmap = mindmapView.mindmap;
+          var node = mindmap.selectNode;
+          if(node)
+          {  mindmap.moveNextSiblingsAsChildren(node); }
+          // else: No node selected: nothing to do
+        }
+      }
+    });
+
+
+    this.addCommand({
+      id: 'Move all siblings as children',
+      name: `${t('Move all siblings as children')}`,
+      hotkeys: [
+        {
+          modifiers: ['Alt', 'Ctrl', 'Shift'],
+          key: 'D',
+        },
+      ],
+      callback: () => {
+        const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+        if(mindmapView){
+          var mindmap = mindmapView.mindmap;
+          var node = mindmap.selectNode;
+          if(node)
+          {  mindmap.moveAllSiblingsAsChildren(node); }
+          // else: No node selected: nothing to do
+        }
+      }
+    });
+
+
     // Alt + Shift + J
     this.addCommand({
       id: 'Join with the node below',
       name: `${t('Join with the node below')}`,
+      hotkeys: [
+        {
+          modifiers: ['Alt', 'Shift'],
+          key: 'J',
+        },
+      ],
       callback: () => {
         const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
         if(mindmapView){
@@ -786,7 +877,29 @@ export default class MindMapPlugin extends Plugin {
           if(node)
           {  mindmap.joinWithFollowingNode(node); }
           // else: No node selected: nothing to do
-  }
+        }
+      }
+    });
+
+    // Alt + Shift + Ctrl + J
+    this.addCommand({
+      id: 'Join as citation with the node below',
+      name: `${t('Join as citation with the node below')}`,
+      hotkeys: [
+        {
+          modifiers: ['Alt', 'Shift', 'Ctrl'],
+          key: 'J',
+        },
+      ],
+      callback: () => {
+        const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+        if(mindmapView){
+          var mindmap = mindmapView.mindmap;
+          var node = mindmap.selectNode;
+          if(node)
+          {  mindmap.joinAsCitationWithFollowingNode(node); }
+          // else: No node selected: nothing to do
+        }
       }
     });
 

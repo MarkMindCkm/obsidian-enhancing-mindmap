@@ -106,12 +106,12 @@ export class ChangeNodeText extends Command {
         this.node = node;
         this.oldText = oldText;
         this.text = text;
-        this.isFirst =true;
+        this.isFirst = true;
     }
     execute():boolean {
-        if(!this.isFirst){
+        //if(!this.isFirst){
             this.node.setText(this.text);
-        }
+        //}
         this.node.refreshBox();
         this.node.clearCacheData();
         this.refresh(this.node.mindmap);

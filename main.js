@@ -157,6 +157,7 @@ var en = {
     'Italicize the node\'s text': 'Italicize the node text',
     'Highlight the node\'s text': 'Highlight the node\'s text',
     'Strike through the node\'s text': 'Strike through the node\'s text',
+    'Remove line breaks (<br>)': 'Remove line breaks (<br>)',
     'Cancel edit': 'Cancel edit',
     'Expand one level': 'Expand one level',
     'Expand one level from the max. displayed level': 'Expand one level from the max. displayed level',
@@ -167,7 +168,10 @@ var en = {
     'Move the current node below': 'Move the current node below',
     'Move the current node left': 'Move the current node left',
     'Move the current node right': 'Move the current node right',
+    'Move next siblings as children': "Move next siblings as children",
+    'Move all siblings as children': "Move all siblings as children",
     'Join with the node below': 'Join with the node below',
+    'Join as citation with the node below': 'Join as citation with the node below',
     'Center mindmap view on the current node': 'Center mindmap view on the current node',
     'Center mindmap view': 'Center mindmap view',
     'Display the node\'s info in console': 'Display the node\'s info in console',
@@ -228,6 +232,7 @@ var fr = {
     'Italicize the node\'s text': 'Mettre en italique le texte du nœud',
     'Highlight the node\'s text': 'Mettre en surbrillance le texte du nœud',
     'Strike through the node\'s text': 'Barrer le texte du nœud',
+    'Remove line breaks (<br>)': "Supprimer les retours à la ligne (<br>)",
     'Cancel edit': 'Annuler la modification',
     'Expand one level': 'Étendre d\'un niveau',
     'Expand one level from the max. displayed level': 'Étendre d\'un niveau à partir du niveau maximal affiché',
@@ -238,7 +243,10 @@ var fr = {
     'Move the current node below': 'Déplacer le nœud courant vers le bas',
     'Move the current node left': 'Déplacer le nœud courant vers la gauche',
     'Move the current node right': 'Déplacer le nœud courant vers la droite',
+    'Move next siblings as children': 'Déplacer les nœuds frères suivants en nœuds enfants',
+    'Move all siblings as children': 'Déplacer tous les nœuds frères en nœuds enfants',
     'Join with the node below': 'Joindre avec le nœud en dessous',
+    'Join as citation with the node below': 'Joindre avec le nœud en dessous comme citation',
     'Center mindmap view on the current node': 'Centrer la vue de la carte mentale sur le nœud courant',
     'Center mindmap view': 'Centrer la vue de la carte mentale',
     'Display the node\'s info in console': 'Afficher les informations du nœud dans la console',
@@ -632,11 +640,31 @@ class Node {
         }
         if (i_check) { // Check in case the pre-/suf-fix must be substracted
             if ((l_selectedText.substring(0, 2) == i_str_1) ||
-                (l_selectedText.substring(0, 2) == i_str_2)) { // Prefix must be substracted
-                l_selectedText = l_selectedText.substring(i_str_1.length); // Remove leading prefix
+                (l_selectedText.substring(0, 2) == i_str_2)) { // Prefix must be substracted, bold first
+                l_selectedText = l_selectedText.substring(2); // Remove leading prefix
                 if ((l_selectedText.substring(l_selectedText.length - 2) == i_str_1) ||
                     (l_selectedText.substring(l_selectedText.length - 2) == i_str_2)) { // Suffix must be substracted
-                    l_selectedText = l_selectedText.substring(0, l_selectedText.length - i_str_1.length);
+                    l_selectedText = l_selectedText.substring(0, l_selectedText.length - 2);
+                }
+                // else: no trailing prefix
+            }
+            else if ((l_selectedText.substring(1, 3) == i_str_1) ||
+                (l_selectedText.substring(1, 3) == i_str_2)) { // Prefix must be substracted, italic (?) first
+                l_selectedText = l_selectedText[0] + l_selectedText.substring(3); // Remove prefix
+                if ((l_selectedText.slice(-3, -1) == i_str_1) ||
+                    (l_selectedText.slice(-3, -1) == i_str_2)) { // Suffix must be substracted
+                    l_selectedText = l_selectedText.substring(0, l_selectedText.length - 3) +
+                        l_selectedText.slice(-1);
+                }
+                // else: no trailing prefix
+            }
+            else if ((l_selectedText.substring(2, 4) == i_str_1) ||
+                (l_selectedText.substring(2, 4) == i_str_2)) { // Prefix must be substracted, highlight (?) first
+                l_selectedText = l_selectedText.substring(0, 2) + l_selectedText.substring(4); // Remove prefix
+                if ((l_selectedText.slice(-4, -2) == i_str_1) ||
+                    (l_selectedText.slice(-4, -2) == i_str_2)) { // Suffix must be substracted
+                    l_selectedText = l_selectedText.substring(0, l_selectedText.length - 4) +
+                        l_selectedText.slice(-2);
                 }
                 // else: no trailing prefix
             }
@@ -684,16 +712,26 @@ class Node {
                 (l_selectedText.substring(0, 2) != "**") &&
                 (l_selectedText.substring(0, 2) != "__")) ||
                 (l_selectedText.substring(0, 3) == "***") ||
-                (l_selectedText.substring(0, 3) == "___")) { // Already italic
-                l_selectedText = l_selectedText.substring(1); // Remove leading prefix
-                if ((l_selectedText.substring(l_selectedText.length - 1) == "*") ||
-                    (l_selectedText.substring(l_selectedText.length - 1) == "_")) { // Suffix must be substracted
-                    l_selectedText = l_selectedText.substring(0, l_selectedText.length - 1);
+                (l_selectedText.substring(0, 3) == "_**") ||
+                (l_selectedText.substring(0, 3) == "__*") ||
+                (l_selectedText.substring(0, 3) == "___") ||
+                (l_selectedText.substring(0, 3) == "**_") ||
+                (l_selectedText.substring(0, 3) == "*__")) { // Already italic
+                if (l_selectedText.slice(0, 3).includes("_")) {
+                    // Replace only the first "_" in the first 3 chars (that make the italic)
+                    l_selectedText = l_selectedText.slice(0, 3).replace('_', '') + l_selectedText.slice(3);
+                    // Replace only the first "_" in the LAST 3 chars (that make the italic)
+                    l_selectedText = l_selectedText.slice(0, -3) + l_selectedText.slice(-3).replace('_', '');
                 }
-                // else: no trailing prefix
+                else { // A "*" is making the italic
+                    l_selectedText = l_selectedText.slice(0, 3).replace('*', '') + l_selectedText.slice(3);
+                    l_selectedText = l_selectedText.slice(0, -3) + l_selectedText.slice(-3).replace('*', '');
+                }
             }
             else { // No pre-/suf-fix: add it
-                l_selectedText = "*" + l_selectedText + "*"; // Use "*" so that bold/italic can be changed in whetever order
+                l_selectedText = "_" + l_selectedText + "_";
+                // Used to use "*" to allow bold/italic change in whatever order
+                // However "***" is not displayed as bold + italic, so use _ for italic and * for bold
             }
         }
         // Add a leading/trailing space if needed
@@ -827,40 +865,53 @@ class Node {
         }
     }
     getPreviousSibling() {
-        var nodeIdx = this.getIndex();
         var returnedNode = this;
-        var searchedIdx = nodeIdx - 1;
-        if (nodeIdx == 0) { // This is the first sibling -> return the last one.
-            searchedIdx = this.parent.children.length - 1;
-        }
-        // else: searchedIdx already set.
-        // Search the sibling
-        var sibs = this.getSiblings();
-        sibs.forEach((sib) => {
-            if (sib.getIndex() == searchedIdx) {
-                returnedNode = sib;
+        if (this.parent) {
+            var searchedIdx = this.getIndex() - 1;
+            if (searchedIdx < 0) { // This is the first sibling -> return the last one.
+                searchedIdx = this.parent.children.length - 1;
             }
-            // else: not the previous sibling
-        });
+            // else: searchedIdx already set.
+            // Search the sibling
+            var sibs = this.getSiblings();
+            sibs.forEach((sib) => {
+                if (sib.getIndex() == searchedIdx) {
+                    returnedNode = sib;
+                }
+                // else: not the previous sibling
+            });
+        }
+        // else: no node to search
         return returnedNode;
     }
     getNextSibling() {
-        var nodeIdx = this.getIndex();
         var returnedNode = this;
-        var searchedIdx = nodeIdx + 1;
-        if (nodeIdx >= this.parent.children.length - 1) { // This is the last sibling -> return the first one.
-            searchedIdx = 0;
-        }
-        // else: searchedIdx already set.
-        // Search the sibling
-        var sibs = this.getSiblings();
-        sibs.forEach((sib) => {
-            if (sib.getIndex() == searchedIdx) {
-                returnedNode = sib;
+        if (this.parent) {
+            var searchedIdx = this.getIndex() + 1;
+            if (searchedIdx >= this.parent.children.length) { // This is the last sibling -> return the first one.
+                searchedIdx = 0;
             }
-            // else: not the next sibling
-        });
+            // else: searchedIdx already set.
+            // Search the sibling
+            var sibs = this.getSiblings();
+            sibs.forEach((sib) => {
+                if (sib.getIndex() == searchedIdx) {
+                    returnedNode = sib;
+                }
+                // else: not the next sibling
+            });
+        }
+        // else: no node to search
         return returnedNode;
+    }
+    getAllNextSiblings() {
+        if (this.parent) {
+            // Return all the next siblings
+            return this.parent.children.filter(item => item.getIndex() > this.getIndex());
+        }
+        else {
+            return [];
+        }
     }
     getFirstSibling() {
         var returnedNode = this;
@@ -933,6 +984,14 @@ class Node {
         this.data.text = text;
         this.contentEl.innerHTML = '';
         this.parseText();
+    }
+    removeLineBreak() {
+        var l_newText = this.data.text.replace('<br>', ' ');
+        this.mindmap.execute('changeNodeText', {
+            node: this,
+            text: l_newText,
+            oldText: this.data.text
+        });
     }
     expand() {
         this.isExpand = true;
@@ -7776,9 +7835,9 @@ class ChangeNodeText extends Command {
         this.isFirst = true;
     }
     execute() {
-        if (!this.isFirst) {
-            this.node.setText(this.text);
-        }
+        //if(!this.isFirst){
+        this.node.setText(this.text);
+        //}
         this.node.refreshBox();
         this.node.clearCacheData();
         this.refresh(this.node.mindmap);
@@ -9166,20 +9225,45 @@ class MindMap {
     _formatNode(node, i_prefix_1, i_prefix_2) {
         var text = node.data.text;
         if ((text.substring(0, 2) == i_prefix_1) ||
-            (text.substring(0, 2) == i_prefix_2)) { // Already formatted
-            text = text.substring(i_prefix_1.length); // Remove leading prefix
+            (text.substring(0, 2) == i_prefix_2)) { // Prefix must be substracted, bold first
+            text = text.substring(2); // Remove leading prefix
             if ((text.substring(text.length - 2) == i_prefix_1) ||
-                (text.substring(text.length - 2) == i_prefix_2)) { // Remove trailing prefix
-                text = text.substring(0, text.length - i_prefix_1.length);
+                (text.substring(text.length - 2) == i_prefix_2)) { // Suffix must be substracted
+                text = text.substring(0, text.length - 2);
             }
             // else: no trailing prefix
         }
-        else { // Not formatted
+        else if ((text.substring(1, 3) == i_prefix_1) ||
+            (text.substring(1, 3) == i_prefix_2)) { // Prefix must be substracted, italic (?) first
+            text = text[0] + text.substring(3); // Remove prefix
+            if ((text.slice(-3, -1) == i_prefix_1) ||
+                (text.slice(-3, -1) == i_prefix_2)) { // Suffix must be substracted
+                text = text.substring(0, text.length - 3) +
+                    text.slice(-1);
+            }
+            // else: no trailing prefix
+        }
+        else if ((text.substring(2, 4) == i_prefix_1) ||
+            (text.substring(2, 4) == i_prefix_2)) { // Prefix must be substracted, highlight (?) first
+            text = text.substring(0, 2) + text.substring(4); // Remove prefix
+            if ((text.slice(-4, -2) == i_prefix_1) ||
+                (text.slice(-4, -2) == i_prefix_2)) { // Suffix must be substracted
+                text = text.substring(0, text.length - 4) +
+                    text.slice(-2);
+            }
+            // else: no trailing prefix
+        }
+        else { // No pre-/suf-fix: add it
             text = i_prefix_1 + text + i_prefix_1;
         }
         // Set the text in the node
-        node.data.oldText = node.data.text;
-        node.setText(text);
+        node.mindmap.execute('changeNodeText', {
+            node: node,
+            text: text,
+            oldText: node.data.text
+        });
+        // node.data.oldText = node.data.text;
+        // node.setText(text);
         node.select();
     }
     _moveAsParent(node) {
@@ -9509,7 +9593,14 @@ class MindMap {
                 var dropNode = this.getNodeById(dropNodeId);
                 if (this._dragNode.data.isRoot) ;
                 else {
-                    this.moveNode(this._dragNode, dropNode, this._dragType);
+                    if (evt.ctrlKey) { // Ctrl key pressed: copy the node
+                        let copiedNode = this.copyNode(this._dragNode);
+                        dropNode.select();
+                        this.pasteNode(copiedNode);
+                    }
+                    else { // Move the node
+                        this.moveNode(this._dragNode, dropNode, this._dragType);
+                    }
                 }
             }
         }
@@ -9734,11 +9825,51 @@ class MindMap {
         }
         // this.execute('moveNode', { type: 'child', node: dragNode, oldParent: dragNode.parent, parent: dropNode })
     }
+    // Move all the current node's siblings as this node's children
+    moveAllSiblingsAsChildren(node) {
+        var sibs = node.getSiblings();
+        sibs.forEach((sib) => {
+            this._moveAsChild(sib, node);
+        });
+        return;
+    }
+    // Move the current node's next siblings as this node's children
+    moveNextSiblingsAsChildren(node) {
+        var sibs = node.getAllNextSiblings();
+        sibs.forEach((sib) => {
+            this._moveAsChild(sib, node);
+        });
+        return;
+    }
     // Join the current node with the following node
     joinWithFollowingNode(node) {
         let joinedNode = node.getNextSibling();
         // Set node's text
         node.setText(node.data.text + joinedNode.data.text);
+        if (!joinedNode.isLeaf()) { // The joined node has children: copy them to the current node
+            joinedNode.children.forEach((n) => {
+                //this._moveAsChild(n, node);
+                let copiedNode = this.copyNode(n);
+                this.selectNode.unSelect();
+                node.select();
+                this.pasteNode(copiedNode);
+            });
+        }
+        // Delete joined node
+        this.removeNode(joinedNode);
+        this.clearSelectNode();
+        this.refresh();
+        this.scale(this.mindScale);
+        node.select();
+    }
+    // Join the current node with the following node, adding " (…) "
+    joinAsCitationWithFollowingNode(node) {
+        let joinedNode = node.getNextSibling();
+        // Set node's text, except for the starting emoticon (if any)
+        const emoticonRegex = /^[\u263a-\u27bf\u{1f300}-\u{1f9ff}]/u;
+        let joinedText = joinedNode.data.text.replace(emoticonRegex, "").trimStart();
+        node.setText(node.data.text + " (…) " + joinedText);
+        // node.setText(node.data.text + " (…) " + joinedNode.data.text);
         if (!joinedNode.isLeaf()) { // The joined node has children: copy them to the current node
             joinedNode.children.forEach((n) => {
                 //this._moveAsChild(n, node);
@@ -9972,7 +10103,7 @@ class MindMap {
             }
             else {
                 for (var i = 0; i < n.getLevel() - level; i++) {
-                    space += '   ';
+                    space += '\t';
                 }
                 var text = n.getData().text.trim();
                 if (text) {
@@ -38619,6 +38750,8 @@ class MindMapPlugin extends obsidian.Plugin {
                         var mindmap = mindmapView.mindmap;
                         navigator.clipboard.readText().then(text => {
                             mindmap.pasteNode(text);
+                            // Copy once more so that the node can be copied once more
+                            navigator.clipboard.writeText(text);
                         });
                     }
                 }
@@ -38872,21 +39005,35 @@ class MindMapPlugin extends obsidian.Plugin {
                                     (text.substring(0, 2) != "**") &&
                                     (text.substring(0, 2) != "__")) ||
                                     (text.substring(0, 3) == "***") ||
-                                    (text.substring(0, 3) == "___")) { // Already italic
-                                    text = text.substring(1); // Remove leading * / _
-                                    if ((text.substring(text.length - 1) == "*") ||
-                                        (text.substring(text.length - 1) == "_")) {
-                                        // Remove trailing * / _
-                                        text = text.substring(0, text.length - 1);
+                                    (text.substring(0, 3) == "_**") ||
+                                    (text.substring(0, 3) == "__*") ||
+                                    (text.substring(0, 3) == "___") ||
+                                    (text.substring(0, 3) == "**_") ||
+                                    (text.substring(0, 3) == "*__")) { // Already italic
+                                    if (text.slice(0, 3).includes("_")) {
+                                        // Replace only the first "_" in the first 3 chars (that make the italic)
+                                        text = text.slice(0, 3).replace('_', '') + text.slice(3);
+                                        // Replace only the first "_" in the LAST 3 chars (that make the italic)
+                                        text = text.slice(0, -3) + text.slice(-3).replace('_', '');
                                     }
-                                    // else: no trailing *
+                                    else { // A "*" is making the italic
+                                        text = text.slice(0, 3).replace('*', '') + text.slice(3);
+                                        text = text.slice(0, -3) + text.slice(-3).replace('*', '');
+                                    }
                                 }
                                 else { // Not in italic
-                                    text = "*" + text + "*"; // Use "*" to allow bold/italic change in whatever order
+                                    text = "_" + text + "_";
+                                    // Used to use "*" to allow bold/italic change in whatever order
+                                    // However "***" is not displayed as bold + italic, so use _ for italic and * for bold
                                 }
-                                // Set in node text
-                                node.data.oldText = node.data.text;
-                                node.setText(text);
+                                // Set node text
+                                node.mindmap.execute('changeNodeText', {
+                                    node: node,
+                                    text: text,
+                                    oldText: node.data.text
+                                });
+                                // node.data.oldText = node.data.text;
+                                // node.setText(text);
                             }
                             mindmap.refresh();
                             mindmap.scale(mindmap.mindScale);
@@ -38946,6 +39093,28 @@ class MindMapPlugin extends obsidian.Plugin {
                             }
                         }
                         //else: no node selected: nothing to do
+                    }
+                }
+            });
+            // Alt + Shift + L
+            this.addCommand({
+                id: 'Remove line breaks (<br>)',
+                name: `${t('Remove line breaks (<br>)')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt', 'Shift'],
+                        key: 'l',
+                    },
+                ],
+                callback: () => {
+                    const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+                    if (mindmapView) {
+                        var mindmap = mindmapView.mindmap;
+                        let node = mindmap.selectNode;
+                        if (node) {
+                            node.removeLineBreak();
+                        }
+                        //else: no node selected
                     }
                 }
             });
@@ -39223,10 +39392,59 @@ class MindMapPlugin extends obsidian.Plugin {
                     }
                 }
             });
+            // Alt + Shift + D
+            this.addCommand({
+                id: 'Move next siblings as children',
+                name: `${t('Move next siblings as children')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt', 'Shift'],
+                        key: 'D',
+                    },
+                ],
+                callback: () => {
+                    const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+                    if (mindmapView) {
+                        var mindmap = mindmapView.mindmap;
+                        var node = mindmap.selectNode;
+                        if (node) {
+                            mindmap.moveNextSiblingsAsChildren(node);
+                        }
+                        // else: No node selected: nothing to do
+                    }
+                }
+            });
+            this.addCommand({
+                id: 'Move all siblings as children',
+                name: `${t('Move all siblings as children')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt', 'Ctrl', 'Shift'],
+                        key: 'D',
+                    },
+                ],
+                callback: () => {
+                    const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+                    if (mindmapView) {
+                        var mindmap = mindmapView.mindmap;
+                        var node = mindmap.selectNode;
+                        if (node) {
+                            mindmap.moveAllSiblingsAsChildren(node);
+                        }
+                        // else: No node selected: nothing to do
+                    }
+                }
+            });
             // Alt + Shift + J
             this.addCommand({
                 id: 'Join with the node below',
                 name: `${t('Join with the node below')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt', 'Shift'],
+                        key: 'J',
+                    },
+                ],
                 callback: () => {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView) {
@@ -39234,6 +39452,28 @@ class MindMapPlugin extends obsidian.Plugin {
                         var node = mindmap.selectNode;
                         if (node) {
                             mindmap.joinWithFollowingNode(node);
+                        }
+                        // else: No node selected: nothing to do
+                    }
+                }
+            });
+            // Alt + Shift + Ctrl + J
+            this.addCommand({
+                id: 'Join as citation with the node below',
+                name: `${t('Join as citation with the node below')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt', 'Shift', 'Ctrl'],
+                        key: 'J',
+                    },
+                ],
+                callback: () => {
+                    const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+                    if (mindmapView) {
+                        var mindmap = mindmapView.mindmap;
+                        var node = mindmap.selectNode;
+                        if (node) {
+                            mindmap.joinAsCitationWithFollowingNode(node);
                         }
                         // else: No node selected: nothing to do
                     }

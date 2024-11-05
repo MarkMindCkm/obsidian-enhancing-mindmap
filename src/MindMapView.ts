@@ -84,11 +84,11 @@ export class MindMapView extends TextFileView implements HoverParent {
        }
     });
 
- 
+
 
     var oldScrollLeft = this.mindmap.containerEL.scrollLeft;
     var oldScrollTop = this.mindmap.containerEL.scrollTop;
-  
+
     var box  = this.mindmap.getBoundingRect(nodes);
     var rootBox = this.mindmap.root.getPosition();
 
@@ -111,11 +111,11 @@ export class MindMapView extends TextFileView implements HoverParent {
     this.mindmap.contentEL.style.height=h+'px';
 
     setTimeout(()=>{
-      domtoimage.toPng(this.mindmap.contentEL,{}).then(dataUrl=>{  
+      domtoimage.toPng(this.mindmap.contentEL,{}).then(dataUrl=>{
         var img = new Image()
         img.src = dataUrl;
         var str = img.outerHTML;
-  
+
          var p= this.mindmap.path.substr(0,this.mindmap.path.length-2);
         try{
           new Notice(p+'html');
@@ -125,7 +125,7 @@ export class MindMapView extends TextFileView implements HoverParent {
           this.restoreMindmap(rootBox,oldScrollLeft,oldScrollTop)
           new Notice(err);
         }
-        
+
       }).catch(err=>{
         this.restoreMindmap(rootBox,oldScrollLeft,oldScrollTop)
         new Notice(err);
@@ -310,7 +310,7 @@ export class MindMapView extends TextFileView implements HoverParent {
 
       frontMatter = this.data.substr(0,end);
     }
-    
+
     frontMatter+='\n\n';
     //frontMatter += `\n---\n\n`;
     return frontMatter
@@ -378,12 +378,12 @@ export class MindMapView extends TextFileView implements HoverParent {
     this.mindmap = new MindMap(mindData, this.contentEl, this.plugin.settings);
     this.mindmap.colors = this.colors;
     if (this.firstInit) {
-     
+
       setTimeout(() => {
         var leaf = this.leaf;
         if (leaf) {
           var view = leaf.view as MindMapView;
-          
+
           this.mindmap.path = view?.file.path;
           if (view.file) {
             this.fileCache = this.app.metadataCache.getFileCache(view.file);
@@ -399,7 +399,7 @@ export class MindMapView extends TextFileView implements HoverParent {
       var view = this.leaf.view as MindMapView;
       this.fileCache = this.app.metadataCache.getFileCache(view.file);
       this.yamlString = this.getFrontMatter();
-   
+
       this.mindmap.path = view?.file.path;
       this.mindmap.init();
       this.mindmap.refresh();

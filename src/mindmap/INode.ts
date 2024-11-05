@@ -322,13 +322,39 @@ export default class Node {
         {// Check in case the pre-/suf-fix must be substracted
             if( (l_selectedText.substring(0,2) == i_str_1)  ||
                 (l_selectedText.substring(0,2) == i_str_2)  )
-            {// Prefix must be substracted
-                l_selectedText = l_selectedText.substring(i_str_1.length); // Remove leading prefix
+            {// Prefix must be substracted, bold first
+                l_selectedText = l_selectedText.substring(2); // Remove leading prefix
 
                 if( (l_selectedText.substring(l_selectedText.length-2) == i_str_1)  ||
                     (l_selectedText.substring(l_selectedText.length-2) == i_str_2)  )
                 {// Suffix must be substracted
-                    l_selectedText = l_selectedText.substring(0,l_selectedText.length-i_str_1.length);
+                    l_selectedText = l_selectedText.substring(0,l_selectedText.length-2);
+                }
+                // else: no trailing prefix
+            }
+            else if(    (l_selectedText.substring(1,3) == i_str_1)  ||
+                        (l_selectedText.substring(1,3) == i_str_2)  )
+            {// Prefix must be substracted, italic (?) first
+                l_selectedText = l_selectedText[0] + l_selectedText.substring(3); // Remove prefix
+
+                if( (l_selectedText.slice(-3, -1) == i_str_1)   ||
+                    (l_selectedText.slice(-3, -1) == i_str_2)   )
+                {// Suffix must be substracted
+                    l_selectedText = l_selectedText.substring(0,l_selectedText.length-3) +
+                        l_selectedText.slice(-1);
+                }
+                // else: no trailing prefix
+            }
+            else if(    (l_selectedText.substring(2,4) == i_str_1)  ||
+                        (l_selectedText.substring(2,4) == i_str_2)  )
+            {// Prefix must be substracted, highlight (?) first
+                l_selectedText = l_selectedText.substring(0,2) + l_selectedText.substring(4); // Remove prefix
+
+                if( (l_selectedText.slice(-4, -2) == i_str_1)   ||
+                    (l_selectedText.slice(-4, -2) == i_str_2)   )
+                {// Suffix must be substracted
+                    l_selectedText = l_selectedText.substring(0,l_selectedText.length-4) +
+                    l_selectedText.slice(-2);
                 }
                 // else: no trailing prefix
             }
@@ -379,24 +405,32 @@ export default class Node {
         }
 
         {// Check in case the pre-/suf-fix must be substracted
-            if( (  ((l_selectedText.substring(0,1)=="*")    ||
-                    (l_selectedText.substring(0,1)=="_")    )   &&
-                (l_selectedText.substring(0,2)!="**")           &&
-                (l_selectedText.substring(0,2)!="__")           )   ||
-                (l_selectedText.substring(0,3)=="***")              ||
-                (l_selectedText.substring(0,3)=="___")              )
+            if( (   (   (l_selectedText.substring(0,1)=="*")   ||
+                        (l_selectedText.substring(0,1)=="_")    )   &&
+                    (l_selectedText.substring(0,2)!="**")           &&
+                    (l_selectedText.substring(0,2)!="__")           )   ||
+                (l_selectedText.substring(0,3)=="***")                  ||
+                (l_selectedText.substring(0,3)=="_**")                  ||
+                (l_selectedText.substring(0,3)=="__*")                  ||
+                (l_selectedText.substring(0,3)=="___")                  ||
+                (l_selectedText.substring(0,3)=="**_")                  ||
+                (l_selectedText.substring(0,3)=="*__")                  )
             {// Already italic
-                l_selectedText = l_selectedText.substring(1); // Remove leading prefix
-
-                if( (l_selectedText.substring(l_selectedText.length-1) == "*")  ||
-                    (l_selectedText.substring(l_selectedText.length-1) == "_")  )
-                {// Suffix must be substracted
-                    l_selectedText = l_selectedText.substring(0,l_selectedText.length-1);
+                if(l_selectedText.slice(0, 3).includes("_")) {
+                    // Replace only the first "_" in the first 3 chars (that make the italic)
+                    l_selectedText = l_selectedText.slice(0, 3).replace('_', '') + l_selectedText.slice(3);
+                    // Replace only the first "_" in the LAST 3 chars (that make the italic)
+                    l_selectedText = l_selectedText.slice(0, -3) + l_selectedText.slice(-3).replace('_', '');
                 }
-                // else: no trailing prefix
+                else{// A "*" is making the italic
+                    l_selectedText = l_selectedText.slice(0, 3).replace('*', '') + l_selectedText.slice(3);
+                    l_selectedText = l_selectedText.slice(0, -3) + l_selectedText.slice(-3).replace('*', '');
+                }
             }
             else {// No pre-/suf-fix: add it
-                l_selectedText = "*"+l_selectedText+"*"; // Use "*" so that bold/italic can be changed in whetever order
+                l_selectedText = "_"+l_selectedText+"_";
+                // Used to use "*" to allow bold/italic change in whatever order
+                // However "***" is not displayed as bold + italic, so use _ for italic and * for bold
             }
         }
 
@@ -559,51 +593,65 @@ export default class Node {
 
 
     getPreviousSibling() {
-        var nodeIdx = this.getIndex();
         var returnedNode = (this as Node);
 
-        var searchedIdx = nodeIdx-1;
-        if(nodeIdx == 0)
-        {// This is the first sibling -> return the last one.
-            searchedIdx = this.parent.children.length-1;
-        }
-        // else: searchedIdx already set.
-
-        // Search the sibling
-        var sibs = this.getSiblings();
-        sibs.forEach((sib) => {
-            if (sib.getIndex() == searchedIdx) {
-                returnedNode = sib;
+        if (this.parent) {
+            var searchedIdx = this.getIndex()-1;
+            if(searchedIdx < 0)
+            {// This is the first sibling -> return the last one.
+                searchedIdx = this.parent.children.length-1;
             }
-            // else: not the previous sibling
-        })
+            // else: searchedIdx already set.
+
+            // Search the sibling
+            var sibs = this.getSiblings();
+            sibs.forEach((sib) => {
+                if (sib.getIndex() == searchedIdx) {
+                    returnedNode = sib;
+                }
+                // else: not the previous sibling
+            })
+        }
+        // else: no node to search
 
         return returnedNode;
     }
 
     getNextSibling() {
-        var nodeIdx = this.getIndex();
         var returnedNode = (this as Node);
 
-        var searchedIdx = nodeIdx+1;
+        if (this.parent) {
+            var searchedIdx = this.getIndex()+1;
 
-        if(nodeIdx >= this.parent.children.length-1)
-        {// This is the last sibling -> return the first one.
-            searchedIdx = 0;
-        }
-        // else: searchedIdx already set.
-
-        // Search the sibling
-        var sibs = this.getSiblings();
-        sibs.forEach((sib) => {
-            if (sib.getIndex() == searchedIdx) {
-                returnedNode = sib;
+            if(searchedIdx >= this.parent.children.length)
+            {// This is the last sibling -> return the first one.
+                searchedIdx = 0;
             }
-            // else: not the next sibling
-        })
+            // else: searchedIdx already set.
+
+            // Search the sibling
+            var sibs = this.getSiblings();
+            sibs.forEach((sib) => {
+                if (sib.getIndex() == searchedIdx) {
+                    returnedNode = sib;
+                }
+                // else: not the next sibling
+            })
+        }
+        // else: no node to search
 
         return returnedNode;
     }
+
+    getAllNextSiblings() {
+        if (this.parent) {
+            // Return all the next siblings
+            return this.parent.children.filter(item => item.getIndex() > this.getIndex());
+        } else {
+            return [];
+        }
+    }
+
 
     getFirstSibling() {
         var returnedNode = (this as Node);
@@ -689,6 +737,15 @@ export default class Node {
         this.data.text = text;
         this.contentEl.innerHTML='';
         this.parseText();
+    }
+
+    removeLineBreak() {
+        var l_newText = this.data.text.replace('<br>', ' ');
+        this.mindmap.execute('changeNodeText',{
+            node:this,
+            text:l_newText,
+            oldText:this.data.text
+        });
     }
 
     expand(){
