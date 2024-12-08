@@ -2013,11 +2013,24 @@ export default class MindMap {
     joinAsCitationWithFollowingNode(node: INode) {
         let joinedNode = node.getNextSibling();
 
-        // Set node's text, except for the starting emoticon (if any)
+
+        // Set node's text, except for the starting emoticon and link (if any)
         const emoticonRegex = /^[\u263a-\u27bf\u{1f300}-\u{1f9ff}]/u;
-        let joinedText = joinedNode.data.text.replace(emoticonRegex, "").trimStart();
+        // Regex to match links with the link pattern [🔗](...)
+        // [🔗] is constant and (...) is any content inside parentheses.
+        const linkRegex = /\[🔗\]\(.*\.pdf\)/g;
+        // Remove the emoticon and links from the text
+        let joinedText = joinedNode.data.text
+            .replace(emoticonRegex, "")    // Remove starting emoticon
+            .replace(linkRegex, "")        // Remove all links of the form [🔗](...)
+            .trimStart();                  // Trim leading whitespace
+
         node.setText(node.data.text + " (…) " + joinedText);
+
+        // let joinedText = joinedNode.data.text.replace(emoticonRegex, "").trimStart();
+        // node.setText(node.data.text + " (…) " + joinedText);
         // node.setText(node.data.text + " (…) " + joinedNode.data.text);
+
 
         if(!joinedNode.isLeaf())
         {// The joined node has children: copy them to the current node
