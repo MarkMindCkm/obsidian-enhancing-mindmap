@@ -455,7 +455,8 @@ class Node {
     }
     parseText() {
         if (this.data.text.length === 0) {
-            this.data.text = "Sub title";
+            // this.data.text = "Sub title";
+            this.data.text = this.getFileName();
         }
         obsidian.MarkdownRenderer.renderMarkdown(this.data.text, this.contentEl, this.mindmap.path || "", null).then(() => {
             this.data.mdText = this.contentEl.innerHTML;
@@ -463,6 +464,14 @@ class Node {
             this.mindmap && this.mindmap.emit('initNode', {});
             this._delay();
         });
+    }
+    getFileName() {
+        const fileNameOnly = require('path').basename(this.mindmap.path);
+        // 获取文件的扩展名
+        const extension = require('path').extname(this.mindmap.path);
+        // 截图文件后缀
+        const fileNameWithoutExtension = fileNameOnly.substr(0, fileNameOnly.length - extension.length);
+        return fileNameWithoutExtension;
     }
     _delay() {
         //parse md

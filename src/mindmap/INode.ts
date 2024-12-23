@@ -2,7 +2,6 @@ import MindMap from './mindmap'
 import {MarkdownRenderer,normalizePath,TFile,parseLinktext,resolveSubpath} from 'obsidian'
 import {t} from '../lang/helpers'
 
-
 export function keepLastIndex(dom:HTMLElement) {
     if ( window.getSelection ) { //ie11 10 9 ff safari
         dom.focus();  //ff
@@ -114,7 +113,8 @@ export default class Node {
 
     parseText(){
         if (this.data.text.length === 0){
-            this.data.text = "Sub title";
+            // this.data.text = "Sub title";
+            this.data.text = this.getFileName();
         }
         MarkdownRenderer.renderMarkdown( this.data.text ,this.contentEl,this.mindmap.path||"",null).then(()=>{
             this.data.mdText = this.contentEl.innerHTML;
@@ -122,7 +122,18 @@ export default class Node {
             this.mindmap&&this.mindmap.emit('initNode',{});
             this._delay();
         });
+    }
 
+    getFileName() {
+        const fileNameOnly = require('path').basename(this.mindmap.path);
+
+        // 获取文件的扩展名
+        const extension = require('path').extname(this.mindmap.path);
+
+        // 截图文件后缀
+        const fileNameWithoutExtension = fileNameOnly.substr(0, fileNameOnly.length - extension.length);
+
+        return fileNameWithoutExtension;
     }
 
     _delay(){
