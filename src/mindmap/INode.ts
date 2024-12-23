@@ -130,7 +130,7 @@ export default class Node {
         // 获取文件的扩展名
         const extension = require('path').extname(this.mindmap.path);
 
-        // 截图文件后缀
+        // 移除文件后缀
         const fileNameWithoutExtension = fileNameOnly.substr(0, fileNameOnly.length - extension.length);
 
         return fileNameWithoutExtension;
