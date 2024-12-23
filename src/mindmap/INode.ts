@@ -114,7 +114,7 @@ export default class Node {
     parseText(){
         if (this.data.text.length === 0){
             // this.data.text = "Sub title";
-            this.data.text = this.getFileName();
+            this.data.text = this.getCurrentFileName();
         }
         MarkdownRenderer.renderMarkdown( this.data.text ,this.contentEl,this.mindmap.path||"",null).then(()=>{
             this.data.mdText = this.contentEl.innerHTML;
@@ -124,7 +124,7 @@ export default class Node {
         });
     }
 
-    getFileName() {
+    getCurrentFileName() {
         const fileNameOnly = require('path').basename(this.mindmap.path);
 
         // 获取文件的扩展名
