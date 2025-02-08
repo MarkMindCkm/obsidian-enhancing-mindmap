@@ -299,7 +299,9 @@ export default class Node {
     }
 
 
-    setSelectedText(i_str_1: string, i_str_2: string, i_check: boolean) {
+    setSelectedText(i_str_1: string, i_str_2: string, i_check: boolean, i_set_as_suffix:boolean) {
+        let l_str_len = i_str_1.length
+
         // Get selection and Create new text
         let l_selection = window.getSelection();
         let l_selectedText = l_selection.toString();
@@ -320,50 +322,54 @@ export default class Node {
 
         if(i_check)
         {// Check in case the pre-/suf-fix must be substracted
-            if( (l_selectedText.substring(0,2) == i_str_1)  ||
-                (l_selectedText.substring(0,2) == i_str_2)  )
+            if( (l_selectedText.substring(0,l_str_len) == i_str_1)  ||
+                (l_selectedText.substring(0,l_str_len) == i_str_2)  )
             {// Prefix must be substracted, bold first
-                l_selectedText = l_selectedText.substring(2); // Remove leading prefix
+                l_selectedText = l_selectedText.substring(l_str_len); // Remove leading prefix
 
-                if( (l_selectedText.substring(l_selectedText.length-2) == i_str_1)  ||
-                    (l_selectedText.substring(l_selectedText.length-2) == i_str_2)  )
+                if( (l_selectedText.substring(l_selectedText.length-l_str_len) == i_str_1)  ||
+                    (l_selectedText.substring(l_selectedText.length-l_str_len) == i_str_2)  )
                 {// Suffix must be substracted
-                    l_selectedText = l_selectedText.substring(0,l_selectedText.length-2);
+                    l_selectedText = l_selectedText.substring(0,l_selectedText.length-l_str_len);
                 }
                 // else: no trailing prefix
             }
-            else if(    (l_selectedText.substring(1,3) == i_str_1)  ||
-                        (l_selectedText.substring(1,3) == i_str_2)  )
+            else if(    (l_selectedText.substring(1,1+l_str_len) == i_str_1)    ||
+                        (l_selectedText.substring(1,1+l_str_len) == i_str_2)    )
             {// Prefix must be substracted, italic (?) first
-                l_selectedText = l_selectedText[0] + l_selectedText.substring(3); // Remove prefix
+                l_selectedText = l_selectedText[0] + l_selectedText.substring(1+l_str_len); // Remove prefix
 
-                if( (l_selectedText.slice(-3, -1) == i_str_1)   ||
-                    (l_selectedText.slice(-3, -1) == i_str_2)   )
+                if( (l_selectedText.slice(-l_str_len-1, -1) == i_str_1)   ||
+                    (l_selectedText.slice(-l_str_len-1, -1) == i_str_2)   )
                 {// Suffix must be substracted
-                    l_selectedText = l_selectedText.substring(0,l_selectedText.length-3) +
+                    l_selectedText = l_selectedText.substring(0,l_selectedText.length-1-l_str_len) +
                         l_selectedText.slice(-1);
                 }
                 // else: no trailing prefix
             }
-            else if(    (l_selectedText.substring(2,4) == i_str_1)  ||
-                        (l_selectedText.substring(2,4) == i_str_2)  )
+            else if(    (l_selectedText.substring(2,2+l_str_len) == i_str_1)  ||
+                        (l_selectedText.substring(2,2+l_str_len) == i_str_2)  )
             {// Prefix must be substracted, highlight (?) first
-                l_selectedText = l_selectedText.substring(0,2) + l_selectedText.substring(4); // Remove prefix
+                l_selectedText = l_selectedText.substring(0,l_str_len) + l_selectedText.substring(4); // Remove prefix
 
-                if( (l_selectedText.slice(-4, -2) == i_str_1)   ||
-                    (l_selectedText.slice(-4, -2) == i_str_2)   )
+                if( (l_selectedText.slice(-2, -2-l_str_len) == i_str_1) ||
+                    (l_selectedText.slice(-2, -2-l_str_len) == i_str_2) )
                 {// Suffix must be substracted
-                    l_selectedText = l_selectedText.substring(0,l_selectedText.length-4) +
+                    l_selectedText = l_selectedText.substring(0,l_selectedText.length-2-l_str_len) +
                     l_selectedText.slice(-2);
                 }
                 // else: no trailing prefix
             }
             else {// No pre-/suf-fix: add it
-                l_selectedText = i_str_1+l_selectedText+i_str_1;
+                l_selectedText = i_str_1+l_selectedText;
+                if(i_set_as_suffix)
+                {   l_selectedText = l_selectedText+i_str_1; }
             }
         }
         else {// No need to check: add the string
-            l_selectedText = i_str_1+l_selectedText+i_str_1;
+            l_selectedText = i_str_1+l_selectedText;
+            if(i_set_as_suffix)
+            {   l_selectedText = l_selectedText+i_str_1; }
         }
 
         // Add a leading/trailing space if needed

@@ -157,6 +157,7 @@ var en = {
     'Italicize the node\'s text': 'Italicize the node text',
     'Highlight the node\'s text': 'Highlight the node\'s text',
     'Strike through the node\'s text': 'Strike through the node\'s text',
+    'Add line break (<br>)': 'Add line break (<br>)',
     'Remove line breaks (<br>)': 'Remove line breaks (<br>)',
     'Cancel edit': 'Cancel edit',
     'Expand one level': 'Expand one level',
@@ -232,7 +233,8 @@ var fr = {
     'Italicize the node\'s text': 'Mettre en italique le texte du nœud',
     'Highlight the node\'s text': 'Mettre en surbrillance le texte du nœud',
     'Strike through the node\'s text': 'Barrer le texte du nœud',
-    'Remove line breaks (<br>)': "Supprimer les retours à la ligne (<br>)",
+    'Add line break (<br>)': 'Ajouter un retour à la ligne (<br>)',
+    'Remove line breaks (<br>)': 'Supprimer les retours à la ligne (<br>)',
     'Cancel edit': 'Annuler la modification',
     'Expand one level': 'Étendre d\'un niveau',
     'Expand one level from the max. displayed level': 'Étendre d\'un niveau à partir du niveau maximal affiché',
@@ -622,7 +624,8 @@ class Node {
             selection.addRange(range);
         }
     }
-    setSelectedText(i_str_1, i_str_2, i_check) {
+    setSelectedText(i_str_1, i_str_2, i_check, i_set_as_suffix) {
+        let l_str_len = i_str_1.length;
         // Get selection and Create new text
         let l_selection = window.getSelection();
         let l_selectedText = l_selection.toString();
@@ -639,41 +642,47 @@ class Node {
             l_trailingSpace = true;
         }
         if (i_check) { // Check in case the pre-/suf-fix must be substracted
-            if ((l_selectedText.substring(0, 2) == i_str_1) ||
-                (l_selectedText.substring(0, 2) == i_str_2)) { // Prefix must be substracted, bold first
-                l_selectedText = l_selectedText.substring(2); // Remove leading prefix
-                if ((l_selectedText.substring(l_selectedText.length - 2) == i_str_1) ||
-                    (l_selectedText.substring(l_selectedText.length - 2) == i_str_2)) { // Suffix must be substracted
-                    l_selectedText = l_selectedText.substring(0, l_selectedText.length - 2);
+            if ((l_selectedText.substring(0, l_str_len) == i_str_1) ||
+                (l_selectedText.substring(0, l_str_len) == i_str_2)) { // Prefix must be substracted, bold first
+                l_selectedText = l_selectedText.substring(l_str_len); // Remove leading prefix
+                if ((l_selectedText.substring(l_selectedText.length - l_str_len) == i_str_1) ||
+                    (l_selectedText.substring(l_selectedText.length - l_str_len) == i_str_2)) { // Suffix must be substracted
+                    l_selectedText = l_selectedText.substring(0, l_selectedText.length - l_str_len);
                 }
                 // else: no trailing prefix
             }
-            else if ((l_selectedText.substring(1, 3) == i_str_1) ||
-                (l_selectedText.substring(1, 3) == i_str_2)) { // Prefix must be substracted, italic (?) first
-                l_selectedText = l_selectedText[0] + l_selectedText.substring(3); // Remove prefix
-                if ((l_selectedText.slice(-3, -1) == i_str_1) ||
-                    (l_selectedText.slice(-3, -1) == i_str_2)) { // Suffix must be substracted
-                    l_selectedText = l_selectedText.substring(0, l_selectedText.length - 3) +
+            else if ((l_selectedText.substring(1, 1 + l_str_len) == i_str_1) ||
+                (l_selectedText.substring(1, 1 + l_str_len) == i_str_2)) { // Prefix must be substracted, italic (?) first
+                l_selectedText = l_selectedText[0] + l_selectedText.substring(1 + l_str_len); // Remove prefix
+                if ((l_selectedText.slice(-l_str_len - 1, -1) == i_str_1) ||
+                    (l_selectedText.slice(-l_str_len - 1, -1) == i_str_2)) { // Suffix must be substracted
+                    l_selectedText = l_selectedText.substring(0, l_selectedText.length - 1 - l_str_len) +
                         l_selectedText.slice(-1);
                 }
                 // else: no trailing prefix
             }
-            else if ((l_selectedText.substring(2, 4) == i_str_1) ||
-                (l_selectedText.substring(2, 4) == i_str_2)) { // Prefix must be substracted, highlight (?) first
-                l_selectedText = l_selectedText.substring(0, 2) + l_selectedText.substring(4); // Remove prefix
-                if ((l_selectedText.slice(-4, -2) == i_str_1) ||
-                    (l_selectedText.slice(-4, -2) == i_str_2)) { // Suffix must be substracted
-                    l_selectedText = l_selectedText.substring(0, l_selectedText.length - 4) +
+            else if ((l_selectedText.substring(2, 2 + l_str_len) == i_str_1) ||
+                (l_selectedText.substring(2, 2 + l_str_len) == i_str_2)) { // Prefix must be substracted, highlight (?) first
+                l_selectedText = l_selectedText.substring(0, l_str_len) + l_selectedText.substring(4); // Remove prefix
+                if ((l_selectedText.slice(-2, -2 - l_str_len) == i_str_1) ||
+                    (l_selectedText.slice(-2, -2 - l_str_len) == i_str_2)) { // Suffix must be substracted
+                    l_selectedText = l_selectedText.substring(0, l_selectedText.length - 2 - l_str_len) +
                         l_selectedText.slice(-2);
                 }
                 // else: no trailing prefix
             }
             else { // No pre-/suf-fix: add it
-                l_selectedText = i_str_1 + l_selectedText + i_str_1;
+                l_selectedText = i_str_1 + l_selectedText;
+                if (i_set_as_suffix) {
+                    l_selectedText = l_selectedText + i_str_1;
+                }
             }
         }
         else { // No need to check: add the string
-            l_selectedText = i_str_1 + l_selectedText + i_str_1;
+            l_selectedText = i_str_1 + l_selectedText;
+            if (i_set_as_suffix) {
+                l_selectedText = l_selectedText + i_str_1;
+            }
         }
         // Add a leading/trailing space if needed
         if (l_leadingSpace) {
@@ -9842,40 +9851,28 @@ class MindMap {
         return;
     }
     // Join the current node with the following node
-    joinWithFollowingNode(node) {
+    joinWithFollowingNode(node, in_asCitation) {
         let joinedNode = node.getNextSibling();
-        // Set node's text
-        node.setText(node.data.text + joinedNode.data.text);
-        if (!joinedNode.isLeaf()) { // The joined node has children: copy them to the current node
-            joinedNode.children.forEach((n) => {
-                //this._moveAsChild(n, node);
-                let copiedNode = this.copyNode(n);
-                this.selectNode.unSelect();
-                node.select();
-                this.pasteNode(copiedNode);
-            });
-        }
-        // Delete joined node
-        this.removeNode(joinedNode);
-        this.clearSelectNode();
-        this.refresh();
-        this.scale(this.mindScale);
-        node.select();
-    }
-    // Join the current node with the following node, adding " (…) "
-    joinAsCitationWithFollowingNode(node) {
-        let joinedNode = node.getNextSibling();
-        // Set node's text, except for the starting emoticon and link (if any)
+        // Set node's text, except for the starting emoticon and finishing link (if any)
         const emoticonRegex = /^[\u263a-\u27bf\u{1f300}-\u{1f9ff}]/u;
         // Regex to match links with the link pattern [🔗](...)
         // [🔗] is constant and (...) is any content inside parentheses.
         const linkRegex = /\[🔗\]\(.*\.pdf\)/g;
+        const pageRegex = / \(p\. \d+\)$/;
         // Remove the emoticon and links from the text
+        let node_text = (node.data.text)
+            .replace(linkRegex, "") // Remove all links of the form [🔗](...)
+            .trimEnd() // Trim ending whitespace
+            .replace(pageRegex, ""); // Remove last page of the form (p. ...)
         let joinedText = joinedNode.data.text
             .replace(emoticonRegex, "") // Remove starting emoticon
-            .replace(linkRegex, "") // Remove all links of the form [🔗](...)
             .trimStart(); // Trim leading whitespace
-        node.setText(node.data.text + " (…) " + joinedText);
+        let l_middle_text = " ";
+        if (in_asCitation) {
+            l_middle_text += "(…)";
+        }
+        l_middle_text += "<br>";
+        node.setText(node_text + l_middle_text + joinedText);
         // let joinedText = joinedNode.data.text.replace(emoticonRegex, "").trimStart();
         // node.setText(node.data.text + " (…) " + joinedText);
         // node.setText(node.data.text + " (…) " + joinedNode.data.text);
@@ -38976,7 +38973,8 @@ class MindMapPlugin extends obsidian.Plugin {
                             var node = mindmap.selectNode;
                             if (node.data.isEdit) { // A node is edited: set in bold only the selected part
                                 var l_check_prefix = true;
-                                node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix);
+                                var l_set_as_suffix = true;
+                                node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix, l_set_as_suffix);
                             }
                             else { // Set in bold the whole node
                                 mindmap._formatNode(node, l_prefix_1, l_prefix_2);
@@ -39071,7 +39069,8 @@ class MindMapPlugin extends obsidian.Plugin {
                             var node = mindmap.selectNode;
                             if (node.data.isEdit) { // A node is edited: set in bold only the selected part
                                 var l_check_prefix = true;
-                                node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix);
+                                var l_set_as_suffix = true;
+                                node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix, l_set_as_suffix);
                             }
                             else { // Set in bold the whole node
                                 mindmap._formatNode(node, l_prefix_1, l_prefix_2);
@@ -39095,13 +39094,37 @@ class MindMapPlugin extends obsidian.Plugin {
                             var node = mindmap.selectNode;
                             if (node.data.isEdit) { // A node is edited: set in bold only the selected part
                                 var l_check_prefix = true;
-                                node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix);
+                                var l_set_as_suffix = true;
+                                node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix, l_set_as_suffix);
                             }
                             else { // Set in bold the whole node
                                 mindmap._formatNode(node, l_prefix_1, l_prefix_2);
                             }
                         }
                         //else: no node selected: nothing to do
+                    }
+                }
+            });
+            // Alt + Ctrl + Shift + L
+            this.addCommand({
+                id: 'Add line break (<br>)',
+                name: `${t('Add line break (<br>)')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt', 'Ctrl', 'Shift'],
+                        key: 'l',
+                    },
+                ],
+                callback: () => {
+                    const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+                    if (mindmapView) {
+                        var mindmap = mindmapView.mindmap;
+                        let node = mindmap.selectNode;
+                        if (node) {
+                            if (node.data.isEdit) ;
+                            node.setSelectedText('<br>', '<br>', false, false);
+                        }
+                        //else: no node selected
                     }
                 }
             });
@@ -39460,7 +39483,7 @@ class MindMapPlugin extends obsidian.Plugin {
                         var mindmap = mindmapView.mindmap;
                         var node = mindmap.selectNode;
                         if (node) {
-                            mindmap.joinWithFollowingNode(node);
+                            mindmap.joinWithFollowingNode(node, false);
                         }
                         // else: No node selected: nothing to do
                     }
@@ -39482,7 +39505,7 @@ class MindMapPlugin extends obsidian.Plugin {
                         var mindmap = mindmapView.mindmap;
                         var node = mindmap.selectNode;
                         if (node) {
-                            mindmap.joinAsCitationWithFollowingNode(node);
+                            mindmap.joinWithFollowingNode(node, true);
                         }
                         // else: No node selected: nothing to do
                     }

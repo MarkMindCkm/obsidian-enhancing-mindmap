@@ -336,7 +336,8 @@ export default class MindMapPlugin extends Plugin {
             if(node.data.isEdit)
             {// A node is edited: set in bold only the selected part
               var l_check_prefix = true;
-              node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix);
+              var l_set_as_suffix = true;
+              node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix, l_set_as_suffix);
             }
 
             else
@@ -446,7 +447,8 @@ export default class MindMapPlugin extends Plugin {
             if(node.data.isEdit)
             {// A node is edited: set in bold only the selected part
               var l_check_prefix = true;
-              node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix);
+              var l_set_as_suffix = true;
+              node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix, l_set_as_suffix);
             }
 
             else
@@ -475,7 +477,8 @@ export default class MindMapPlugin extends Plugin {
             if(node.data.isEdit)
             {// A node is edited: set in bold only the selected part
               var l_check_prefix = true;
-              node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix);
+              var l_set_as_suffix = true;
+              node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix, l_set_as_suffix);
             }
 
             else
@@ -485,6 +488,33 @@ export default class MindMapPlugin extends Plugin {
         }
         //else: no node selected: nothing to do
 }
+      }
+    });
+
+    // Alt + Ctrl + Shift + L
+    this.addCommand({
+      id: 'Add line break (<br>)',
+      name: `${t('Add line break (<br>)')}`,
+      hotkeys: [
+        {
+          modifiers: ['Alt','Ctrl', 'Shift'],
+          key: 'l',
+        },
+      ],
+      callback: () => {
+        const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+        if(mindmapView){
+          var mindmap = mindmapView.mindmap;
+          let node = mindmap.selectNode;
+          if(node) {
+            if(node.data.isEdit)
+              {// A node is edited: set in bold only the selected part
+
+              }
+            node.setSelectedText('<br>', '<br>', false, false);
+          }
+          //else: no node selected
+        }
       }
     });
 
@@ -510,7 +540,6 @@ export default class MindMapPlugin extends Plugin {
         }
       }
     });
-
 
     // (Shift +) Escape
     this.addCommand({
@@ -875,7 +904,7 @@ export default class MindMapPlugin extends Plugin {
           var mindmap = mindmapView.mindmap;
           var node = mindmap.selectNode;
           if(node)
-          {  mindmap.joinWithFollowingNode(node); }
+          {  mindmap.joinWithFollowingNode(node, false); }
           // else: No node selected: nothing to do
         }
       }
@@ -897,7 +926,7 @@ export default class MindMapPlugin extends Plugin {
           var mindmap = mindmapView.mindmap;
           var node = mindmap.selectNode;
           if(node)
-          {  mindmap.joinAsCitationWithFollowingNode(node); }
+          {  mindmap.joinWithFollowingNode(node, true); }
           // else: No node selected: nothing to do
         }
       }
