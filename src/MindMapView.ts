@@ -388,6 +388,7 @@ export class MindMapView extends TextFileView implements HoverParent {
           if (view.file) {
             this.fileCache = this.app.metadataCache.getFileCache(view.file);
             this.yamlString = this.getFrontMatter();
+            this.mindmap.updateFrontmatterTooltip(this.yamlString);
           }
         }
         this.mindmap.init();
@@ -529,8 +530,5 @@ export class MindMapView extends TextFileView implements HoverParent {
     //    })
 
     // })
-
-    super.onPaneMenu(menu,'more-options');
   }
-
 }
