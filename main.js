@@ -624,7 +624,7 @@ class Node {
             selection.addRange(range);
         }
     }
-    setSelectedText(i_str_1, i_str_2, i_check, i_set_as_suffix) {
+    setSelectedText(i_str_1, i_str_2, i_check, i_set_as_suffix, i_select_str) {
         let l_str_len = i_str_1.length;
         // Get selection and Create new text
         let l_selection = window.getSelection();
@@ -696,8 +696,16 @@ class Node {
         range.deleteContents();
         let textNode = document.createTextNode(l_selectedText);
         range.insertNode(textNode);
-        // Unselect modified text
-        //selection.removeAllRanges();
+        if (!i_select_str) {
+            // Unselect modified text
+            // l_selection.removeAllRanges();
+            // Move the cursor to the end of the inserted text
+            range.setStartAfter(textNode);
+            range.setEndAfter(textNode);
+            // Clear the selection and apply the cursor at the end
+            l_selection.removeAllRanges();
+            l_selection.addRange(range);
+        }
     }
     setSelectedText_italic() {
         // Get selection and Create new text
@@ -38974,7 +38982,7 @@ class MindMapPlugin extends obsidian.Plugin {
                             if (node.data.isEdit) { // A node is edited: set in bold only the selected part
                                 var l_check_prefix = true;
                                 var l_set_as_suffix = true;
-                                node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix, l_set_as_suffix);
+                                node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix, l_set_as_suffix, true);
                             }
                             else { // Set in bold the whole node
                                 mindmap._formatNode(node, l_prefix_1, l_prefix_2);
@@ -39070,7 +39078,7 @@ class MindMapPlugin extends obsidian.Plugin {
                             if (node.data.isEdit) { // A node is edited: set in bold only the selected part
                                 var l_check_prefix = true;
                                 var l_set_as_suffix = true;
-                                node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix, l_set_as_suffix);
+                                node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix, l_set_as_suffix, true);
                             }
                             else { // Set in bold the whole node
                                 mindmap._formatNode(node, l_prefix_1, l_prefix_2);
@@ -39095,7 +39103,7 @@ class MindMapPlugin extends obsidian.Plugin {
                             if (node.data.isEdit) { // A node is edited: set in bold only the selected part
                                 var l_check_prefix = true;
                                 var l_set_as_suffix = true;
-                                node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix, l_set_as_suffix);
+                                node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix, l_set_as_suffix, true);
                             }
                             else { // Set in bold the whole node
                                 mindmap._formatNode(node, l_prefix_1, l_prefix_2);
@@ -39122,7 +39130,7 @@ class MindMapPlugin extends obsidian.Plugin {
                         let node = mindmap.selectNode;
                         if (node) {
                             if (node.data.isEdit) ;
-                            node.setSelectedText('<br>', '<br>', false, false);
+                            node.setSelectedText('<br>', '<br>', false, false, false);
                         }
                         //else: no node selected
                     }

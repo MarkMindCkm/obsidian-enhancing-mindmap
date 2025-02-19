@@ -337,7 +337,7 @@ export default class MindMapPlugin extends Plugin {
             {// A node is edited: set in bold only the selected part
               var l_check_prefix = true;
               var l_set_as_suffix = true;
-              node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix, l_set_as_suffix);
+              node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix, l_set_as_suffix, true);
             }
 
             else
@@ -448,7 +448,7 @@ export default class MindMapPlugin extends Plugin {
             {// A node is edited: set in bold only the selected part
               var l_check_prefix = true;
               var l_set_as_suffix = true;
-              node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix, l_set_as_suffix);
+              node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix, l_set_as_suffix, true);
             }
 
             else
@@ -478,7 +478,7 @@ export default class MindMapPlugin extends Plugin {
             {// A node is edited: set in bold only the selected part
               var l_check_prefix = true;
               var l_set_as_suffix = true;
-              node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix, l_set_as_suffix);
+              node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix, l_set_as_suffix, true);
             }
 
             else
@@ -511,7 +511,7 @@ export default class MindMapPlugin extends Plugin {
               {// A node is edited: set in bold only the selected part
 
               }
-            node.setSelectedText('<br>', '<br>', false, false);
+            node.setSelectedText('<br>', '<br>', false, false, false);
           }
           //else: no node selected
         }

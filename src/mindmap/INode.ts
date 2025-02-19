@@ -299,7 +299,7 @@ export default class Node {
     }
 
 
-    setSelectedText(i_str_1: string, i_str_2: string, i_check: boolean, i_set_as_suffix:boolean) {
+    setSelectedText(i_str_1: string, i_str_2: string, i_check: boolean, i_set_as_suffix:boolean, i_select_str: boolean) {
         let l_str_len = i_str_1.length
 
         // Get selection and Create new text
@@ -387,9 +387,19 @@ export default class Node {
         let textNode = document.createTextNode(l_selectedText);
         range.insertNode(textNode);
 
-        // Unselect modified text
-        //selection.removeAllRanges();
+        if (!i_select_str) {
+            // Unselect modified text
+            // l_selection.removeAllRanges();
+            // Move the cursor to the end of the inserted text
+            range.setStartAfter(textNode);
+            range.setEndAfter(textNode);
+
+            // Clear the selection and apply the cursor at the end
+            l_selection.removeAllRanges();
+            l_selection.addRange(range);
+        }
     }
+
 
     setSelectedText_italic() {
         // Get selection and Create new text
