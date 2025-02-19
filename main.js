@@ -439,6 +439,7 @@ class Node {
         //this.containEl.textContent = this.data.text;
         this.initNodeBar();
         if (this.data.isRoot) {
+            this.containEl.setAttribute("title", this.data.tooltip);
             this.containEl.classList.add('mm-root');
             this.data.isRoot = true;
         }
@@ -8440,6 +8441,10 @@ class MindMap {
         //this.center();
         this.dispLevel = 0;
     }
+    updateFrontmatterTooltip(fm) {
+        this.frontmatter = fm;
+        this.data.tooltip = fm;
+    }
     setMenuIcon() {
         var addNodeDom = document.createElement('span');
         var deleteNodeDom = document.createElement('span');
@@ -8463,10 +8468,11 @@ class MindMap {
     init(collapsedIds) {
         var that = this;
         var data = this.data;
+        this.frontmatter;
         var x = this.setting.canvasSize / 2 - 60;
         var y = this.setting.canvasSize / 2 - 200;
         var waitCollapseNodes = [];
-        function initNode(d, isRoot, p) {
+        function initNode(d, isRoot, p, fm) {
             that._nodeNum++;
             var n = new Node(d, that);
             // if (collapsedIds && collapsedIds.includes(n.getId())) {
@@ -8479,6 +8485,9 @@ class MindMap {
             if (isRoot) {
                 n.setPosition(x, y);
                 that.root = n;
+                // if (fm) {
+                //     n.containEl.setAttribute("aria-label",fm);
+                // }
                 n.data.isRoot = true;
             }
             else {
@@ -8638,7 +8647,7 @@ class MindMap {
     }
     mindMapChange() {
         var _a;
-        //console.log(this.view)
+        // console.log(this.view)
         (_a = this.view) === null || _a === void 0 ? void 0 : _a.mindMapChange();
     }
     appFocusIn(evt) {
@@ -38385,6 +38394,7 @@ class MindMapView extends obsidian.TextFileView {
                     if (view.file) {
                         this.fileCache = this.app.metadataCache.getFileCache(view.file);
                         this.yamlString = this.getFrontMatter();
+                        this.mindmap.updateFrontmatterTooltip(this.yamlString);
                     }
                 }
                 this.mindmap.init();
@@ -38506,7 +38516,6 @@ class MindMapView extends obsidian.TextFileView {
         //       }
         //    })
         // })
-        super.onPaneMenu(menu, 'more-options');
     }
 }
 

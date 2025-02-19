@@ -42,6 +42,7 @@ export default class MindMap {
     // selectedNodes?: INode[];
     setting: Setting;
     data: INodeData;
+    frontmatter?: string;
     drag?: boolean;
     startX?: number;
     startY?: number;
@@ -153,6 +154,11 @@ export default class MindMap {
         this.dispLevel=0;
     }
 
+    updateFrontmatterTooltip(fm: string){
+        this.frontmatter = fm;
+        this.data.tooltip = fm;
+    }
+
     setMenuIcon(){
         var addNodeDom = document.createElement('span');
         var deleteNodeDom = document.createElement('span');
@@ -177,11 +183,12 @@ export default class MindMap {
     init(collapsedIds?: string[]) {
         var that = this;
         var data = this.data;
+        var fm = this.frontmatter;
         var x = this.setting.canvasSize / 2 - 60;
         var y = this.setting.canvasSize / 2 - 200;
         var waitCollapseNodes:INode[]=[];
 
-        function initNode(d: INodeData, isRoot: boolean, p?: INode) {
+        function initNode(d: INodeData, isRoot: boolean, p?: INode, fm?: string) {
             that._nodeNum++;
             var n = new INode(d, that);
             // if (collapsedIds && collapsedIds.includes(n.getId())) {
@@ -195,6 +202,9 @@ export default class MindMap {
             if (isRoot) {
                 n.setPosition(x, y);
                 that.root = n;
+                // if (fm) {
+                //     n.containEl.setAttribute("aria-label",fm);
+                // }
                 n.data.isRoot = true;
             } else {
                 n.setPosition(0, 0);
@@ -379,7 +389,7 @@ export default class MindMap {
     }
 
     mindMapChange() {
-        //console.log(this.view)
+        // console.log(this.view)
         this.view?.mindMapChange();
     }
     appFocusIn(evt: FocusEvent){

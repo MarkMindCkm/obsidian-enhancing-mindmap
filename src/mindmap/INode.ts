@@ -2,7 +2,6 @@ import MindMap from './mindmap'
 import {MarkdownRenderer,normalizePath,TFile,parseLinktext,resolveSubpath} from 'obsidian'
 import {t} from '../lang/helpers'
 
-
 export function keepLastIndex(dom:HTMLElement) {
     if ( window.getSelection ) { //ie11 10 9 ff safari
         dom.focus();  //ff
@@ -41,12 +40,14 @@ interface BOX {
 export class INodeData implements INode{
     id:string;
     text:string;
+    tooltip?:string;
     pid?:string;
     mdText?:string;
     isRoot?:Boolean;
     children?:INodeData[]
     expanded?:boolean;
     isEdit?:boolean;
+
 }
 
 export default class Node {
@@ -72,7 +73,7 @@ export default class Node {
     //isEdit:boolean=false;
     _barDom:HTMLElement=null;
     data:any
-    constructor( data:INode,mindMap?:MindMap){
+    constructor( data:INode,mindMap?:MindMap ){
        this.data = data;
        this.mindmap = mindMap;
        this.initDom();
@@ -81,6 +82,7 @@ export default class Node {
     getId(){
         return this.data.id;
     }
+
 
     initDom(){
         this.containEl = document.createElement('div');
@@ -97,6 +99,7 @@ export default class Node {
         this.initNodeBar();
 
         if(this.data.isRoot){
+            this.containEl.setAttribute("title",this.data.tooltip);
             this.containEl.classList.add('mm-root');
             this.data.isRoot = true;
         }else{
