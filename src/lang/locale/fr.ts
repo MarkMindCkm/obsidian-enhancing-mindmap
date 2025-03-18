@@ -35,6 +35,8 @@ export default {
     "Save fail":"Échec de l'enregistrement des données",
     "Save success":"Enregistrement des données réussi",
     "Toggle markdown/mindmap":"Basculer entre le mode markdown et le mode carte mentale",
+    "Set to mindmap mode":"Passer en mode carte mentale",
+    "Set to markdown mode":"Passer en mode markdown",
     "Copy node":"Copier le nœud",
     "Paste node":"Coller le nœud",
 

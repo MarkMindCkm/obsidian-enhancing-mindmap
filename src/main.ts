@@ -63,6 +63,33 @@ export default class MindMapPlugin extends Plugin {
       }
     });
 
+     this.addCommand({
+      id: 'Set to mindmap view',
+      name: `${t('Set to mindmap mode')}`,
+      mobileOnly: false,
+      callback: () => {
+        const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
+        if(markdownView!=null)
+        {
+          this.mindmapFileModes[(markdownView.leaf as any).id || markdownView.file.path] = mindmapViewType;
+          this.setMarkdownView(markdownView.leaf);
+        }
+      }
+    });
+
+     this.addCommand({
+      id: 'Set to markdown view',
+      name: `${t('Set to markdown mode')}`,
+      mobileOnly: false,
+      callback: () => {
+        const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+        if(mindmapView!=null){
+          this.mindmapFileModes[(mindmapView.leaf as any).id || mindmapView.file.path] = 'markdown';
+          this.setMarkdownView(mindmapView.leaf);
+        }
+      }
+    });
+
     // Alt + Shift + C
     this.addCommand({
       id: 'Copy Node',

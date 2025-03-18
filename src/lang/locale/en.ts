@@ -36,6 +36,8 @@ export default {
     "Save fail":"Save data err",
     "Save success":"Save data success",
     "Toggle markdown/mindmap":"Toggle to markdown/mindmap mode",
+    "Set to mindmap mode":"Set to mindmap mode",
+    "Set to markdown mode":"Set to markdown mode",
     "Copy node":"Copy node(s)",
     "Paste node":"Paste node(s)",
 

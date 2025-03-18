@@ -143,6 +143,8 @@ var en = {
     "Save fail": "Save data err",
     "Save success": "Save data success",
     "Toggle markdown/mindmap": "Toggle to markdown/mindmap mode",
+    "Set to mindmap mode": "Set to mindmap mode",
+    "Set to markdown mode": "Set to markdown mode",
     "Copy node": "Copy node(s)",
     "Paste node": "Paste node(s)",
     "Undo": "Undo",
@@ -219,6 +221,8 @@ var fr = {
     "Save fail": "Échec de l'enregistrement des données",
     "Save success": "Enregistrement des données réussi",
     "Toggle markdown/mindmap": "Basculer entre le mode markdown et le mode carte mentale",
+    "Set to mindmap mode": "Passer en mode carte mentale",
+    "Set to markdown mode": "Passer en mode markdown",
     "Copy node": "Copier le nœud",
     "Paste node": "Coller le nœud",
     "Undo": "Annuler",
@@ -38722,6 +38726,30 @@ class MindMapPlugin extends obsidian.Plugin {
                     else if (markdownView != null) {
                         this.mindmapFileModes[markdownView.leaf.id || markdownView.file.path] = mindmapViewType;
                         this.setMarkdownView(markdownView.leaf);
+                    }
+                }
+            });
+            this.addCommand({
+                id: 'Set to mindmap view',
+                name: `${t('Set to mindmap mode')}`,
+                mobileOnly: false,
+                callback: () => {
+                    const markdownView = this.app.workspace.getActiveViewOfType(obsidian.MarkdownView);
+                    if (markdownView != null) {
+                        this.mindmapFileModes[markdownView.leaf.id || markdownView.file.path] = mindmapViewType;
+                        this.setMarkdownView(markdownView.leaf);
+                    }
+                }
+            });
+            this.addCommand({
+                id: 'Set to markdown view',
+                name: `${t('Set to markdown mode')}`,
+                mobileOnly: false,
+                callback: () => {
+                    const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+                    if (mindmapView != null) {
+                        this.mindmapFileModes[mindmapView.leaf.id || mindmapView.file.path] = 'markdown';
+                        this.setMarkdownView(mindmapView.leaf);
                     }
                 }
             });
