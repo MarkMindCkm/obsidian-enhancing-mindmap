@@ -74,6 +74,10 @@ export default {
     'Display the node\'s info in console':'Display the node\'s info in console',
 
     "Export to html":"Export to html",
-     "Export to PNG":"Export to PNG",
-     "Export to JPEG":"Export to JPEG",
+    "Export to PNG":"Export to PNG",
+    "Export to JPEG":"Export to JPEG",
+    "Export to PNG (HQ)":"Export to PNG (HQ)",
+    "Export to JPEG (HQ)":"Export to JPEG (HQ)",
+    "Export to PNG (LQ)":"Export to PNG (LQ)",
+    "Export to JPEG (LQ)":"Export to JPEG (LQ)",
 };

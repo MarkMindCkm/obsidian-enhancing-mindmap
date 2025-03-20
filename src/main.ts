@@ -1029,12 +1029,35 @@ export default class MindMapPlugin extends Plugin {
 
 
     this.addCommand({
+      id: 'Export to JPEG (LQ)',
+      name: `${t('Export to JPEG (LQ)')}`,
+      callback: () => {
+        const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+        if (mindmapView) {
+          mindmapView.exportToJpeg(1);
+        }
+      }
+    });
+
+    this.addCommand({
+      id: 'Export to PNG (LQ)',
+      name: `${t('Export to PNG (LQ)')}`,
+      callback: () => {
+        const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+        if(mindmapView){
+            mindmapView.exportToPng(1);
+        }
+      }
+    });
+
+
+    this.addCommand({
       id: 'Export to JPEG',
       name: `${t('Export to JPEG')}`,
       callback: () => {
         const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
         if (mindmapView) {
-          mindmapView.exportToJpeg();
+          mindmapView.exportToJpeg(2);
         }
       }
     });
@@ -1045,7 +1068,30 @@ export default class MindMapPlugin extends Plugin {
       callback: () => {
         const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
         if(mindmapView){
-            mindmapView.exportToPng();
+            mindmapView.exportToPng(2);
+        }
+      }
+    });
+
+
+    this.addCommand({
+      id: 'Export to JPEG (HQ)',
+      name: `${t('Export to JPEG (HQ)')}`,
+      callback: () => {
+        const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+        if (mindmapView) {
+          mindmapView.exportToJpeg(4);
+        }
+      }
+    });
+
+    this.addCommand({
+      id: 'Export to PNG (HQ)',
+      name: `${t('Export to PNG (HQ)')}`,
+      callback: () => {
+        const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+        if(mindmapView){
+            mindmapView.exportToPng(4);
         }
       }
     });

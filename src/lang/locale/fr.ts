@@ -75,4 +75,8 @@ export default {
     "Export to html":"Exporter en html",
     "Export to PNG":"Exporter en PNG",
     "Export to JPEG":"Exporter en JPEG",
+    "Export to PNG (HQ)":"Exporter en PNG (HQ)",
+    "Export to JPEG (HQ)":"Exporter en JPEG (HQ)",
+    "Export to PNG (LQ)":"Exporter en PNG (LQ)",
+    "Export to JPEG (LQ)":"Exporter en JPEG (LQ)",
 };
