@@ -299,6 +299,34 @@ export default class Node {
     }
 
 
+    insertText(i_str_1: string) {
+        // Replace regular spaces with non-breaking spaces
+        const formattedText = i_str_1.replace(/ /g, '\u00A0');
+
+        // Get selection and Create new text
+        let l_selection = window.getSelection();
+        let l_selectedText = l_selection.toString();
+
+        l_selectedText = formattedText+l_selectedText;
+
+        // Create a new selection range
+        let range = l_selection.getRangeAt(0);
+        range.deleteContents();
+        let textNode = document.createTextNode(l_selectedText);
+        range.insertNode(textNode);
+
+        // Unselect modified text
+        // l_selection.removeAllRanges();
+        // Move the cursor to the end of the inserted text
+        // range.setStartAfter(textNode);
+        // range.setEndAfter(textNode);
+
+        // Clear the selection and apply the cursor at the end
+        l_selection.removeAllRanges();
+        l_selection.addRange(range);
+    }
+
+
     setSelectedText(i_str_1: string, i_str_2: string, i_check: boolean, i_set_as_suffix:boolean, i_select_str: boolean) {
         let l_str_len = i_str_1.length
 

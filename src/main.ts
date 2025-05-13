@@ -518,6 +518,33 @@ export default class MindMapPlugin extends Plugin {
       }
     });
 
+    // Alt + Shift + T
+    this.addCommand({
+      id: 'Add tabulation',
+      name: `${t('Add tabulation')}`,
+      hotkeys: [
+        {
+          modifiers: ['Alt', 'Shift'],
+          key: 't',
+        },
+      ],
+      callback: () => {
+        const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+        if(mindmapView){
+          var mindmap = mindmapView.mindmap;
+          let node = mindmap.selectNode;
+          if(node) {
+            if(node.data.isEdit)
+              {// A node is edited: set in bold only the selected part
+
+              }
+            node.insertText('    ');
+          }
+          //else: no node selected
+        }
+      }
+    });
+
     // Alt + Ctrl + Shift + L
     this.addCommand({
       id: 'Add line break (<br>)',

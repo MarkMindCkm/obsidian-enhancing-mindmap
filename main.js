@@ -159,6 +159,7 @@ var en = {
     'Italicize the node\'s text': 'Italicize the node text',
     'Highlight the node\'s text': 'Highlight the node\'s text',
     'Strike through the node\'s text': 'Strike through the node\'s text',
+    'Add tabulation': 'Add tabulation',
     'Add line break (<br>)': 'Add line break (<br>)',
     'Remove line breaks (<br>)': 'Remove line breaks (<br>)',
     'Cancel edit': 'Cancel edit',
@@ -241,6 +242,7 @@ var fr = {
     'Italicize the node\'s text': 'Mettre en italique le texte du nœud',
     'Highlight the node\'s text': 'Mettre en surbrillance le texte du nœud',
     'Strike through the node\'s text': 'Barrer le texte du nœud',
+    'Add tabulation': 'Ajouter une tabulation',
     'Add line break (<br>)': 'Ajouter un retour à la ligne (<br>)',
     'Remove line breaks (<br>)': 'Supprimer les retours à la ligne (<br>)',
     'Cancel edit': 'Annuler la modification',
@@ -635,6 +637,27 @@ class Node$1 {
             selection.removeAllRanges();
             selection.addRange(range);
         }
+    }
+    insertText(i_str_1) {
+        // Replace regular spaces with non-breaking spaces
+        const formattedText = i_str_1.replace(/ /g, '\u00A0');
+        // Get selection and Create new text
+        let l_selection = window.getSelection();
+        let l_selectedText = l_selection.toString();
+        l_selectedText = formattedText + l_selectedText;
+        // Create a new selection range
+        let range = l_selection.getRangeAt(0);
+        range.deleteContents();
+        let textNode = document.createTextNode(l_selectedText);
+        range.insertNode(textNode);
+        // Unselect modified text
+        // l_selection.removeAllRanges();
+        // Move the cursor to the end of the inserted text
+        // range.setStartAfter(textNode);
+        // range.setEndAfter(textNode);
+        // Clear the selection and apply the cursor at the end
+        l_selection.removeAllRanges();
+        l_selection.addRange(range);
     }
     setSelectedText(i_str_1, i_str_2, i_check, i_set_as_suffix, i_select_str) {
         let l_str_len = i_str_1.length;
@@ -39899,6 +39922,29 @@ class MindMapPlugin extends obsidian.Plugin {
                             }
                         }
                         //else: no node selected: nothing to do
+                    }
+                }
+            });
+            // Alt + Shift + T
+            this.addCommand({
+                id: 'Add tabulation',
+                name: `${t('Add tabulation')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt', 'Shift'],
+                        key: 't',
+                    },
+                ],
+                callback: () => {
+                    const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+                    if (mindmapView) {
+                        var mindmap = mindmapView.mindmap;
+                        let node = mindmap.selectNode;
+                        if (node) {
+                            if (node.data.isEdit) ;
+                            node.insertText('    ');
+                        }
+                        //else: no node selected
                     }
                 }
             });
