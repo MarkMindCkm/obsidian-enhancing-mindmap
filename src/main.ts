@@ -115,6 +115,35 @@ export default class MindMapPlugin extends Plugin {
       }
     });
 
+    // Alt + Shift + X
+    this.addCommand({
+      id: 'Cut Node',
+      name: `${t('Cut node')}`,
+      hotkeys: [
+        {
+          modifiers: ['Alt', 'Shift'],
+          key: 'X',
+        },
+      ],
+      callback: () => {
+        const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+        if(mindmapView){
+          var mindmap = mindmapView.mindmap;
+          navigator.clipboard.writeText('');
+          var node = mindmap.selectNode;
+          if(node){
+            var text = mindmap.copyNode(node);
+            navigator.clipboard.writeText(text);
+            if (!node.data.isRoot && !node.data.isEdit) {
+              node.mindmap.execute("deleteNodeAndChild", { node });
+              mindmap._menuDom.style.display='none';
+            }
+          }
+        }
+
+      }
+    });
+
     // Alt + Shift + V
     this.addCommand({
       id: 'Paste Node',

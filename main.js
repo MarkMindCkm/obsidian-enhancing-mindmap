@@ -146,6 +146,7 @@ var en = {
     "Set to mindmap mode": "Set to mindmap mode",
     "Set to markdown mode": "Set to markdown mode",
     "Copy node": "Copy node(s)",
+    "Cut node": "Cut node(s)",
     "Paste node": "Paste node(s)",
     "Undo": "Undo",
     "Redo": "Redo",
@@ -229,6 +230,7 @@ var fr = {
     "Set to mindmap mode": "Passer en mode carte mentale",
     "Set to markdown mode": "Passer en mode markdown",
     "Copy node": "Copier le nœud",
+    "Cut node": "Couper le nœud",
     "Paste node": "Coller le nœud",
     "Undo": "Annuler",
     "Redo": "Rétablir",
@@ -39556,6 +39558,33 @@ class MindMapPlugin extends obsidian.Plugin {
                         if (node) {
                             var text = mindmap.copyNode(node);
                             navigator.clipboard.writeText(text);
+                        }
+                    }
+                }
+            });
+            // Alt + Shift + X
+            this.addCommand({
+                id: 'Cut Node',
+                name: `${t('Cut node')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt', 'Shift'],
+                        key: 'X',
+                    },
+                ],
+                callback: () => {
+                    const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+                    if (mindmapView) {
+                        var mindmap = mindmapView.mindmap;
+                        navigator.clipboard.writeText('');
+                        var node = mindmap.selectNode;
+                        if (node) {
+                            var text = mindmap.copyNode(node);
+                            navigator.clipboard.writeText(text);
+                            if (!node.data.isRoot && !node.data.isEdit) {
+                                node.mindmap.execute("deleteNodeAndChild", { node });
+                                mindmap._menuDom.style.display = 'none';
+                            }
                         }
                     }
                 }

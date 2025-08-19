@@ -38,6 +38,7 @@ export default {
     "Set to mindmap mode":"Passer en mode carte mentale",
     "Set to markdown mode":"Passer en mode markdown",
     "Copy node":"Copier le nœud",
+    "Cut node":"Couper le nœud",
     "Paste node":"Coller le nœud",
 
     "Undo":"Annuler",

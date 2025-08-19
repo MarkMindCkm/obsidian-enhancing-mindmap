@@ -39,6 +39,7 @@ export default {
     "Set to mindmap mode":"Set to mindmap mode",
     "Set to markdown mode":"Set to markdown mode",
     "Copy node":"Copy node(s)",
+    "Cut node":"Cut node(s)",
     "Paste node":"Paste node(s)",
 
     "Undo":"Undo",
