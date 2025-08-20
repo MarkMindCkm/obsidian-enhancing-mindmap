@@ -36,7 +36,10 @@ export default {
     "Save fail":"Save data err",
     "Save success":"Save data success",
     "Toggle markdown/mindmap":"Toggle to markdown/mindmap mode",
+    "Set to mindmap mode":"Set to mindmap mode",
+    "Set to markdown mode":"Set to markdown mode",
     "Copy node":"Copy node(s)",
+    "Cut node":"Cut node(s)",
     "Paste node":"Paste node(s)",
 
     "Undo":"Undo",
@@ -51,6 +54,8 @@ export default {
     'Italicize the node\'s text':'Italicize the node text',
     'Highlight the node\'s text':'Highlight the node\'s text',
     'Strike through the node\'s text':'Strike through the node\'s text',
+    'Add tabulation':'Add tabulation',
+    'Add line break (<br>)':'Add line break (<br>)',
     'Remove line breaks (<br>)':'Remove line breaks (<br>)',
     'Cancel edit':'Cancel edit',
     'Expand one level':'Expand one level',
@@ -71,6 +76,10 @@ export default {
     'Display the node\'s info in console':'Display the node\'s info in console',
 
     "Export to html":"Export to html",
-     "Export to PNG":"Export to PNG",
-     "Export to JPEG":"Export to JPEG",
+    "Export to PNG":"Export to PNG",
+    "Export to JPEG":"Export to JPEG",
+    "Export to PNG (HQ)":"Export to PNG (HQ)",
+    "Export to JPEG (HQ)":"Export to JPEG (HQ)",
+    "Export to PNG (LQ)":"Export to PNG (LQ)",
+    "Export to JPEG (LQ)":"Export to JPEG (LQ)",
 };

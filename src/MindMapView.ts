@@ -17,7 +17,8 @@ import { Transformer } from './markmapLib/markmap-lib';
 import randomColor from "randomcolor";
 import { t } from './lang/helpers'
 
-import domtoimage from './domtoimage.js'
+// import domtoimage from './domtoimage.js'
+import domtoimage from './dom-to-image-more.js'
 
 export function uuid(): string {
   function S4() {
@@ -134,7 +135,7 @@ export class MindMapView extends TextFileView implements HoverParent {
 
   }
 
-  exportToPng() {
+  exportToPng(i_scale: number) {
     if (!this.mindmap) {
       return;
     }
@@ -142,7 +143,7 @@ export class MindMapView extends TextFileView implements HoverParent {
     const { rootBox, oldScrollLeft, oldScrollTop } = this.prepareForExport();
 
     setTimeout(() => {
-      domtoimage.toPng(this.mindmap.contentEL, { scale: 2 }).then(async (dataUrl: string) => {
+      domtoimage.toPng(this.mindmap.contentEL, { scale: i_scale }).then(async (dataUrl: string) => {
         var img = new Image();
         img.src = dataUrl;
 
@@ -166,7 +167,7 @@ export class MindMapView extends TextFileView implements HoverParent {
     }, 200);
   }
 
-  exportToJpeg() {
+  exportToJpeg(i_scale: number) {
     if (!this.mindmap) {
       return;
     }
@@ -174,7 +175,7 @@ export class MindMapView extends TextFileView implements HoverParent {
     const { rootBox, oldScrollLeft, oldScrollTop } = this.prepareForExport();
 
     setTimeout(() => {
-      domtoimage.toJpeg(this.mindmap.contentEL, { quality: 1.0, scale: 2 }).then(async (dataUrl: string) => {
+      domtoimage.toJpeg(this.mindmap.contentEL, { quality: 1.0, scale: i_scale }).then(async (dataUrl: string) => {
         var img = new Image();
         img.src = dataUrl;
 

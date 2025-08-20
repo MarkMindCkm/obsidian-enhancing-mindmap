@@ -1983,41 +1983,35 @@ export default class MindMap {
 
 
     // Join the current node with the following node
-    joinWithFollowingNode(node: INode) {
+    joinWithFollowingNode(node: INode, in_asCitation: Boolean) {
         let joinedNode = node.getNextSibling();
 
-        // Set node's text
-        node.setText(node.data.text + joinedNode.data.text);
-
-        if(!joinedNode.isLeaf())
-        {// The joined node has children: copy them to the current node
-            joinedNode.children.forEach((n) => {
-                //this._moveAsChild(n, node);
-                let copiedNode = this.copyNode(n);
-                this.selectNode.unSelect();
-                node.select();
-                this.pasteNode(copiedNode);
-            });
-        }
-
-        // Delete joined node
-        this.removeNode(joinedNode);
-
-        this.clearSelectNode();
-        this.refresh();
-        this.scale(this.mindScale);
-        node.select();
-    }
-
-    // Join the current node with the following node, adding " (…) "
-    joinAsCitationWithFollowingNode(node: INode) {
-        let joinedNode = node.getNextSibling();
-
-        // Set node's text, except for the starting emoticon (if any)
+        // Set node's text, except for the starting emoticon and finishing link (if any)
         const emoticonRegex = /^[\u263a-\u27bf\u{1f300}-\u{1f9ff}]/u;
-        let joinedText = joinedNode.data.text.replace(emoticonRegex, "").trimStart();
-        node.setText(node.data.text + " (…) " + joinedText);
+        // Regex to match links with the link pattern [🔗](...)
+        // [🔗] is constant and (...) is any content inside parentheses.
+        const linkRegex = /\[🔗\]\(.*\.pdf\)/g;
+        const pageRegex = / \(p\. \d+\)$/;
+        // Remove the emoticon and links from the text
+        let node_text = (node.data.text)
+            .replace(linkRegex, "")        // Remove all links of the form [🔗](...)
+            .trimEnd()                     // Trim ending whitespace
+            .replace(pageRegex, "")        // Remove last page of the form (p. ...)
+        let joinedText = joinedNode.data.text
+            .replace(emoticonRegex, "")    // Remove starting emoticon
+            .trimStart();                  // Trim leading whitespace
+
+        let l_middle_text = " "
+        if (in_asCitation)
+        { l_middle_text += "(…)"
+        }
+        l_middle_text += "<br>"
+        node.setText(node_text + l_middle_text + joinedText);
+
+        // let joinedText = joinedNode.data.text.replace(emoticonRegex, "").trimStart();
+        // node.setText(node.data.text + " (…) " + joinedText);
         // node.setText(node.data.text + " (…) " + joinedNode.data.text);
+
 
         if(!joinedNode.isLeaf())
         {// The joined node has children: copy them to the current node
