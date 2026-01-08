@@ -51,6 +51,8 @@ The plug-in only support a limited markdown format
 | Move node to another node  | Drag and drop node |
 | Tab node                 | Up/down/left/right |
 | Zoom in/out              | Ctrl/Cmd + mouse wheel|
+| Zoom in                  | Ctrl/Cmd + =       |
+| Zoom out                 | Ctrl/Cmd + -       |
 | mind map to center          | Ctrl/Cmd + E |
 
 ## Features
