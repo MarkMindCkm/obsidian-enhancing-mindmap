@@ -73,6 +73,8 @@ export default {
     'Join as citation with the node below':'Join as citation with the node below',
     'Center mindmap view on the current node':'Center mindmap view on the current node',
     'Center mindmap view':'Center mindmap view',
+    'Zoom in':'Zoom in',
+    'Zoom out':'Zoom out',
     'Display the node\'s info in console':'Display the node\'s info in console',
 
     "Export to html":"Export to html",

@@ -1047,6 +1047,44 @@ export default class MindMapPlugin extends Plugin {
       }
     });
 
+    // Zoom in
+    this.addCommand({
+      id: 'Zoom in',
+      name: `${t('Zoom in')}`,
+      hotkeys: [
+        {
+          modifiers: ['Alt'],
+          key: '=',
+        },
+      ],
+      callback: () => {
+        const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+        if(mindmapView){
+          var mindmap = mindmapView.mindmap;
+          mindmap.setScale("up");
+        }
+      }
+    });
+
+    // Zoom out
+    this.addCommand({
+      id: 'Zoom out',
+      name: `${t('Zoom out')}`,
+      hotkeys: [
+        {
+          modifiers: ['Alt'],
+          key: '-',
+        },
+      ],
+      callback: () => {
+        const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+        if(mindmapView){
+          var mindmap = mindmapView.mindmap;
+          mindmap.setScale("down");
+        }
+      }
+    });
+
     this.addCommand({
       id: 'Display the node\'s info in console',
       name: `${t('Display the node\'s info in console')}`,
