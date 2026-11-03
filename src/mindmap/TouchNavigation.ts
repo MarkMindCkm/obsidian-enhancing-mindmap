@@ -160,6 +160,13 @@ export default class TouchNavigation {
         // OS file drags cannot originate from the node touch being cancelled.
         const transfer = (event as DragEvent).dataTransfer;
         if (transfer && Array.from(transfer.types).indexOf('Files') !== -1) return;
+        // Compatibility mouse input must not bypass the touch pan threshold.
+        // Keep clicks available so a touch below the threshold still acts as a tap.
+        if (touch && this.pointers.size && this.canPan &&
+            ['mousedown', 'mousemove', 'mouseup'].indexOf(event.type) !== -1) {
+            this.stop(event);
+            return;
+        }
         if (this.navigating) {
             this.stop(event);
             return;

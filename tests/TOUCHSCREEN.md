@@ -11,27 +11,27 @@ Run with Node.js and the repository dependencies installed:
     node --test tests/touch-navigation.cjs
 
 The regression tests use a simulated viewport plus the existing click/selection
-methods; they do not replace hardware tests. There are 22 cases covering taps,
+methods; they do not replace hardware tests. There are 23 cases covering taps,
 the 6 CSS-pixel pan threshold, both zoom limits and pointer event orders,
 midpoint anchoring, finger-count transitions, cancellation, trailing touch
 activation, external drops, and disposal. Native capture, layout/scroll bounds,
 Obsidian editing, and native drag-and-drop still require the checks below.
 
-## Source-only PR and build output
+## Packaged plugin bundle
 
-Upstream has mixed history: older PRs included `main.js`, but the latest merged
-zoom-shortcut change (`7b37041`, merged by `1f5b100` / PR #174) changed only source
-and README files. `main.js` is also listed in `.gitignore`, although an older
-copy remains tracked. This patch follows that source-only precedent.
+`package.json` declares `main.js` as the plugin entrypoint. Although it is listed
+in `.gitignore`, the file remains tracked and must be rebuilt and included with
+source changes so checkouts and releases contain touchscreen navigation.
 
-`npm run build` overwrites the repository bundle. It picks up existing upstream
-zoom commands missing from that old bundle, whitespace differences, and JSZip
-3.10.2 instead of the previously bundled 3.10.1. The existing `^3.7.1` dependency
-range permits both versions; no dependency manifest change caused this update.
-Do not include those generated differences in the touch-navigation PR. No
-dependency downgrade or lockfile rewrite is required. Build output was checked,
-then the working-tree bundle was restored to upstream; any previously staged
-bundle must still be unstaged before committing.
+Run `npm run build` after changing the source and include the resulting `main.js`.
+The rebuild also picks up existing upstream zoom commands, formatting differences,
+and JSZip 3.10.2 instead of the previously bundled 3.10.1. The existing `^3.7.1`
+dependency range permits both versions; no dependency manifest or lockfile change
+is required.
+
+Touch-origin compatibility mouse events are suppressed during a pending canvas
+pan so the existing mouse handlers cannot bypass the 6 CSS-pixel threshold.
+Below-threshold touches still deliver their click for deselection and editing.
 
 Post-gesture suppression is limited to touch-origin activation/compatibility
 events for 800 ms, matching pointer IDs or, for legacy mouse events, the release

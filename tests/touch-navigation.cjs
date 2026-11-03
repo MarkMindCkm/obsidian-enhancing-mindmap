@@ -90,6 +90,32 @@ test('6px threshold initiates pan and suppresses only the resulting touch click'
     assert.equal(s.cancellations(), 1);
 });
 
+test('touch compatibility mouse events cannot pan below the threshold', () => {
+    const s = setup();
+    const editor = { ...s.viewport, drag: false, scalePointer: [] };
+    for (const [type, method] of [['mousedown', 'appMouseDown'], ['mousemove', 'appMouseMove'], ['mouseup', 'appMouseUp']]) {
+        s.canvas.addEventListener(type, e => MindMap.prototype[method].call(editor, e));
+    }
+    s.emit('pointerdown');
+    assert.equal(s.emit('mousedown', 1, 200, 200, { pageX: 200, pageY: 200 }).defaultPrevented, true);
+    s.emit('pointermove', 1, 205, 200);
+    assert.equal(s.emit('mousemove', 1, 205, 200, { pageX: 205, pageY: 200 }).defaultPrevented, true);
+    assert.equal(editor.drag, false);
+    assert.deepEqual(s.viewport.containerEL, { scrollLeft: 900, scrollTop: 700 });
+    s.emit('pointerup', 1, 205, 200);
+    assert.equal(s.emit('mouseup', 1, 205, 200).defaultPrevented, false);
+    assert.equal(s.emit('click', 1, 205, 200).defaultPrevented, false);
+    assert.equal(s.cancellations(), 0);
+
+    s.emit('pointerdown');
+    s.emit('mousedown');
+    s.emit('pointermove', 1, 206, 200);
+    near(s.viewport.containerEL.scrollLeft, 894);
+    s.emit('pointerup', 1, 206, 200);
+    assert.equal(s.emit('click', 1, 206, 200).defaultPrevented, true);
+    assert.equal(s.cancellations(), 1);
+});
+
 test('node taps, node dragging, mouse and pen input pass through before navigation', () => {
     const s = setup(); s.canvas.onNode = true;
     for (const type of ['pointerdown', 'pointermove', 'dragstart', 'dragover', 'drop', 'pointerup', 'click', 'dblclick']) {
