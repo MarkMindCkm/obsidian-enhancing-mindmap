@@ -159,13 +159,13 @@ export default class TouchNavigation {
         if (event.type === 'click' && mouse.detail === 0 && !touch) return;
         // OS file drags cannot originate from the node touch being cancelled.
         const transfer = (event as DragEvent).dataTransfer;
-        if (transfer && Array.from(transfer.types).includes('Files')) return;
+        if (transfer && Array.from(transfer.types).indexOf('Files') !== -1) return;
         if (this.navigating) {
             this.stop(event);
             return;
         }
         // External drag events are never trailing clicks from a touch gesture.
-        if (!touch || !['mousedown', 'mousemove', 'mouseup', 'click', 'dblclick', 'contextmenu'].includes(event.type)) return;
+        if (!touch || ['mousedown', 'mousemove', 'mouseup', 'click', 'dblclick', 'contextmenu'].indexOf(event.type) === -1) return;
         const now = Date.now();
         for (const [id, entry] of this.trailing) {
             if (entry.expires <= now) {
