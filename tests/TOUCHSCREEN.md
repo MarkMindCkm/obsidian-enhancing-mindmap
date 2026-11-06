@@ -8,14 +8,29 @@ Run with Node.js and the repository dependencies installed:
 
     npm run build
     npx tsc --noEmit
+    npx tsc --noEmit --strict --target es2015 --moduleResolution node --lib dom,es2015 src/mindmap/TouchNavigation.ts
     node --test tests/touch-navigation.cjs
 
 The regression tests use a simulated viewport plus the existing click/selection
-methods; they do not replace hardware tests. There are 23 cases covering taps,
+methods; they do not replace hardware tests. There are 37 cases covering taps,
 the 6 CSS-pixel pan threshold, both zoom limits and pointer event orders,
 midpoint anchoring, finger-count transitions, cancellation, trailing touch
-activation, external drops, and disposal. Native capture, layout/scroll bounds,
+activation, external drops, and disposal. Wheel integration cases run the real
+MindMap.initEvent/removeEvent, mouse/wheel handlers, setScale and scale alongside
+TouchNavigation. They cover Ctrl/Cmd-wheel direction, fixed steps, anchors,
+touchpad-sized deltas, plain scrolling, view isolation, touch/mouse transitions,
+shared limits, and cancellation. Node EventTarget does not provide a DOM tree;
+the harness explicitly forwards bubbling events to the container and body.
+Native capture, layout/scroll bounds,
 Obsidian editing, and native drag-and-drop still require the checks below.
+
+The wheel handler uses standard `wheel`/`deltaY`, replacing the inherited
+body-level legacy `mousewheel`/`wheelDelta` listener. It is non-passive and scoped
+to the view container. Only nonzero vertical Ctrl/Cmd-wheel zoom prevents the
+browser default; propagation and plain scrolling remain available. All zoom
+uses the original 10-point setScale step, 20–300% clamp, and scalePointer origin.
+Ctrl-marked touchpad pinch wheel events use that same path; unmodified touchpad
+scrolling does not zoom. Touchscreen pinch remains in TouchNavigation.
 
 ## Packaged plugin bundle
 

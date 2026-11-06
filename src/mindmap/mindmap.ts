@@ -322,7 +322,7 @@ export default class MindMap {
         document.addEventListener('keydown', this.appKeydown);
         document.addEventListener('compositionstart',this.compositionStart)
         document.addEventListener('compositionend',this.compositionEnd)
-        document.body.addEventListener('mousewheel', this.appMousewheel);
+        this.containerEL.addEventListener('wheel', this.appMousewheel, { passive: false });
 
         if(Platform.isDesktop){
             this.appEl.addEventListener('mousedown', this.appMouseDown);
@@ -354,7 +354,7 @@ export default class MindMap {
         document.removeEventListener('compositionstart',this.compositionStart)
         document.removeEventListener('compositionend',this.compositionEnd)
 
-        document.body.removeEventListener('mousewheel', this.appMousewheel);
+        this.containerEL.removeEventListener('wheel', this.appMousewheel);
 
         if(Platform.isDesktop){
             this.appEl.removeEventListener('mousedown', this.appMouseDown);
@@ -1841,29 +1841,12 @@ export default class MindMap {
         }
     }
 
-    appMousewheel(evt: any) {
-        // if(!evt) evt = window.event;
-        var ctrlKey = evt.ctrlKey || evt.metaKey;
-        var delta;
-        if (evt.wheelDelta) {
-            //IE、chrome  -120
-            delta = evt.wheelDelta / 120;
-        } else if (evt.detail) {
-            //FF 3
-            delta = -evt.detail / 3;
-        }
-
-        if (delta) {
-            if (delta < 0) {
-                if (ctrlKey) {
-                    this.setScale("down");
-                }
-            } else {
-                if (ctrlKey) {
-                    this.setScale("up");
-                }
-            }
-        }
+    appMousewheel(evt: WheelEvent) {
+        // Ctrl-wheel also represents touchpad pinch in Chromium. Leave plain
+        // wheel/touchpad scrolling alone and keep the existing fixed zoom step.
+        if (!(evt.ctrlKey || evt.metaKey) || !evt.deltaY) return;
+        if (evt.cancelable) evt.preventDefault();
+        this.setScale(evt.deltaY < 0 ? "up" : "down");
     }
 
     clearNode() {

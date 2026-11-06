@@ -13,7 +13,11 @@ function load(file, requireModule = require) {
 }
 const TouchNavigation = load('src/mindmap/TouchNavigation.ts');
 // Exercise the real click/selection methods without booting Obsidian or rendering.
-const MindMap = load('src/mindmap/mindmap.ts', () => ({}));
+const MindMap = load('src/mindmap/mindmap.ts', name => {
+    if (name === './TouchNavigation') return { default: TouchNavigation };
+    if (name === 'obsidian') return { Platform: { isDesktop: true }, Notice: class {} };
+    return {};
+});
 
 function setup(scale = 100) {
     const canvas = new EventTarget();
@@ -241,5 +245,167 @@ for (const reason of ['pointercancel', 'lostpointercapture', 'blur', 'destroy'])
             assert.equal(s.emit('click', 2, 600, 200).defaultPrevented, true);
         }
         if (reason === 'destroy') assert.equal(s.emit('pointerdown').defaultPrevented, false);
+    });
+}
+
+// Use the actual MindMap listener lifecycle, wheel/mouse handlers, setScale and
+// scale alongside TouchNavigation. EventTarget has no DOM tree, so explicitly
+// forward bubbling canvas events to its container and then the document body.
+function integrated(t, scale = 100) {
+    const s = setup(scale);
+    s.controller.destroy();
+    const doc = new EventTarget();
+    doc.body = new EventTarget();
+    const container = Object.assign(new EventTarget(), s.viewport.containerEL);
+    const listeners = [];
+    const add = container.addEventListener.bind(container);
+    container.addEventListener = (type, listener, options) => {
+        listeners.push({ type, options });
+        add(type, listener, options);
+    };
+    s.viewport.containerEL = container;
+    s.canvas.style = {};
+    const editor = s.viewport;
+    Object.setPrototypeOf(editor, MindMap.prototype);
+    delete editor.scale;
+    Object.assign(editor, {
+        scalePointer: [1200, 1000], _indicateDom: { style: {} },
+        on() {}, off() {}
+    });
+    // Unrelated editor callbacks need a rendered Obsidian document.
+    for (const name of ['appClickFn', 'appMouseOverFn', 'appDblclickFn',
+        'appDragstart', 'appDragover', 'appDragend', 'appDrop', 'appKeyup',
+        'appKeydown', 'compositionStart', 'compositionEnd', 'appFocusIn',
+        'appFocusOut', 'initNode', 'renderEditNode', 'mindMapChange']) editor[name] = () => {};
+    for (const name of ['appMousewheel', 'appMouseMove', 'appMouseDown', 'appMouseUp']) {
+        editor[name] = editor[name].bind(editor);
+    }
+    function withDocument(fn) {
+        const previous = global.document;
+        global.document = doc;
+        try { fn(); } finally { global.document = previous; }
+    }
+    const dispatch = s.canvas.dispatchEvent.bind(s.canvas);
+    s.canvas.dispatchEvent = e => {
+        dispatch(e);
+        if (e.bubbles && !e.cancelBubble) container.dispatchEvent(e);
+        if (e.bubbles && !e.cancelBubble) doc.body.dispatchEvent(e);
+        return !e.defaultPrevented;
+    };
+    withDocument(() => editor.initEvent());
+    const remove = () => withDocument(() => editor.removeEvent());
+    t.after(() => { remove(); clearTimeout(editor.timeOut); });
+    function wheel(deltaY, extra = {}, target = s.canvas) {
+        const e = new Event('wheel', { bubbles: true, cancelable: true });
+        Object.assign(e, { deltaY, deltaX: 0, deltaMode: 0, ctrlKey: true, metaKey: false }, extra);
+        target.dispatchEvent(e);
+        return e;
+    }
+    return { ...s, editor, container, doc, wheel, remove, listeners };
+}
+
+for (const [delta, expected] of [[-120, 110], [120, 90], [-0.5, 110], [500, 90]]) {
+    test(`integrated Ctrl-wheel ${delta} uses upstream direction, step and anchor`, t => {
+        const s = integrated(t);
+        let propagated = 0;
+        s.doc.body.addEventListener('wheel', () => propagated++);
+        assert.equal(s.wheel(delta).defaultPrevented, true);
+        assert.equal(s.editor.mindScale, expected);
+        assert.equal(s.canvas.style.transform, `scale(${expected / 100})`);
+        assert.equal(s.canvas.style.transformOrigin, '1200px 1000px');
+        assert.deepEqual(s.editor.scalePointer, [1200, 1000]);
+        assert.equal(s.container.scrollLeft, 900);
+        assert.equal(s.container.scrollTop, 700);
+        assert.equal(propagated, 1);
+    });
+}
+
+test('plain wheel and touchpad scrolling pass through; Cmd-wheel and Ctrl-touchpad pinch zoom', t => {
+    const s = integrated(t);
+    for (const deltaMode of [0, 1, 2]) {
+        assert.equal(s.wheel(120, { ctrlKey: false, deltaMode }).defaultPrevented, false);
+        assert.equal(s.wheel(0, { deltaX: 100, deltaMode }).defaultPrevented, false);
+        assert.equal(s.editor.mindScale, 100);
+    }
+    s.wheel(-3, { ctrlKey: false, metaKey: true, deltaMode: 1 });
+    assert.equal(s.editor.mindScale, 110);
+    s.wheel(-0.25); // Touchpad pinch is indistinguishable from Ctrl-wheel here.
+    assert.equal(s.editor.mindScale, 120);
+});
+
+test('wheel listener is scoped to its view, non-passive and removed on disposal', t => {
+    const s = integrated(t);
+    assert.deepEqual(s.listeners.filter(l => l.type === 'wheel'), [
+        { type: 'wheel', options: { passive: false } }
+    ]);
+    assert.equal(s.wheel(-120, {}, s.doc.body).defaultPrevented, false);
+    assert.equal(s.editor.mindScale, 100);
+    // The container also includes blank space outside the transformed canvas.
+    assert.equal(s.wheel(-120, {}, s.container).defaultPrevented, true);
+    assert.equal(s.editor.mindScale, 110);
+    s.remove();
+    assert.equal(s.wheel(-120).defaultPrevented, false);
+    assert.equal(s.editor.mindScale, 110);
+});
+
+test('wheel zoom in one mindmap does not zoom a second mindmap', t => {
+    const first = integrated(t), second = integrated(t);
+    first.wheel(-120);
+    assert.equal(first.editor.mindScale, 110);
+    assert.equal(second.editor.mindScale, 100);
+    second.wheel(120);
+    assert.equal(first.editor.mindScale, 110);
+    assert.equal(second.editor.mindScale, 90);
+});
+
+test('pinch after wheel and wheel immediately after pinch keep zoom and midpoint anchoring', t => {
+    const s = integrated(t);
+    s.wheel(-120);
+    beginPinch(s);
+    const world = anchor(s, 300, 200);
+    s.emit('pointermove', 2, 600, 200);
+    near(s.editor.mindScale, 220);
+    anchored(s, world, 400, 200);
+    s.emit('pointerup', 2, 600, 200); s.emit('pointerup', 1, 200, 200);
+    assert.equal(s.captured.size, 0);
+    assert.equal(s.wheel(120).defaultPrevented, true);
+    near(s.editor.mindScale, 210);
+    beginPinch(s);
+    s.emit('pointermove', 2, 400, 200);
+    near(s.editor.mindScale, 210); // Fresh baseline after switching back.
+});
+
+for (const [start, right, limit, delta, reverse] of [[290, 600, 300, -120, 290], [30, 210, 20, 120, 30]]) {
+    test(`real touch and wheel scale share the ${limit}% limit`, t => {
+        const s = integrated(t, start);
+        beginPinch(s); s.emit('pointermove', 2, right, 200);
+        near(s.editor.mindScale, limit);
+        s.emit('pointerup', 2, right, 200); s.emit('pointerup', 1, 200, 200);
+        s.wheel(delta); near(s.editor.mindScale, limit);
+        s.wheel(-delta); near(s.editor.mindScale, reverse);
+    });
+}
+
+for (const end of ['pointerup', 'pointercancel', 'lostpointercapture', 'blur']) {
+    test(`wheel and mouse drag work after touch ${end} without stale suppression`, t => {
+        const s = integrated(t);
+        beginPinch(s); s.emit('pointermove', 2, 600, 200);
+        if (end === 'blur') s.window.dispatchEvent(new Event('blur'));
+        else {
+            s.emit(end, 2, 600, 200);
+            if (end === 'pointerup') s.emit(end, 1, 200, 200);
+        }
+        const scroll = s.container.scrollLeft;
+        s.emit('pointermove', 1, 800, 800);
+        near(s.container.scrollLeft, scroll);
+        s.wheel(-120); near(s.editor.mindScale, 210);
+        assert.equal(s.captured.size, 0);
+        const physicalMouse = { pointerType: 'mouse', sourceCapabilities: { firesTouchEvents: false } };
+        s.emit('mousedown', 9, 200, 200, { ...physicalMouse, pageX: 200, pageY: 200 });
+        s.emit('mousemove', 9, 220, 230, { ...physicalMouse, pageX: 220, pageY: 230, offsetX: 220, offsetY: 230 });
+        near(s.container.scrollLeft, scroll - 20);
+        s.emit('mouseup', 9, 220, 230, physicalMouse);
+        assert.equal(s.editor.drag, false);
+        assert.equal(s.wheel(120, { ctrlKey: false }).defaultPrevented, false);
     });
 }
