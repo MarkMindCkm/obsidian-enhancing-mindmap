@@ -1,5 +1,6 @@
 import INode, { INodeData } from './INode'
 import Layout from './Layout'
+import TouchNavigation from './TouchNavigation'
 import { Notice, Platform } from 'obsidian'
 import SVG from 'svg.js'
 import { MindMapView } from '../MindMapView'
@@ -65,6 +66,7 @@ export default class MindMap {
     _left:number;
     _top:number;
     dispLevel:number;
+    private touchNavigation: TouchNavigation;
     isComposing = false;
     isFocused = true;
 
@@ -303,6 +305,12 @@ export default class MindMap {
 
 
     initEvent() {
+        this.touchNavigation = new TouchNavigation(this, () => {
+            this.drag = false;
+            this._dragNode = null;
+            this._dragType = '';
+            this._indicateDom.style.display = 'none';
+        });
         this.appEl.addEventListener('click', this.appClickFn);
         this.appEl.addEventListener('mouseover', this.appMouseOverFn);
         this.appEl.addEventListener('dblclick', this.appDblclickFn);
@@ -314,7 +322,7 @@ export default class MindMap {
         document.addEventListener('keydown', this.appKeydown);
         document.addEventListener('compositionstart',this.compositionStart)
         document.addEventListener('compositionend',this.compositionEnd)
-        document.body.addEventListener('mousewheel', this.appMousewheel);
+        this.containerEL.addEventListener('wheel', this.appMousewheel, { passive: false });
 
         if(Platform.isDesktop){
             this.appEl.addEventListener('mousedown', this.appMouseDown);
@@ -333,6 +341,7 @@ export default class MindMap {
     }
 
     removeEvent() {
+        this.touchNavigation.destroy();
         this.appEl.removeEventListener('click', this.appClickFn);
         this.appEl.removeEventListener('dragstart', this.appDragstart);
         this.appEl.removeEventListener('dragover', this.appDragover);
@@ -345,7 +354,7 @@ export default class MindMap {
         document.removeEventListener('compositionstart',this.compositionStart)
         document.removeEventListener('compositionend',this.compositionEnd)
 
-        document.body.removeEventListener('mousewheel', this.appMousewheel);
+        this.containerEL.removeEventListener('wheel', this.appMousewheel);
 
         if(Platform.isDesktop){
             this.appEl.removeEventListener('mousedown', this.appMouseDown);
@@ -1832,29 +1841,12 @@ export default class MindMap {
         }
     }
 
-    appMousewheel(evt: any) {
-        // if(!evt) evt = window.event;
-        var ctrlKey = evt.ctrlKey || evt.metaKey;
-        var delta;
-        if (evt.wheelDelta) {
-            //IE、chrome  -120
-            delta = evt.wheelDelta / 120;
-        } else if (evt.detail) {
-            //FF 3
-            delta = -evt.detail / 3;
-        }
-
-        if (delta) {
-            if (delta < 0) {
-                if (ctrlKey) {
-                    this.setScale("down");
-                }
-            } else {
-                if (ctrlKey) {
-                    this.setScale("up");
-                }
-            }
-        }
+    appMousewheel(evt: WheelEvent) {
+        // Ctrl-wheel also represents touchpad pinch in Chromium. Leave plain
+        // wheel/touchpad scrolling alone and keep the existing fixed zoom step.
+        if (!(evt.ctrlKey || evt.metaKey) || !evt.deltaY) return;
+        if (evt.cancelable) evt.preventDefault();
+        this.setScale(evt.deltaY < 0 ? "up" : "down");
     }
 
     clearNode() {
